@@ -189,6 +189,13 @@ body.in-nauka .main{padding-bottom:14px}
 .item .kic{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;
   background:color-mix(in srgb,var(--kc) 16%,transparent)}
 .item .body{cursor:pointer}
+.tv-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.tv-head .kic{width:44px;height:44px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kc) 16%,transparent)}
+.tv-head .kic .kico{width:22px;height:22px}
+.tv-head h3{margin:0} .tv-kind{font-size:13px}
+.tv-rows{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;font-size:14px}
+.tv-rows dt{color:var(--ink-dim)} .tv-rows dd{color:var(--ink)}
+.tv-desc{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:rgba(255,255,255,.03);border:1px solid var(--line);white-space:pre-wrap;font-size:14px;color:var(--ink-soft)}
 .notelink{color:var(--accent-2);cursor:pointer} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
 .cal .more{font-size:10.5px;color:var(--ink-dim)}
 @media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
@@ -1412,6 +1419,7 @@ async function loadPlan(){
   const d=$('#plan-date').value||todayISO(); $('#plan-date').value=d;
   const m=await api('/tasks?month='+d.slice(0,7)), t=m.filter(x=>x.date===d);
   planTasks={}; m.forEach(x=>planTasks[x.id]=x);
+  if(m[0]&&!('kind' in m[0])&&!window._staleWarned){window._staleWarned=1;alert('Serwer działa na starej wersji — zrestartuj uvicorn, inaczej typ i notatka nie zapiszą się.');}
   $('#plan-count').textContent=(t.length? t.length+' '+plural(t.length,'zadanie','zadania','zadań'):'Zadania')+' — '+dlong(d);
   renderTasks(t,'#plan-tasks','Brak wpisów na ten dzień. Kliknij dzień w kalendarzu, aby dodać.');
   renderCal(d,m);
@@ -1429,7 +1437,7 @@ function renderCal(sel,tasks){
     h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" data-date="${iso}" onclick="calPick('${iso}')">
       <span class="n">${dt.getDate()}</span>
       ${ev.slice(0,3).map(t=>{const k=kindOf(t.kind);return `<span class="ev${t.done?' done':''}" style="--kc:${k[2]}" draggable="true" data-id="${t.id}"
-        onclick="event.stopPropagation();openTask(${t.id})" title="${escAttr(t.title)}">${kico(k)} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' '+kico(['',ICONS.nauka,'var(--ink-soft)']):''}</span>`;}).join('')}
+        onclick="event.stopPropagation();viewTask(${t.id})" title="${escAttr(t.title)}">${kico(k)} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' '+kico(['',ICONS.nauka,'var(--ink-soft)']):''}</span>`;}).join('')}
       ${ev.length>3?`<span class="more">+${ev.length-3} więcej</span>`:''}</div>`;
   }
   $('#cal').innerHTML=h;
@@ -1499,6 +1507,26 @@ async function submitTask(){
   else await api('/tasks',{method:'POST',body:JSON.stringify(data)});
   closeModal(); $('#plan-date').value=date; loadPlan();
 }
+/* podgląd wpisu (podsumowanie) → Edytuj otwiera formularz */
+function viewTask(id){
+  const t=planTasks[id]; if(!t)return; const k=kindOf(t.kind);
+  const time=t.start_time?t.start_time+(t.end_time?' – '+t.end_time:''):'cały dzień';
+  const rows=[['Kiedy',dlong(t.date)],['Godzina',time],
+    ['Priorytet',{high:'Wysoki',low:'Niski'}[t.priority]||'Normalny'],
+    t.remind_at&&['Przypomnienie',t.remind_at.slice(11,16)],
+    ['Status',t.done?'Zrobione':'Do zrobienia'],
+    t.note_title&&['Notatka',`<span class="notelink" onclick="closeModal();openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} ${esc(t.note_title)}</span>`]
+  ].filter(Boolean);
+  $('#modal').style.maxWidth='520px';
+  $('#modal').innerHTML=`
+    <div class="tv-head"><div class="kic" style="--kc:${k[2]}">${kico(k)}</div>
+      <div><h3>${esc(t.title)}</h3><div class="tv-kind" style="color:${k[2]}">${esc(k[0]||'Bez typu')}</div></div></div>
+    <dl class="tv-rows">${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
+    ${t.notes?`<div class="tv-desc">${esc(t.notes)}</div>`:''}
+    <div class="actions"><button class="btn danger" style="margin-right:auto" onclick="delTask(${t.id});closeModal()">Usuń</button>
+      <button class="btn ghost" onclick="closeModal()">Zamknij</button><button class="btn" onclick="openTask(${t.id})">Edytuj</button></div>`;
+  openModal();
+}
 function openLinkedNote(nb,id){go('nauka');selectNotebook(nb);setTimeout(()=>openNote(id),250);}
 
 function renderTasks(list,sel,emptyMsg){
@@ -1513,7 +1541,7 @@ function renderTasks(list,sel,emptyMsg){
       <div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
       <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${kico(k)}</div>
       <div class="time">${time}</div>
-      <div class="body" onclick="openTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
+      <div class="body" onclick="viewTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
       <button class="x" onclick="delTask(${t.id})">✕</button>
     </div>`;
   }).join('');
