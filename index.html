@@ -196,6 +196,21 @@ body.in-nauka .main{padding-bottom:14px}
 .tv-rows{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;font-size:14px}
 .tv-rows dt{color:var(--ink-dim)} .tv-rows dd{color:var(--ink)}
 .tv-desc{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:rgba(255,255,255,.03);border:1px solid var(--line);white-space:pre-wrap;font-size:14px;color:var(--ink-soft)}
+.dayv{height:min(62vh,640px);overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.02)}
+.dayv-grid{position:relative;height:calc(24 * var(--hh))} .dayv{--hh:52px}
+.dayv .hr{height:var(--hh);border-top:1px solid var(--line);display:flex;cursor:pointer;transition:background .12s}
+.dayv .hr:first-child{border-top:0}
+.dayv .hr:hover{background:var(--glass)} .dayv .hr:hover::after{content:"+ dodaj";margin:auto 12px auto auto;font-size:12px;color:var(--ink-dim)}
+.dayv .hr span{width:58px;flex:none;font-size:11.5px;color:var(--ink-dim);padding:3px 10px;font-variant-numeric:tabular-nums}
+.tev{position:absolute;border-radius:9px;padding:5px 9px;overflow:hidden;cursor:pointer;font-size:12.5px;line-height:1.35;
+  background:color-mix(in srgb,var(--kc) 22%,#14151f);border-left:3px solid var(--kc);transition:filter .12s}
+.tev:hover{filter:brightness(1.18)} .tev.done{opacity:.55} .tev.done b{text-decoration:line-through}
+.tev b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tev small{color:var(--ink-soft);font-size:11.5px} .tev .kico{width:12px;height:12px;vertical-align:-1px}
+.nowline{position:absolute;left:52px;right:0;border-top:2px solid var(--neg);z-index:2;pointer-events:none}
+.nowline::before{content:"";position:absolute;left:-5px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--neg)}
+.allday{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.allday .ev{font-size:12.5px;padding:4px 10px;border-radius:8px;cursor:pointer;background:color-mix(in srgb,var(--kc) 22%,transparent);border-left:3px solid var(--kc)}
 .notelink{color:var(--accent-2);cursor:pointer} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
 .cal .more{font-size:10.5px;color:var(--ink-dim)}
 @media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
@@ -987,11 +1002,11 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .blocks{max-width:100%}
 /* Spotify widget */
 .spoti{position:fixed;top:16px;right:18px;z-index:150}
-.spoti-logo{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 32% 24%,#242a27,#121513 70%);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 22px -6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.05) inset}
-.spoti-logo svg circle{fill:#1DB954}
-.spoti-logo:hover{transform:translateY(-1px) scale(1.06);border-color:color-mix(in srgb,#1DB954 40%,transparent);box-shadow:0 10px 26px -6px rgba(0,0,0,.65),0 0 18px -4px rgba(29,185,84,.45)}
-.spoti-logo svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
-.spoti.open .spoti-logo{border-color:color-mix(in srgb,#1DB954 55%,transparent);box-shadow:0 0 0 3px rgba(29,185,84,.18),0 8px 24px -6px rgba(0,0,0,.6)}
+.spoti-logo{width:44px;height:44px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;display:grid;place-items:center;
+  transition:transform .2s cubic-bezier(.2,.8,.3,1),box-shadow .2s;box-shadow:0 6px 18px -6px rgba(0,0,0,.7)}
+.spoti-logo svg{display:block;width:44px;height:44px}
+.spoti-logo:hover{transform:scale(1.06);box-shadow:0 0 0 3px rgba(29,185,84,.18),0 6px 18px -6px rgba(0,0,0,.7)}
+.spoti.open .spoti-logo{box-shadow:0 0 0 3px rgba(29,185,84,.3),0 6px 18px -6px rgba(0,0,0,.7)}
 .spoti-panel{position:absolute;top:0;right:56px;width:300px;max-width:calc(100vw - 84px);padding:14px 14px 12px;border-radius:16px;display:none;transform-origin:top right}
 .spoti.open .spoti-panel{display:block;animation:spotiPop .18s cubic-bezier(.2,.8,.3,1)}
 @keyframes spotiPop{from{opacity:0;transform:scale(.82) translateX(14px)}to{opacity:1;transform:none}}
@@ -1079,6 +1094,10 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <div class="date" id="pulpit-date"></div>
       </div>
       <div class="tiles" id="tiles"></div>
+      <div class="panel glass">
+        <div class="ph"><h3>Dziś w kalendarzu</h3><button class="btn ghost sm" onclick="go('plan');openDay(todayISO())">Otwórz dzień →</button></div>
+        <div class="list" id="pulpit-tasks"></div>
+      </div>
     </section>
 
     <!-- PLAN DNIA -->
@@ -1266,7 +1285,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 <!-- Spotify widget (prawy górny róg) -->
 <div id="spoti" class="spoti">
   <button class="spoti-logo" onclick="spotiToggle()" title="Spotify">
-    <svg viewBox="0 0 168 168" width="26" height="26" aria-hidden="true"><circle cx="84" cy="84" r="84" fill="#1DB954"/><path fill="#000" d="M122.9 120.4a5.2 5.2 0 01-7.2 1.7c-19.6-12-44.3-14.7-73.4-8.1a5.24 5.24 0 11-2.3-10.2c31.8-7.3 59.1-4.2 81.1 9.3a5.2 5.2 0 011.8 7.3zm10.4-23.1a6.55 6.55 0 01-9 2.2C111 87.6 80.3 84 56.5 91.2a6.56 6.56 0 11-3.8-12.6c27.2-8.3 61-4.3 86.4 11.3a6.55 6.55 0 012.2 9zm.9-24.1C110.9 59.5 71.3 58.2 48.6 65.1a7.86 7.86 0 11-4.6-15.1c26.1-7.9 69.8-6.4 97.3 9.9a7.86 7.86 0 01-8.1 13.5z"/></svg>
+    <svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="84" fill="#1DB954"/><path fill="#000" d="M122.9 120.4a5.2 5.2 0 01-7.2 1.7c-19.6-12-44.3-14.7-73.4-8.1a5.24 5.24 0 11-2.3-10.2c31.8-7.3 59.1-4.2 81.1 9.3a5.2 5.2 0 011.8 7.3zm10.4-23.1a6.55 6.55 0 01-9 2.2C111 87.6 80.3 84 56.5 91.2a6.56 6.56 0 11-3.8-12.6c27.2-8.3 61-4.3 86.4 11.3a6.55 6.55 0 012.2 9zm.9-24.1C110.9 59.5 71.3 58.2 48.6 65.1a7.86 7.86 0 11-4.6-15.1c26.1-7.9 69.8-6.4 97.3 9.9a7.86 7.86 0 01-8.1 13.5z"/></svg>
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
@@ -1286,14 +1305,38 @@ function go(v){
   if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources();
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
+  pushNav();
 }
+
+/* historia nawigacji: każdy widok/zeszyt/notatka = wpis w historii przeglądarki,
+   więc wstecz/dalej (przyciski myszy, Alt+←/→) chodzą po aplikacji zamiast z niej wychodzić */
+let navRestoring=false;
+const navState=()=>{const v=($('.view.active')||{id:'view-pulpit'}).id.replace('view-','');
+  const tab=v==='nauka'?(['notebooks','notes','note','calc'].find(x=>{const p=$('#pane-'+x);return p&&p.style.display!=='none';})||'notebooks'):null;
+  return {v,tab,nb:v==='nauka'?nbActive:null,note:v==='nauka'&&tab==='note'?noteActive:null};};
+function pushNav(){
+  if(navRestoring)return; const st=navState();
+  if(JSON.stringify(st)!==JSON.stringify(history.state))history.pushState(st,'');
+}
+window.addEventListener('popstate',async e=>{
+  const st=e.state; if(!st)return;
+  navRestoring=true;
+  try{
+    if($('#modal-bd').classList.contains('open'))closeModal();
+    go(st.v);
+    if(st.v==='nauka'){
+      if(st.nb&&st.nb!==nbActive)selectNotebook(st.nb);
+      if(st.note)await openNote(st.note); else showTab(st.tab||'notebooks');
+    }
+  }finally{navRestoring=false;}
+});
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.v);});
 
 function showTab(t){
   ['notebooks','notes','note','calc'].forEach(x=>{const p=$('#pane-'+x); if(p)p.style.display=(x===t)?'':'none';});
   $$('#tabbar .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='calc')calcInit();
-  updateBreadcrumb();
+  updateBreadcrumb(); pushNav();
   requestAnimationFrame(fitStudy); setTimeout(fitStudy,90);
 }
 /* dopasuj wysokość obszaru nauki do dołu ekranu (scroll tylko w notatce) */
@@ -1315,6 +1358,7 @@ function updateBreadcrumb(){
 }
 
 /* ---------- PULPIT (kafelki modułów) ---------- */
+let planTasks={};   // wpisy kalendarza po id (plan + pulpit)
 const ICONS={
   plan:'<rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/>',
   finanse:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16.5 14.5h1.5"/>',
@@ -1325,7 +1369,9 @@ async function loadPulpit(){
   const h=new Date().getHours();
   $('#greet').textContent=h<6?'Dobrej nocy.':h<12?'Dzień dobry.':h<18?'Miłego dnia.':'Dobry wieczór.';
   $('#pulpit-date').textContent=dlong(todayISO());
-  const [s,srcs,nbs]=await Promise.all([api('/summary'),api('/sources'),api('/notebooks')]);
+  const [s,srcs,nbs,today]=await Promise.all([api('/summary'),api('/sources'),api('/notebooks'),api('/tasks?day='+todayISO())]);
+  today.forEach(x=>planTasks[x.id]=x);
+  renderTasks(today,'#pulpit-tasks','Na dziś nic nie zaplanowano.');
   const tiles=[
     {v:'plan',   c:'#8b7cff', t:'Plan dnia',      stat:`${s.today_done}/${s.today_tasks}`, cls:'', desc:s.today_tasks?'zadań na dziś':'brak zadań — zaplanuj dzień'},
     {v:'finanse',c:'#54d996', t:'Finanse',        stat:zl(s.balance), cls:(s.balance<0?'neg':'pos'), desc:'saldo · '+(s.month_net>=0?'+':'−')+zl(Math.abs(s.month_net))+' w tym mies.'},
@@ -1413,7 +1459,6 @@ function combo(root,{items,value,placeholder,custom=false,readonly=false,onChang
   show();
   return {get:()=>val,set:v=>{val=v;show();}};
 }
-let planTasks={};
 
 async function loadPlan(){
   const d=$('#plan-date').value||todayISO(); $('#plan-date').value=d;
@@ -1442,7 +1487,44 @@ function renderCal(sel,tasks){
   }
   $('#cal').innerHTML=h;
 }
-function calPick(iso){$('#plan-date').value=iso;loadPlan();openTask(null,iso);}
+function calPick(iso){$('#plan-date').value=iso;loadPlan();openDay(iso);}
+
+/* okno dnia: oś godzinowa, wpisy jako bloki start–koniec; klik w godzinę = nowy wpis o tej godzinie */
+let returnDay=null;
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m;};
+async function openDay(iso){
+  returnDay=iso;
+  const list=await api('/tasks?day='+iso); list.forEach(x=>planTasks[x.id]=x);
+  const timed=list.filter(t=>t.start_time), allday=list.filter(t=>!t.start_time), HH=52;
+  // układ kolumn dla nachodzących wpisów: grupy (klastry) + zachłanne przydzielanie kolumn
+  const ev=timed.map(t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;if(b<=a)b=Math.min(a+60,1440);return {t,a,b};})
+    .sort((x,y)=>x.a-y.a||y.b-x.b);
+  let cl=[],end=-1;
+  const flush=()=>{const n=Math.max(...cl.map(e=>e.col))+1;cl.forEach(e=>e.n=n);cl=[];};
+  ev.forEach(e=>{ if(e.a>=end&&cl.length)flush();
+    const cols=[];cl.forEach(o=>{if(o.b>e.a)cols[o.col]=1;}); e.col=cols.findIndex(x=>!x); if(e.col<0)e.col=cols.length;
+    cl.push(e); end=Math.max(end,e.b);});
+  if(cl.length)flush();
+  const now=new Date(), nowMin=iso===todayISO()?now.getHours()*60+now.getMinutes():null;
+  $('#modal').style.maxWidth='680px';
+  $('#modal').innerHTML=`
+    <div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h3>${dlong(iso)}</h3><div class="msub" style="margin-bottom:14px">${list.length?list.length+' '+plural(list.length,'wpis','wpisy','wpisów'):'Brak wpisów'} · kliknij godzinę, aby dodać</div></div>
+      <button class="btn sm" onclick="openTask(null,'${iso}')">+ Dodaj</button></div>
+    ${allday.length?`<div class="allday">${allday.map(t=>{const k=kindOf(t.kind);return `<span class="ev" style="--kc:${k[2]}" onclick="viewTask(${t.id})">${kico(k)} ${esc(t.title)}</span>`;}).join('')}</div>`:''}
+    <div class="dayv" id="dayv"><div class="dayv-grid">
+      ${Array.from({length:24},(_,h)=>`<div class="hr" onclick="openTask(null,'${iso}','${String(h).padStart(2,'0')}:00')"><span>${String(h).padStart(2,'0')}:00</span></div>`).join('')}
+      ${ev.map(e=>{const k=kindOf(e.t.kind),w=`(100% - 66px) / ${e.n}`;return `<div class="tev${e.t.done?' done':''}" style="--kc:${k[2]};top:${e.a/60*HH+1}px;height:${Math.max(24,(e.b-e.a)/60*HH-3)}px;
+        left:calc(62px + ${w} * ${e.col});width:calc(${w} - 4px)" onclick="event.stopPropagation();viewTask(${e.t.id})">
+        <b>${kico(k)} ${esc(e.t.title)}</b><small>${e.t.start_time}${e.t.end_time?'–'+e.t.end_time:''}${k[0]?' · '+esc(k[0]):''}</small></div>`;}).join('')}
+      ${nowMin!=null?`<div class="nowline" style="top:${nowMin/60*HH}px"></div>`:''}
+    </div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Zamknij</button></div>`;
+  openModal();
+  const first=ev.length?ev[0].a:nowMin??480;      // przewiń do pierwszego wpisu (albo teraz / 8:00)
+  $('#dayv').scrollTop=Math.max(0,(first/60-1)*HH);
+}
+function back(){returnDay?openDay(returnDay):closeModal();}
 function calMove(n){const [y,m]=($('#plan-date').value||todayISO()).split('-').map(Number);$('#plan-date').value=new Date(y,m-1+n,1).toLocaleDateString('sv');loadPlan();}
 $('#cal').addEventListener('dragstart',e=>{const ev=e.target.closest('.ev');if(ev)e.dataTransfer.setData('text/plain',ev.dataset.id);});
 $('#cal').addEventListener('dragover',e=>{const d=e.target.closest('.d');if(!d)return;e.preventDefault();
@@ -1460,7 +1542,7 @@ $('#cal').addEventListener('drop',async e=>{
 
 /* modal wpisu: nowy (id=null) lub edycja */
 let taskEditId=null, cbKind, cbNote, cbPr;
-async function openTask(id,date){
+async function openTask(id,date,hour){
   const t=id!=null?planTasks[id]:null; taskEditId=t?t.id:null;
   const [notes,nbs]=await Promise.all([api('/notes/all'),api('/notebooks')]);
   const v=x=>t&&t[x]?escAttr(t[x]):'';
@@ -1472,8 +1554,8 @@ async function openTask(id,date){
     <div class="field"><span>Typ</span><div id="tk-kind"></div></div>
     <div class="frow">
       <label class="field"><span>Data</span><input type="date" id="tk-date" value="${t?t.date:date}"></label>
-      <label class="field"><span>Start</span><input type="time" id="tk-start" value="${v('start_time')}"></label>
-      <label class="field"><span>Koniec</span><input type="time" id="tk-end" value="${v('end_time')}"></label>
+      <label class="field"><span>Start</span><input type="time" id="tk-start" value="${t?v('start_time'):hour||''}"></label>
+      <label class="field"><span>Koniec</span><input type="time" id="tk-end" value="${t?v('end_time'):hour?(hour<'23'?String(+hour.slice(0,2)+1).padStart(2,'0')+':00':'23:59'):''}"></label>
     </div>
     <div class="frow">
       <div class="field"><span>Priorytet</span><div id="tk-pr"></div></div>
@@ -1481,8 +1563,8 @@ async function openTask(id,date){
     </div>
     <div class="field"><span>Powiązana notatka (np. do powtórki przed kolokwium)</span><div id="tk-note"></div></div>
     <label class="field"><span>Opis</span><textarea id="tk-notes" placeholder="Miejsce, link, z kim, zakres materiału…">${t?esc(t.notes||''):''}</textarea></label>
-    <div class="actions">${t?`<button class="btn danger" style="margin-right:auto" onclick="delTask(${t.id});closeModal()">Usuń</button>`:''}
-      <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="submitTask()">${t?'Zapisz':'Dodaj'}</button></div>`;
+    <div class="actions">${t?`<button class="btn danger" style="margin-right:auto" onclick="delTaskBack(${t.id})">Usuń</button>`:''}
+      <button class="btn ghost" onclick="back()">Anuluj</button><button class="btn" onclick="submitTask()">${t?'Zapisz':'Dodaj'}</button></div>`;
   let kindTouched=!!(t&&t.kind);
   cbKind=combo($('#tk-kind'),{items:KINDS.map(k=>({v:k[0],label:k[0],icon:k[1],color:k[2]})),value:t?t.kind||'':'',
     placeholder:'Wybierz lub wpisz własny typ…',custom:true,onChange:()=>kindTouched=true});
@@ -1505,7 +1587,7 @@ async function submitTask(){
     priority:cbPr.get(), remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(), note_id:nid?+nid:null};
   if(taskEditId!=null)await api('/tasks/'+taskEditId,{method:'PATCH',body:JSON.stringify(data)});
   else await api('/tasks',{method:'POST',body:JSON.stringify(data)});
-  closeModal(); $('#plan-date').value=date; loadPlan();
+  if(returnDay)returnDay=date; $('#plan-date').value=date; refresh(); back();
 }
 /* podgląd wpisu (podsumowanie) → Edytuj otwiera formularz */
 function viewTask(id){
@@ -1523,8 +1605,8 @@ function viewTask(id){
       <div><h3>${esc(t.title)}</h3><div class="tv-kind" style="color:${k[2]}">${esc(k[0]||'Bez typu')}</div></div></div>
     <dl class="tv-rows">${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
     ${t.notes?`<div class="tv-desc">${esc(t.notes)}</div>`:''}
-    <div class="actions"><button class="btn danger" style="margin-right:auto" onclick="delTask(${t.id});closeModal()">Usuń</button>
-      <button class="btn ghost" onclick="closeModal()">Zamknij</button><button class="btn" onclick="openTask(${t.id})">Edytuj</button></div>`;
+    <div class="actions"><button class="btn danger" style="margin-right:auto" onclick="delTaskBack(${t.id})">Usuń</button>
+      <button class="btn ghost" onclick="back()">${returnDay?'← Dzień':'Zamknij'}</button><button class="btn" onclick="openTask(${t.id})">Edytuj</button></div>`;
   openModal();
 }
 function openLinkedNote(nb,id){go('nauka');selectNotebook(nb);setTimeout(()=>openNote(id),250);}
@@ -1548,6 +1630,7 @@ function renderTasks(list,sel,emptyMsg){
 }
 async function toggleTask(id,done){await api('/tasks/'+id,{method:'PATCH',body:JSON.stringify({done:!!done})});refresh();}
 async function delTask(id){await api('/tasks/'+id,{method:'DELETE'});refresh();}
+async function delTaskBack(id){await delTask(id);back();}
 function refresh(){const v=$('.view.active').id.replace('view-','');go(v);}
 
 /* ---------- FINANSE ---------- */
@@ -1877,7 +1960,7 @@ const THEMES=[
   ['paper','Jasny','linear-gradient(135deg,#f4f5f8,#e9ebf0)'],
 ];
 function openModal(){$('#modal-bd').classList.add('open');}
-function closeModal(){$('#modal-bd').classList.remove('open');$('#modal').innerHTML='';$('#modal').style.maxWidth='';}
+function closeModal(){returnDay=null;$('#modal-bd').classList.remove('open');$('#modal').innerHTML='';$('#modal').style.maxWidth='';}
 $('#modal-bd').addEventListener('click',e=>{if(e.target.id==='modal-bd')closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
@@ -3777,7 +3860,7 @@ updateCorrectionBtn();
 
 /* ---------- start ---------- */
 $('#plan-date').value=todayISO(); $('#tx-form input[name=date]').value=todayISO();
-restoreCols(); syncBell(); loadPulpit();
+restoreCols(); syncBell(); loadPulpit(); history.replaceState(navState(),'');
 </script>
 </body>
 </html>
