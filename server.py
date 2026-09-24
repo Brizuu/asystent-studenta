@@ -77,10 +77,12 @@ class Transaction(BaseModel):
 
 # ---------- TASKS ----------
 @app.get("/api/tasks")
-def list_tasks(day: str | None = None):
+def list_tasks(day: str | None = None, month: str | None = None):
     with get_conn() as c:
         if day:
             cur = c.execute("SELECT * FROM tasks WHERE date=? ORDER BY start_time IS NULL, start_time", (day,))
+        elif month:  # YYYY-MM — widok kalendarza
+            cur = c.execute("SELECT * FROM tasks WHERE date LIKE ? ORDER BY date, start_time IS NULL, start_time", (month + "%",))
         else:
             cur = c.execute("SELECT * FROM tasks ORDER BY date, start_time IS NULL, start_time")
         return rows(cur)

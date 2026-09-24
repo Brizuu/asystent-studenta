@@ -154,6 +154,22 @@ body.in-nauka .main{padding-bottom:14px}
 .panel{padding:var(--s3);border-radius:var(--r);margin-top:var(--s3)}
 .panel .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)}
 
+/* ---------- kalendarz (plan dnia) ---------- */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .wd{font-size:11.5px;color:var(--ink-dim);text-align:center;padding-bottom:2px}
+.cal .d{min-height:86px;padding:6px 7px;border-radius:var(--r-sm);border:1px solid var(--line);background:rgba(255,255,255,.03);
+  cursor:pointer;display:flex;flex-direction:column;gap:3px;overflow:hidden;transition:border-color .15s,background .15s}
+.cal .d:hover{border-color:rgba(255,255,255,.2)}
+.cal .d.out{opacity:.4}
+.cal .d.today .n{color:var(--accent-2);font-weight:700}
+.cal .d.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.cal .n{font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.cal .ev{font-size:11px;padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--accent) 22%,transparent);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .ev.high{background:rgba(255,180,84,.22)} .cal .ev.done{opacity:.5;text-decoration:line-through}
+.cal .more{font-size:10.5px;color:var(--ink-dim)}
+@media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
+
 /* ---------- formularze ---------- */
 .row{display:flex;flex-wrap:wrap;gap:var(--s1)}
 input,select,textarea{
@@ -1046,7 +1062,13 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         </div>
       </div>
       <div class="panel glass">
-        <div class="ph"><h3>Nowe zadanie</h3></div>
+        <div class="ph"><h3 id="cal-title">Kalendarz</h3>
+          <div class="row"><button class="btn ghost sm" onclick="calMove(-1)">←</button><button class="btn ghost sm" onclick="calMove(1)">→</button></div>
+        </div>
+        <div class="cal" id="cal"></div>
+      </div>
+      <div class="panel glass">
+        <div class="ph"><h3 id="task-form-title">Nowe zadanie</h3></div>
         <form id="task-form" class="row" style="align-items:flex-end">
           <label class="f" style="flex:2;min-width:200px"><span>Tytuł</span><input name="title" placeholder="np. Trening / Spotkanie / Nauka" required></label>
           <label class="f"><span>Start</span><input type="time" name="start_time"></label>
@@ -1055,6 +1077,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
             <select name="priority"><option value="normal">Normalny</option><option value="high">Wysoki</option><option value="low">Niski</option></select>
           </label>
           <label class="f"><span>Przypomnij o</span><input type="time" name="remind"></label>
+          <label class="f" style="flex:2;min-width:200px"><span>Notatka</span><input name="notes" placeholder="np. miejsce, link, z kim"></label>
           <button class="btn" type="submit">Dodaj</button>
         </form>
       </div>
@@ -1306,16 +1329,37 @@ function setToday(){$('#plan-date').value=todayISO();loadPlan();}
 $('#plan-date').addEventListener('change',loadPlan);
 async function loadPlan(){
   const d=$('#plan-date').value||todayISO(); $('#plan-date').value=d;
-  const t=await api('/tasks?day='+d);
+  const [t,m]=await Promise.all([api('/tasks?day='+d),api('/tasks?month='+d.slice(0,7))]);
+  $('#task-form-title').textContent='Nowe zadanie — '+dlong(d);
   $('#plan-count').textContent=t.length? t.length+' '+plural(t.length,'zadanie','zadania','zadań'):'Zadania';
   renderTasks(t,'#plan-tasks','Brak zadań na ten dzień. Dodaj pierwsze powyżej.');
+  renderCal(d,m);
 }
+/* kalendarz miesiąca: klik w dzień = wybór dnia do planu */
+function renderCal(sel,tasks){
+  const [y,mo]=sel.split('-').map(Number), first=new Date(y,mo-1,1), today=todayISO();
+  const by={}; tasks.forEach(t=>(by[t.date]=by[t.date]||[]).push(t));
+  $('#cal-title').textContent=first.toLocaleDateString('pl-PL',{month:'long',year:'numeric'});
+  const start=new Date(y,mo-1,1-((first.getDay()+6)%7));        // poniedziałek przed 1.
+  let h=['Pn','Wt','Śr','Cz','Pt','So','Nd'].map(w=>`<div class="wd">${w}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const dt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), iso=dt.toLocaleDateString('sv'), ev=by[iso]||[];
+    if(i===35&&dt.getMonth()!==mo-1)break;                        // bez pustego 6. tygodnia
+    h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" onclick="calPick('${iso}')">
+      <span class="n">${dt.getDate()}</span>
+      ${ev.slice(0,3).map(t=>`<span class="ev${t.priority==='high'?' high':''}${t.done?' done':''}" title="${escAttr(t.title)}">${t.start_time?t.start_time+' ':''}${esc(t.title)}</span>`).join('')}
+      ${ev.length>3?`<span class="more">+${ev.length-3} więcej</span>`:''}</div>`;
+  }
+  $('#cal').innerHTML=h;
+}
+function calPick(iso){$('#plan-date').value=iso;loadPlan();}
+function calMove(n){const [y,m]=($('#plan-date').value||todayISO()).split('-').map(Number);calPick(new Date(y,m-1+n,1).toLocaleDateString('sv'));}
 $('#task-form').addEventListener('submit',async e=>{
   e.preventDefault(); const f=e.target, d=$('#plan-date').value||todayISO();
   const remind=f.remind.value? d+'T'+f.remind.value : null;
   await api('/tasks',{method:'POST',body:JSON.stringify({
     title:f.title.value.trim(), date:d, start_time:f.start_time.value||null,
-    end_time:f.end_time.value||null, priority:f.priority.value, remind_at:remind })});
+    end_time:f.end_time.value||null, priority:f.priority.value, notes:f.notes.value.trim(), remind_at:remind })});
   f.reset(); loadPlan();
 });
 
