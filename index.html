@@ -105,11 +105,14 @@ h3{font-size:var(--fs-h3);font-weight:600;letter-spacing:-.02em}
 .navlist button:hover{background:var(--glass-2);color:var(--ink)}
 .navlist button.active{background:var(--glass-2);color:var(--ink)}
 .navlist button.active svg{stroke:var(--accent-2)}
-.rail .foot{margin-top:auto;font-size:12.5px;color:var(--ink-dim);padding:8px}
-.bell{margin-top:var(--s1);display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r-sm);
-  border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-size:13px;transition:.15s}
+.rail .foot{font-size:12.5px;color:var(--ink-dim);padding:0 8px 4px}
+/* dzwonek na dole szyny, wygląd jak przyciski menu */
+.bell{margin-top:auto;display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:var(--r-sm);
+  background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-weight:500;text-align:left;transition:background .15s,color .15s;position:relative}
+.bell svg{width:19px;height:19px;flex:none}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
-.bell.on{color:var(--pos);border-color:rgba(84,217,150,.35)}
+.bell.on svg{stroke:var(--pos)}
+.bell.on::after{content:"";position:absolute;left:28px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 2px rgba(13,14,21,.9)}
 
 .main{padding:var(--s4) var(--s4) var(--s4);max-width:1560px;margin:0;width:100%}
 body.in-nauka .main{padding-bottom:14px}
@@ -986,6 +989,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
     overflow:visible;box-shadow:none}
   .railgrip{display:none}
   .brand,.rail .foot,.bell span{display:none}
+  .bell{margin-top:0;width:auto}
   .rail .navlist .lbl{opacity:1}
   .main{margin:0}
   .navlist{flex-direction:row;margin:0;gap:2px}
@@ -1002,11 +1006,10 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .blocks{max-width:100%}
 /* Spotify widget */
 .spoti{position:fixed;top:16px;right:18px;z-index:150}
-.spoti-logo{width:44px;height:44px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;display:grid;place-items:center;
-  transition:transform .2s cubic-bezier(.2,.8,.3,1),box-shadow .2s;box-shadow:0 6px 18px -6px rgba(0,0,0,.7)}
-.spoti-logo svg{display:block;width:44px;height:44px}
-.spoti-logo:hover{transform:scale(1.06);box-shadow:0 0 0 3px rgba(29,185,84,.18),0 6px 18px -6px rgba(0,0,0,.7)}
-.spoti.open .spoti-logo{box-shadow:0 0 0 3px rgba(29,185,84,.3),0 6px 18px -6px rgba(0,0,0,.7)}
+.spoti-logo{width:46px;height:46px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 32% 24%,#242a27,#121513 70%);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s cubic-bezier(.2,.8,.3,1);box-shadow:0 8px 22px -6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.05) inset}
+.spoti-logo svg{display:block;width:26px;height:26px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.spoti-logo:hover{transform:translateY(-1px) scale(1.06);border-color:color-mix(in srgb,#1DB954 40%,transparent);box-shadow:0 10px 26px -6px rgba(0,0,0,.65),0 0 18px -4px rgba(29,185,84,.45)}
+.spoti.open .spoti-logo{border-color:color-mix(in srgb,#1DB954 55%,transparent);box-shadow:0 0 0 3px rgba(29,185,84,.18),0 8px 24px -6px rgba(0,0,0,.6)}
 .spoti-panel{position:absolute;top:0;right:56px;width:300px;max-width:calc(100vw - 84px);padding:14px 14px 12px;border-radius:16px;display:none;transform-origin:top right}
 .spoti.open .spoti-panel{display:block;animation:spotiPop .18s cubic-bezier(.2,.8,.3,1)}
 @keyframes spotiPop{from{opacity:0;transform:scale(.82) translateX(14px)}to{opacity:1;transform:none}}
@@ -1081,7 +1084,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <span class="lbl">Nauka</span>
       </button>
     </nav>
-    <button class="bell" id="bell"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 1112 0c0 7 3 8 3 8H3s3-1 3-8M10.5 21a1.8 1.8 0 003 0"/></svg><span>Powiadomienia</span></button>
+    <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span></button>
     <div class="foot">Dane lokalnie w Twojej bazie.</div>
   </aside>
 
@@ -1285,7 +1288,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 <!-- Spotify widget (prawy górny róg) -->
 <div id="spoti" class="spoti">
   <button class="spoti-logo" onclick="spotiToggle()" title="Spotify">
-    <svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="84" fill="#1DB954"/><path fill="#000" d="M122.9 120.4a5.2 5.2 0 01-7.2 1.7c-19.6-12-44.3-14.7-73.4-8.1a5.24 5.24 0 11-2.3-10.2c31.8-7.3 59.1-4.2 81.1 9.3a5.2 5.2 0 011.8 7.3zm10.4-23.1a6.55 6.55 0 01-9 2.2C111 87.6 80.3 84 56.5 91.2a6.56 6.56 0 11-3.8-12.6c27.2-8.3 61-4.3 86.4 11.3a6.55 6.55 0 012.2 9zm.9-24.1C110.9 59.5 71.3 58.2 48.6 65.1a7.86 7.86 0 11-4.6-15.1c26.1-7.9 69.8-6.4 97.3 9.9a7.86 7.86 0 01-8.1 13.5z"/></svg>
+    <svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="84" fill="#1DB954"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M42 65Q84 47 126 65" stroke-width="14"/><path d="M50 91Q84 77 118 91" stroke-width="11.5"/><path d="M58 115Q84 105 110 115" stroke-width="9"/></g></svg>
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
