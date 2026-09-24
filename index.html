@@ -164,9 +164,19 @@ body.in-nauka .main{padding-bottom:14px}
 .cal .d.today .n{color:var(--accent-2);font-weight:700}
 .cal .d.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .cal .n{font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
-.cal .ev{font-size:11px;padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--accent) 22%,transparent);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cal .ev.high{background:rgba(255,180,84,.22)} .cal .ev.done{opacity:.5;text-decoration:line-through}
+.cal .ev{font-size:11px;padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--kc) 26%,transparent);
+  border-left:3px solid var(--kc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab}
+.cal .ev:hover{background:color-mix(in srgb,var(--kc) 40%,transparent)}
+.cal .ev.done{opacity:.5;text-decoration:line-through}
+.cal .d.drop{border-color:var(--accent-2);background:color-mix(in srgb,var(--accent-2) 12%,transparent)}
+.kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.kinds button{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;cursor:pointer;font:inherit;font-size:12.5px;
+  color:var(--ink-soft);background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:3px solid var(--kc);text-align:left}
+.kinds button.on{color:var(--ink);background:color-mix(in srgb,var(--kc) 24%,transparent);border-color:var(--kc)}
+.item .kic{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--kc) 24%,transparent);font-size:15px}
+.item .body{cursor:pointer}
+.notelink{color:var(--accent-2);cursor:pointer} .notelink:hover{text-decoration:underline}
 .cal .more{font-size:10.5px;color:var(--ink-dim)}
 @media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
 
@@ -1059,6 +1069,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <div class="row" style="margin-top:16px;align-items:center">
           <input type="date" id="plan-date">
           <button class="btn ghost sm" onclick="setToday()">Dziś</button>
+          <button class="btn sm" onclick="openTask(null,$('#plan-date').value)">+ Dodaj wpis</button>
         </div>
       </div>
       <div class="panel glass">
@@ -1066,20 +1077,6 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
           <div class="row"><button class="btn ghost sm" onclick="calMove(-1)">←</button><button class="btn ghost sm" onclick="calMove(1)">→</button></div>
         </div>
         <div class="cal" id="cal"></div>
-      </div>
-      <div class="panel glass">
-        <div class="ph"><h3 id="task-form-title">Nowe zadanie</h3></div>
-        <form id="task-form" class="row" style="align-items:flex-end">
-          <label class="f" style="flex:2;min-width:200px"><span>Tytuł</span><input name="title" placeholder="np. Trening / Spotkanie / Nauka" required></label>
-          <label class="f"><span>Start</span><input type="time" name="start_time"></label>
-          <label class="f"><span>Koniec</span><input type="time" name="end_time"></label>
-          <label class="f"><span>Priorytet</span>
-            <select name="priority"><option value="normal">Normalny</option><option value="high">Wysoki</option><option value="low">Niski</option></select>
-          </label>
-          <label class="f"><span>Przypomnij o</span><input type="time" name="remind"></label>
-          <label class="f" style="flex:2;min-width:200px"><span>Notatka</span><input name="notes" placeholder="np. miejsce, link, z kim"></label>
-          <button class="btn" type="submit">Dodaj</button>
-        </form>
       </div>
       <div class="panel glass">
         <div class="ph"><h3 id="plan-count">Zadania</h3></div>
@@ -1327,15 +1324,24 @@ async function loadPulpit(){
 /* ---------- PLAN ---------- */
 function setToday(){$('#plan-date').value=todayISO();loadPlan();}
 $('#plan-date').addEventListener('change',loadPlan);
+/* typy wpisów: [nazwa, ikona, kolor]; własny typ = 📌 szary */
+const KINDS=[['Spotkanie','🤝','#8b7cff'],['Wykład','🎓','#5eead4'],['Ćwiczenia','✏️','#60a5fa'],['Laboratorium','🧪','#22d3ee'],
+  ['Kolokwium','📝','#f59e0b'],['Egzamin','🎯','#ef4444'],['Projekt','🧩','#a78bfa'],['Termin oddania','⏳','#f97316'],
+  ['Nauka','📚','#34d399'],['Konsultacje','💬','#38bdf8'],['Praca','💼','#94a3b8'],['Trening','🏋️','#84cc16'],
+  ['Lekarz','🩺','#f43f5e'],['Urodziny','🎂','#ec4899'],['Zakupy','🛒','#eab308'],['Rachunki','💳','#14b8a6'],
+  ['Podróż','✈️','#0ea5e9'],['Impreza','🎉','#d946ef'],['Telefon','📞','#10b981'],['Dom','🏠','#fb923c']];
+const kindOf=k=>KINDS.find(x=>x[0]===k)||[k||'','📌','#9ca3af'];
+let planTasks={};
+
 async function loadPlan(){
   const d=$('#plan-date').value||todayISO(); $('#plan-date').value=d;
-  const [t,m]=await Promise.all([api('/tasks?day='+d),api('/tasks?month='+d.slice(0,7))]);
-  $('#task-form-title').textContent='Nowe zadanie — '+dlong(d);
-  $('#plan-count').textContent=t.length? t.length+' '+plural(t.length,'zadanie','zadania','zadań'):'Zadania';
-  renderTasks(t,'#plan-tasks','Brak zadań na ten dzień. Dodaj pierwsze powyżej.');
+  const m=await api('/tasks?month='+d.slice(0,7)), t=m.filter(x=>x.date===d);
+  planTasks={}; m.forEach(x=>planTasks[x.id]=x);
+  $('#plan-count').textContent=(t.length? t.length+' '+plural(t.length,'zadanie','zadania','zadań'):'Zadania')+' — '+dlong(d);
+  renderTasks(t,'#plan-tasks','Brak wpisów na ten dzień. Kliknij dzień w kalendarzu, aby dodać.');
   renderCal(d,m);
 }
-/* kalendarz miesiąca: klik w dzień = wybór dnia do planu */
+/* kalendarz miesiąca: klik w dzień = nowy wpis, klik we wpis = edycja, przeciągnij wpis = zmiana dnia */
 function renderCal(sel,tasks){
   const [y,mo]=sel.split('-').map(Number), first=new Date(y,mo-1,1), today=todayISO();
   const by={}; tasks.forEach(t=>(by[t.date]=by[t.date]||[]).push(t));
@@ -1345,35 +1351,92 @@ function renderCal(sel,tasks){
   for(let i=0;i<42;i++){
     const dt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), iso=dt.toLocaleDateString('sv'), ev=by[iso]||[];
     if(i===35&&dt.getMonth()!==mo-1)break;                        // bez pustego 6. tygodnia
-    h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" onclick="calPick('${iso}')">
+    h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" data-date="${iso}" onclick="calPick('${iso}')">
       <span class="n">${dt.getDate()}</span>
-      ${ev.slice(0,3).map(t=>`<span class="ev${t.priority==='high'?' high':''}${t.done?' done':''}" title="${escAttr(t.title)}">${t.start_time?t.start_time+' ':''}${esc(t.title)}</span>`).join('')}
+      ${ev.slice(0,3).map(t=>{const k=kindOf(t.kind);return `<span class="ev${t.done?' done':''}" style="--kc:${k[2]}" draggable="true" data-id="${t.id}"
+        onclick="event.stopPropagation();openTask(${t.id})" title="${escAttr(t.title)}">${k[1]} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' 📓':''}</span>`;}).join('')}
       ${ev.length>3?`<span class="more">+${ev.length-3} więcej</span>`:''}</div>`;
   }
   $('#cal').innerHTML=h;
 }
-function calPick(iso){$('#plan-date').value=iso;loadPlan();}
-function calMove(n){const [y,m]=($('#plan-date').value||todayISO()).split('-').map(Number);calPick(new Date(y,m-1+n,1).toLocaleDateString('sv'));}
-$('#task-form').addEventListener('submit',async e=>{
-  e.preventDefault(); const f=e.target, d=$('#plan-date').value||todayISO();
-  const remind=f.remind.value? d+'T'+f.remind.value : null;
-  await api('/tasks',{method:'POST',body:JSON.stringify({
-    title:f.title.value.trim(), date:d, start_time:f.start_time.value||null,
-    end_time:f.end_time.value||null, priority:f.priority.value, notes:f.notes.value.trim(), remind_at:remind })});
-  f.reset(); loadPlan();
+function calPick(iso){$('#plan-date').value=iso;loadPlan();openTask(null,iso);}
+function calMove(n){const [y,m]=($('#plan-date').value||todayISO()).split('-').map(Number);$('#plan-date').value=new Date(y,m-1+n,1).toLocaleDateString('sv');loadPlan();}
+$('#cal').addEventListener('dragstart',e=>{const ev=e.target.closest('.ev');if(ev)e.dataTransfer.setData('text/plain',ev.dataset.id);});
+$('#cal').addEventListener('dragover',e=>{const d=e.target.closest('.d');if(!d)return;e.preventDefault();
+  $$('#cal .drop').forEach(x=>x!==d&&x.classList.remove('drop'));d.classList.add('drop');});
+$('#cal').addEventListener('dragleave',e=>{if(!e.relatedTarget||!$('#cal').contains(e.relatedTarget))$$('#cal .drop').forEach(x=>x.classList.remove('drop'));});
+$('#cal').addEventListener('drop',async e=>{
+  const d=e.target.closest('.d'), id=e.dataTransfer.getData('text/plain'); if(!d||!id)return; e.preventDefault();
+  const t=planTasks[id], date=d.dataset.date;
+  if(t&&t.date!==date){
+    const body={date}; if(t.remind_at)body.remind_at=date+t.remind_at.slice(10);   // przypomnienie jedzie razem z wpisem
+    await api('/tasks/'+id,{method:'PATCH',body:JSON.stringify(body)});
+  }
+  loadPlan();
 });
+
+/* modal wpisu: nowy (id=null) lub edycja */
+let taskKind='', taskEditId=null;
+async function openTask(id,date){
+  const t=id!=null?planTasks[id]:null; taskEditId=t?t.id:null; taskKind=t?t.kind||'':'';
+  const [notes,nbs]=await Promise.all([api('/notes/all'),api('/notebooks')]);
+  const opts=nbs.map(nb=>{const ns=notes.filter(n=>n.notebook_id===nb.id); return ns.length?`<optgroup label="${escAttr(nb.name)}">${
+    ns.map(n=>`<option value="${n.id}" ${t&&t.note_id===n.id?'selected':''}>${esc(n.title||'Bez tytułu')}</option>`).join('')}</optgroup>`:'';}).join('');
+  const v=x=>t&&t[x]?escAttr(t[x]):'', custom=taskKind&&!KINDS.some(k=>k[0]===taskKind)?escAttr(taskKind):'';
+  $('#modal').style.maxWidth='640px';
+  $('#modal').innerHTML=`
+    <h3>${t?'Edytuj wpis':'Nowy wpis'}</h3>
+    <div class="msub">${dlong(t?t.date:date)}</div>
+    <label class="field"><span>Nazwa</span><input id="tk-title" placeholder="np. Kolokwium z analizy" value="${v('title')}"></label>
+    <div class="field"><span>Typ</span><div class="kinds" id="tk-kinds">${KINDS.map(k=>
+      `<button type="button" style="--kc:${k[2]}" class="${k[0]===taskKind?'on':''}" onclick="pickKind(this,'${k[0]}')">${k[1]} ${k[0]}</button>`).join('')}</div>
+      <input id="tk-kind" placeholder="…lub wpisz własny typ" value="${custom}" oninput="pickKind(null,this.value.trim())"></div>
+    <div class="frow">
+      <label class="field"><span>Data</span><input type="date" id="tk-date" value="${t?t.date:date}"></label>
+      <label class="field"><span>Start</span><input type="time" id="tk-start" value="${v('start_time')}"></label>
+      <label class="field"><span>Koniec</span><input type="time" id="tk-end" value="${v('end_time')}"></label>
+    </div>
+    <div class="frow">
+      <label class="field"><span>Priorytet</span><select id="tk-pr">${[['normal','Normalny'],['high','Wysoki'],['low','Niski']].map(([a,b])=>
+        `<option value="${a}" ${(t?t.priority:'normal')===a?'selected':''}>${b}</option>`).join('')}</select></label>
+      <label class="field"><span>Przypomnij o</span><input type="time" id="tk-rem" value="${t&&t.remind_at?t.remind_at.slice(11,16):''}"></label>
+    </div>
+    <label class="field"><span>Powiązana notatka (np. do powtórki przed kolokwium)</span>
+      <select id="tk-note"><option value="">— brak —</option>${opts}</select></label>
+    <label class="field"><span>Opis</span><textarea id="tk-notes" placeholder="Miejsce, link, z kim, zakres materiału…">${t?esc(t.notes||''):''}</textarea></label>
+    <div class="actions">${t?`<button class="btn danger" style="margin-right:auto" onclick="delTask(${t.id});closeModal()">Usuń</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="submitTask()">${t?'Zapisz':'Dodaj'}</button></div>`;
+  openModal(); setTimeout(()=>$('#tk-title')?.focus(),60);
+}
+function pickKind(btn,k){
+  taskKind=k; $$('#tk-kinds button').forEach(b=>b.classList.toggle('on',b===btn));
+  if(btn)$('#tk-kind').value='';
+}
+async function submitTask(){
+  const title=$('#tk-title').value.trim(); if(!title){$('#tk-title').focus();return;}
+  const date=$('#tk-date').value||todayISO(), rem=$('#tk-rem').value;
+  const data={title, date, kind:taskKind, start_time:$('#tk-start').value||null, end_time:$('#tk-end').value||null,
+    priority:$('#tk-pr').value, remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(),
+    note_id:$('#tk-note').value?+$('#tk-note').value:null};
+  if(taskEditId!=null)await api('/tasks/'+taskEditId,{method:'PATCH',body:JSON.stringify(data)});
+  else await api('/tasks',{method:'POST',body:JSON.stringify(data)});
+  closeModal(); $('#plan-date').value=date; loadPlan();
+}
+function openLinkedNote(nb,id){go('nauka');selectNotebook(nb);setTimeout(()=>openNote(id),250);}
 
 function renderTasks(list,sel,emptyMsg){
   const el=$(sel);
   if(!list.length){el.innerHTML=`<div class="empty">${emptyMsg}</div>`;return;}
   el.innerHTML=list.map(t=>{
-    const time=t.start_time?`${t.start_time}${t.end_time?'–'+t.end_time:''}`:'';
+    const k=kindOf(t.kind), time=t.start_time?`${t.start_time}${t.end_time?'–'+t.end_time:''}`:'';
     const pr=t.priority==='high'?'<span class="pill high">Wysoki</span>':t.priority==='low'?'<span class="pill low">Niski</span>':'';
-    const rem=t.remind_at?`<span class="pill">⏰ ${t.remind_at.slice(11,16)}</span>`.replace('⏰','◔'):'';
+    const rem=t.remind_at?`<span class="pill">◔ ${t.remind_at.slice(11,16)}</span>`:'';
+    const nl=t.note_title?`<span class="notelink" onclick="event.stopPropagation();openLinkedNote(${t.note_nb},${t.note_id})">📓 ${esc(t.note_title)}</span>`:'';
     return `<div class="item ${t.done?'done':''}">
       <div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
+      <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${k[1]}</div>
       <div class="time">${time}</div>
-      <div class="body"><div class="t">${esc(t.title)}</div><div class="meta">${pr}${rem}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
+      <div class="body" onclick="openTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
       <button class="x" onclick="delTask(${t.id})">✕</button>
     </div>`;
   }).join('');
@@ -1709,7 +1772,7 @@ const THEMES=[
   ['paper','Jasny','linear-gradient(135deg,#f4f5f8,#e9ebf0)'],
 ];
 function openModal(){$('#modal-bd').classList.add('open');}
-function closeModal(){$('#modal-bd').classList.remove('open');$('#modal').innerHTML='';}
+function closeModal(){$('#modal-bd').classList.remove('open');$('#modal').innerHTML='';$('#modal').style.maxWidth='';}
 $('#modal-bd').addEventListener('click',e=>{if(e.target.id==='modal-bd')closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
