@@ -1,0 +1,22 @@
+# Sekrety — NIGDY nie commituj
+.gemini_key
+*.key
+.env
+
+# Dane użytkownika / runtime
+asystent.db
+asystent.db-wal
+asystent.db-shm
+uploads/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# System / edytor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
