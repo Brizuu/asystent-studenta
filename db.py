@@ -89,6 +89,8 @@ _MIGRATIONS = [
     ("notes",     "description", "ALTER TABLE notes ADD COLUMN description TEXT DEFAULT ''"),
     ("notes",     "created_at",  "ALTER TABLE notes ADD COLUMN created_at TEXT"),
     ("notes",     "group_id",    "ALTER TABLE notes ADD COLUMN group_id INTEGER"),
+    ("tasks",     "kind",        "ALTER TABLE tasks ADD COLUMN kind TEXT DEFAULT ''"),
+    ("tasks",     "note_id",     "ALTER TABLE tasks ADD COLUMN note_id INTEGER"),
 ]
 
 

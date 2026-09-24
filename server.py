@@ -46,6 +46,8 @@ class Task(BaseModel):
     priority: str = "normal"
     notes: str = ""
     remind_at: str | None = None
+    kind: str = ""
+    note_id: int | None = None
 
 
 class TaskPatch(BaseModel):
@@ -57,6 +59,8 @@ class TaskPatch(BaseModel):
     notes: str | None = None
     remind_at: str | None = None
     done: bool | None = None
+    kind: str | None = None
+    note_id: int | None = None
 
 
 class Source(BaseModel):
@@ -78,13 +82,17 @@ class Transaction(BaseModel):
 # ---------- TASKS ----------
 @app.get("/api/tasks")
 def list_tasks(day: str | None = None, month: str | None = None):
+    # dołącz tytuł powiązanej notatki (np. kolokwium → notatka do powtórki)
+    q = ("SELECT t.*, n.title note_title, n.notebook_id note_nb FROM tasks t "
+         "LEFT JOIN notes n ON n.id=t.note_id ")
+    order = " ORDER BY t.date, t.start_time IS NULL, t.start_time"
     with get_conn() as c:
         if day:
-            cur = c.execute("SELECT * FROM tasks WHERE date=? ORDER BY start_time IS NULL, start_time", (day,))
+            cur = c.execute(q + "WHERE t.date=?" + order, (day,))
         elif month:  # YYYY-MM — widok kalendarza
-            cur = c.execute("SELECT * FROM tasks WHERE date LIKE ? ORDER BY date, start_time IS NULL, start_time", (month + "%",))
+            cur = c.execute(q + "WHERE t.date LIKE ?" + order, (month + "%",))
         else:
-            cur = c.execute("SELECT * FROM tasks ORDER BY date, start_time IS NULL, start_time")
+            cur = c.execute(q + order)
         return rows(cur)
 
 
@@ -92,14 +100,18 @@ def list_tasks(day: str | None = None, month: str | None = None):
 def add_task(t: Task):
     with get_conn() as c:
         cur = c.execute(
-            "INSERT INTO tasks(title,date,start_time,end_time,priority,notes,remind_at) VALUES(?,?,?,?,?,?,?)",
-            (t.title, t.date, t.start_time, t.end_time, t.priority, t.notes, t.remind_at))
+            "INSERT INTO tasks(title,date,start_time,end_time,priority,notes,remind_at,kind,note_id) VALUES(?,?,?,?,?,?,?,?,?)",
+            (t.title, t.date, t.start_time, t.end_time, t.priority, t.notes, t.remind_at, t.kind, t.note_id))
         return {"id": cur.lastrowid}
 
 
 @app.patch("/api/tasks/{tid}")
 def patch_task(tid: int, p: TaskPatch):
-    fields = {k: v for k, v in p.model_dump().items() if v is not None}
+    # exclude_unset: jawne null czyści pole (np. odpięcie notatki, usunięcie godziny)
+    fields = p.model_dump(exclude_unset=True)
+    for k in ("title", "date", "done"):
+        if fields.get(k, 0) is None:
+            del fields[k]
     if not fields:
         return {"updated": 0}
     if "done" in fields:
