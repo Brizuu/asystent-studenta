@@ -169,14 +169,27 @@ body.in-nauka .main{padding-bottom:14px}
 .cal .ev:hover{background:color-mix(in srgb,var(--kc) 40%,transparent)}
 .cal .ev.done{opacity:.5;text-decoration:line-through}
 .cal .d.drop{border-color:var(--accent-2);background:color-mix(in srgb,var(--accent-2) 12%,transparent)}
-.kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
-.kinds button{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;cursor:pointer;font:inherit;font-size:12.5px;
-  color:var(--ink-soft);background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:3px solid var(--kc);text-align:left}
-.kinds button.on{color:var(--ink);background:color-mix(in srgb,var(--kc) 24%,transparent);border-color:var(--kc)}
+.combo{position:relative}
+.combo-in{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.04);
+  padding:0 12px;transition:border-color .15s,background .15s}
+.combo.open .combo-in,.combo-in:focus-within{border-color:var(--accent);background:rgba(255,255,255,.06)}
+.combo-in input{flex:1;min-width:0;border:0;background:transparent;padding:11px 0}
+.combo-in input:focus{background:transparent}
+.combo-in .chev{width:14px;height:14px;stroke:var(--ink-dim);fill:none;stroke-width:2;transition:transform .15s;flex:none}
+.combo.open .chev{transform:rotate(180deg)}
+.combo-list{display:none;position:fixed;z-index:300;max-height:260px;overflow:auto;padding:6px;
+  background:#14151f;border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:0 18px 40px -12px rgba(0,0,0,.7)}
+.combo-list .grp{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);padding:9px 10px 4px}
+.combo-list .opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--ink-soft);font-size:14px}
+.combo-list .opt.act{background:var(--glass-2);color:var(--ink)}
+.combo-list .opt.on{color:var(--ink)} .combo-list .opt.on::after{content:"✓";margin-left:auto;color:var(--accent-2)}
+.combo-list .none{padding:10px;color:var(--ink-dim);font-size:13px}
+.kico{width:18px;height:18px;flex:none;stroke:var(--kc,var(--accent-2));fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cal .ev .kico{width:11px;height:11px;vertical-align:-1px;stroke-width:2.2}
 .item .kic{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;
-  background:color-mix(in srgb,var(--kc) 24%,transparent);font-size:15px}
+  background:color-mix(in srgb,var(--kc) 16%,transparent)}
 .item .body{cursor:pointer}
-.notelink{color:var(--accent-2);cursor:pointer} .notelink:hover{text-decoration:underline}
+.notelink{color:var(--accent-2);cursor:pointer} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
 .cal .more{font-size:10.5px;color:var(--ink-dim)}
 @media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
 
@@ -1324,13 +1337,75 @@ async function loadPulpit(){
 /* ---------- PLAN ---------- */
 function setToday(){$('#plan-date').value=todayISO();loadPlan();}
 $('#plan-date').addEventListener('change',loadPlan);
-/* typy wpisów: [nazwa, ikona, kolor]; własny typ = 📌 szary */
-const KINDS=[['Spotkanie','🤝','#8b7cff'],['Wykład','🎓','#5eead4'],['Ćwiczenia','✏️','#60a5fa'],['Laboratorium','🧪','#22d3ee'],
-  ['Kolokwium','📝','#f59e0b'],['Egzamin','🎯','#ef4444'],['Projekt','🧩','#a78bfa'],['Termin oddania','⏳','#f97316'],
-  ['Nauka','📚','#34d399'],['Konsultacje','💬','#38bdf8'],['Praca','💼','#94a3b8'],['Trening','🏋️','#84cc16'],
-  ['Lekarz','🩺','#f43f5e'],['Urodziny','🎂','#ec4899'],['Zakupy','🛒','#eab308'],['Rachunki','💳','#14b8a6'],
-  ['Podróż','✈️','#0ea5e9'],['Impreza','🎉','#d946ef'],['Telefon','📞','#10b981'],['Dom','🏠','#fb923c']];
-const kindOf=k=>KINDS.find(x=>x[0]===k)||[k||'','📌','#9ca3af'];
+/* typy wpisów: [nazwa, ikona (ścieżki svg 24x24, obrys), kolor]; własny typ = etykieta, szary */
+const KINDS=[
+  ['Spotkanie','<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0M15.5 5.3a3 3 0 010 5.4M17 14a5 5 0 013.5 5"/>','#8b7cff'],
+  ['Wykład','<path d="M2.5 9L12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11.2v4.3c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-4.3M21.5 9v5"/>','#5eead4'],
+  ['Ćwiczenia','<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 013 3L8 18.5z"/><path d="M13.5 7l3 3"/>','#60a5fa'],
+  ['Laboratorium','<path d="M9.5 3.5h5M10 3.5V9L5 18.5a1.4 1.4 0 001.2 2h11.6a1.4 1.4 0 001.2-2L14 9V3.5M7.3 14.5h9.4"/>','#22d3ee'],
+  ['Kolokwium','<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>','#f59e0b'],
+  ['Egzamin','<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>','#ef4444'],
+  ['Projekt','<path d="M3 7a2 2 0 012-2h4l2 2.5h8a2 2 0 012 2V17a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>','#a78bfa'],
+  ['Termin oddania','<path d="M6.5 3.5h11M6.5 20.5h11M7.5 3.5c0 4.5 4.5 5.5 4.5 8.5s-4.5 4-4.5 8.5M16.5 3.5c0 4.5-4.5 5.5-4.5 8.5s4.5 4 4.5 8.5"/>','#f97316'],
+  ['Nauka',ICONS.nauka,'#34d399'],
+  ['Konsultacje','<path d="M4 5.5a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2h-7l-4.5 4v-4H6a2 2 0 01-2-2z"/>','#38bdf8'],
+  ['Praca','<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5a2 2 0 012-2h3a2 2 0 012 2V7M3 12.5h18"/>','#94a3b8'],
+  ['Trening','<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>','#84cc16'],
+  ['Lekarz','<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.3 4.3 4.3 0 0119.5 10c0 5.4-7.5 10-7.5 10z"/><path d="M8 12.5h2.2l1.1-2 1.6 4 1-2H16"/>','#f43f5e'],
+  ['Urodziny','<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20M12 8.5S8 8.3 7.5 7.2C6.5 5 10 4 12 8.5zM12 8.5s4-.2 4.5-1.3C17.5 5 14 4 12 8.5z"/>','#ec4899'],
+  ['Zakupy','<path d="M3 4h2.5l2.2 11h10.5l2-8H6.3"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>','#eab308'],
+  ['Rachunki',ICONS.finanse,'#14b8a6'],
+  ['Podróż','<path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0113 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>','#0ea5e9'],
+  ['Impreza','<path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.5l-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/>','#d946ef'],
+  ['Telefon','<path d="M5 4h3.5l1.5 4.5-2 1.5a11 11 0 006 6l1.5-2L20 15.5V19a1.5 1.5 0 01-1.5 1.5A15.5 15.5 0 013.5 5.5 1.5 1.5 0 015 4z"/>','#10b981'],
+  ['Dom','<path d="M3.5 11L12 4l8.5 7M5.5 9.5V20h13V9.5M10 20v-5.5h4V20"/>','#fb923c']];
+const TAG_ICON='<path d="M3.5 12.5v-8a1 1 0 011-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.3"/>';
+const kindOf=k=>KINDS.find(x=>x[0]===k)||[k||'',TAG_ICON,'#9ca3af'];
+const kico=k=>`<svg class="kico" viewBox="0 0 24 24" style="--kc:${k[2]}">${k[1]}</svg>`;
+const norm=x=>(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ł/g,'l');
+
+/* combobox: input + własna lista (filtr po wpisanym tekście, strzałki/Enter/Esc).
+   items: [{v,label,icon?,color?,group?}]; custom=true → wpisany tekst też jest wartością */
+function combo(root,{items,value,placeholder,custom=false,readonly=false,onChange}){
+  root.className='combo';
+  root.innerHTML=`<div class="combo-in"><span class="cic"></span><input placeholder="${escAttr(placeholder||'')}" ${readonly?'readonly style="cursor:pointer"':''}>
+    <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div><div class="combo-list"></div>`;
+  const inp=$('input',root), list=$('.combo-list',root), cic=$('.cic',root);
+  let val=value, act=0, shown=[];
+  const find=v=>items.find(i=>i.v===v);
+  const icon=()=>{const it=find(val);
+    cic.innerHTML=it&&it.icon?kico([0,it.icon,it.color]):custom&&val?kico(kindOf(val)):''; cic.style.display=cic.innerHTML?'flex':'none';};
+  const show=()=>{const it=find(val); inp.value=it?it.label:(custom?val||'':''); icon();};
+  const render=q=>{
+    const n=norm(q); shown=items.filter(i=>!n||norm(i.label).includes(n)||norm(i.group).includes(n));
+    let g=null, h='';
+    shown.forEach((i,ix)=>{ if(i.group&&i.group!==g){g=i.group;h+=`<div class="grp">${esc(g)}</div>`;}
+      h+=`<div class="opt${ix===act?' act':''}${i.v===val?' on':''}" data-ix="${ix}">${i.icon?kico([0,i.icon,i.color]):''}<span>${esc(i.label)}</span></div>`;});
+    if(custom&&q.trim()&&!shown.some(i=>norm(i.label)===n)) h+=`<div class="none">Enter — własny typ „${esc(q.trim())}”</div>`;
+    list.innerHTML=h||'<div class="none">Brak wyników</div>';
+    list.querySelector('.opt.act')?.scrollIntoView({block:'nearest'});
+  };
+  const open=()=>{root.classList.add('open');act=Math.max(0,items.findIndex(i=>i.v===val));render('');
+    const r=$('.combo-in',root).getBoundingClientRect(), up=innerHeight-r.bottom<280&&r.top>innerHeight-r.bottom;
+    document.body.appendChild(list);           // poza modalem (transform/overflow ucina listę)
+    Object.assign(list.style,{display:'block',left:r.left+'px',width:r.width+'px',top:up?'':r.bottom+6+'px',bottom:up?innerHeight-r.top+6+'px':''});};
+  const close=()=>{root.classList.remove('open');list.style.display='';root.appendChild(list);show();};
+  const pick=v=>{val=v;close();onChange&&onChange(v);};
+  inp.addEventListener('focus',open);
+  inp.addEventListener('click',()=>root.classList.contains('open')||open());
+  inp.addEventListener('input',()=>{act=0;render(inp.value);if(custom){val=inp.value.trim();const it=items.find(i=>norm(i.label)===norm(val));if(it)val=it.v;icon();onChange&&onChange(val);}});
+  inp.addEventListener('blur',()=>setTimeout(close,120));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!root.classList.contains('open'))open();
+      act=(act+(e.key==='ArrowDown'?1:-1)+shown.length)%Math.max(1,shown.length);render(readonly?'':inp.value);}
+    else if(e.key==='Enter'){e.preventDefault();const it=shown[act];
+      if(custom&&inp.value.trim()&&(!it||!norm(it.label).includes(norm(inp.value))))pick(inp.value.trim()); else if(it)pick(it.v); inp.blur();}
+    else if(e.key==='Escape'&&root.classList.contains('open')){e.stopPropagation();inp.blur();}
+  });
+  list.addEventListener('mousedown',e=>{e.preventDefault();const o=e.target.closest('.opt');if(o){pick(shown[+o.dataset.ix].v);inp.blur();}});
+  show();
+  return {get:()=>val,set:v=>{val=v;show();}};
+}
 let planTasks={};
 
 async function loadPlan(){
@@ -1354,7 +1429,7 @@ function renderCal(sel,tasks){
     h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" data-date="${iso}" onclick="calPick('${iso}')">
       <span class="n">${dt.getDate()}</span>
       ${ev.slice(0,3).map(t=>{const k=kindOf(t.kind);return `<span class="ev${t.done?' done':''}" style="--kc:${k[2]}" draggable="true" data-id="${t.id}"
-        onclick="event.stopPropagation();openTask(${t.id})" title="${escAttr(t.title)}">${k[1]} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' 📓':''}</span>`;}).join('')}
+        onclick="event.stopPropagation();openTask(${t.id})" title="${escAttr(t.title)}">${kico(k)} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' '+kico(['',ICONS.nauka,'var(--ink-soft)']):''}</span>`;}).join('')}
       ${ev.length>3?`<span class="more">+${ev.length-3} więcej</span>`:''}</div>`;
   }
   $('#cal').innerHTML=h;
@@ -1376,48 +1451,50 @@ $('#cal').addEventListener('drop',async e=>{
 });
 
 /* modal wpisu: nowy (id=null) lub edycja */
-let taskKind='', taskEditId=null;
+let taskEditId=null, cbKind, cbNote, cbPr;
 async function openTask(id,date){
-  const t=id!=null?planTasks[id]:null; taskEditId=t?t.id:null; taskKind=t?t.kind||'':'';
+  const t=id!=null?planTasks[id]:null; taskEditId=t?t.id:null;
   const [notes,nbs]=await Promise.all([api('/notes/all'),api('/notebooks')]);
-  const opts=nbs.map(nb=>{const ns=notes.filter(n=>n.notebook_id===nb.id); return ns.length?`<optgroup label="${escAttr(nb.name)}">${
-    ns.map(n=>`<option value="${n.id}" ${t&&t.note_id===n.id?'selected':''}>${esc(n.title||'Bez tytułu')}</option>`).join('')}</optgroup>`:'';}).join('');
-  const v=x=>t&&t[x]?escAttr(t[x]):'', custom=taskKind&&!KINDS.some(k=>k[0]===taskKind)?escAttr(taskKind):'';
-  $('#modal').style.maxWidth='640px';
+  const v=x=>t&&t[x]?escAttr(t[x]):'';
+  $('#modal').style.maxWidth='560px';
   $('#modal').innerHTML=`
     <h3>${t?'Edytuj wpis':'Nowy wpis'}</h3>
     <div class="msub">${dlong(t?t.date:date)}</div>
     <label class="field"><span>Nazwa</span><input id="tk-title" placeholder="np. Kolokwium z analizy" value="${v('title')}"></label>
-    <div class="field"><span>Typ</span><div class="kinds" id="tk-kinds">${KINDS.map(k=>
-      `<button type="button" style="--kc:${k[2]}" class="${k[0]===taskKind?'on':''}" onclick="pickKind(this,'${k[0]}')">${k[1]} ${k[0]}</button>`).join('')}</div>
-      <input id="tk-kind" placeholder="…lub wpisz własny typ" value="${custom}" oninput="pickKind(null,this.value.trim())"></div>
+    <div class="field"><span>Typ</span><div id="tk-kind"></div></div>
     <div class="frow">
       <label class="field"><span>Data</span><input type="date" id="tk-date" value="${t?t.date:date}"></label>
       <label class="field"><span>Start</span><input type="time" id="tk-start" value="${v('start_time')}"></label>
       <label class="field"><span>Koniec</span><input type="time" id="tk-end" value="${v('end_time')}"></label>
     </div>
     <div class="frow">
-      <label class="field"><span>Priorytet</span><select id="tk-pr">${[['normal','Normalny'],['high','Wysoki'],['low','Niski']].map(([a,b])=>
-        `<option value="${a}" ${(t?t.priority:'normal')===a?'selected':''}>${b}</option>`).join('')}</select></label>
+      <div class="field"><span>Priorytet</span><div id="tk-pr"></div></div>
       <label class="field"><span>Przypomnij o</span><input type="time" id="tk-rem" value="${t&&t.remind_at?t.remind_at.slice(11,16):''}"></label>
     </div>
-    <label class="field"><span>Powiązana notatka (np. do powtórki przed kolokwium)</span>
-      <select id="tk-note"><option value="">— brak —</option>${opts}</select></label>
+    <div class="field"><span>Powiązana notatka (np. do powtórki przed kolokwium)</span><div id="tk-note"></div></div>
     <label class="field"><span>Opis</span><textarea id="tk-notes" placeholder="Miejsce, link, z kim, zakres materiału…">${t?esc(t.notes||''):''}</textarea></label>
     <div class="actions">${t?`<button class="btn danger" style="margin-right:auto" onclick="delTask(${t.id});closeModal()">Usuń</button>`:''}
       <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="submitTask()">${t?'Zapisz':'Dodaj'}</button></div>`;
+  let kindTouched=!!(t&&t.kind);
+  cbKind=combo($('#tk-kind'),{items:KINDS.map(k=>({v:k[0],label:k[0],icon:k[1],color:k[2]})),value:t?t.kind||'':'',
+    placeholder:'Wybierz lub wpisz własny typ…',custom:true,onChange:()=>kindTouched=true});
+  cbPr=combo($('#tk-pr'),{items:[{v:'normal',label:'Normalny'},{v:'high',label:'Wysoki'},{v:'low',label:'Niski'}],value:t?t.priority:'normal',readonly:true});
+  const nbName=Object.fromEntries(nbs.map(n=>[n.id,n.name])), nbOrder=Object.fromEntries(nbs.map((n,i)=>[n.id,i]));
+  cbNote=combo($('#tk-note'),{value:t&&t.note_id||'',placeholder:'Szukaj notatki…',
+    items:[{v:'',label:'— brak —'},...notes.filter(n=>n.notebook_id in nbName).sort((a,b)=>nbOrder[a.notebook_id]-nbOrder[b.notebook_id])
+      .map(n=>({v:n.id,label:n.title||'Bez tytułu',icon:ICONS.nauka,color:'var(--accent-2)',group:nbName[n.notebook_id]}))]});
+  // podpowiedź typu z nazwy ("Kolokwium z analizy" → Kolokwium), dopóki typ nie wybrany ręcznie
+  $('#tk-title').addEventListener('input',e=>{ if(kindTouched)return;
+    const words=norm(e.target.value).split(/[^a-z0-9]+/).filter(w=>w.length>=3);
+    const k=KINDS.find(k=>words.some(w=>{const st=norm(k[0]).slice(0,Math.min(4,w.length));return w.startsWith(st);}));
+    cbKind.set(k?k[0]:'');});
   openModal(); setTimeout(()=>$('#tk-title')?.focus(),60);
-}
-function pickKind(btn,k){
-  taskKind=k; $$('#tk-kinds button').forEach(b=>b.classList.toggle('on',b===btn));
-  if(btn)$('#tk-kind').value='';
 }
 async function submitTask(){
   const title=$('#tk-title').value.trim(); if(!title){$('#tk-title').focus();return;}
-  const date=$('#tk-date').value||todayISO(), rem=$('#tk-rem').value;
-  const data={title, date, kind:taskKind, start_time:$('#tk-start').value||null, end_time:$('#tk-end').value||null,
-    priority:$('#tk-pr').value, remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(),
-    note_id:$('#tk-note').value?+$('#tk-note').value:null};
+  const date=$('#tk-date').value||todayISO(), rem=$('#tk-rem').value, nid=cbNote.get();
+  const data={title, date, kind:cbKind.get()||'', start_time:$('#tk-start').value||null, end_time:$('#tk-end').value||null,
+    priority:cbPr.get(), remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(), note_id:nid?+nid:null};
   if(taskEditId!=null)await api('/tasks/'+taskEditId,{method:'PATCH',body:JSON.stringify(data)});
   else await api('/tasks',{method:'POST',body:JSON.stringify(data)});
   closeModal(); $('#plan-date').value=date; loadPlan();
@@ -1431,10 +1508,10 @@ function renderTasks(list,sel,emptyMsg){
     const k=kindOf(t.kind), time=t.start_time?`${t.start_time}${t.end_time?'–'+t.end_time:''}`:'';
     const pr=t.priority==='high'?'<span class="pill high">Wysoki</span>':t.priority==='low'?'<span class="pill low">Niski</span>':'';
     const rem=t.remind_at?`<span class="pill">◔ ${t.remind_at.slice(11,16)}</span>`:'';
-    const nl=t.note_title?`<span class="notelink" onclick="event.stopPropagation();openLinkedNote(${t.note_nb},${t.note_id})">📓 ${esc(t.note_title)}</span>`:'';
+    const nl=t.note_title?`<span class="notelink" onclick="event.stopPropagation();openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} ${esc(t.note_title)}</span>`:'';
     return `<div class="item ${t.done?'done':''}">
       <div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
-      <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${k[1]}</div>
+      <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${kico(k)}</div>
       <div class="time">${time}</div>
       <div class="body" onclick="openTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
       <button class="x" onclick="delTask(${t.id})">✕</button>
