@@ -150,10 +150,11 @@ body.in-nauka .main{padding-bottom:14px}
 #view-pulpit{padding-top:34px;max-width:1120px;margin-inline:auto}
 #view-pulpit.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 2 * var(--s4))}
 /* niebo zależne od pory dnia: statyczne (bez pętli), zmiana pory = łagodne przenikanie */
-.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .45s ease;
   mask-image:linear-gradient(#000 45%,transparent 92%);-webkit-mask-image:linear-gradient(#000 45%,transparent 92%)}
 .sky .layer{position:absolute;inset:0;opacity:0;transition:opacity 2.4s ease}
-#view-pulpit[data-tod=morning] .l-morning,#view-pulpit[data-tod=day] .l-day,#view-pulpit[data-tod=evening] .l-evening,#view-pulpit[data-tod=night] .l-night{opacity:1}
+body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście = przenikanie */
+.sky[data-tod=morning] .l-morning,.sky[data-tod=day] .l-day,.sky[data-tod=evening] .l-evening,.sky[data-tod=night] .l-night{opacity:1}
 .l-morning{background:linear-gradient(180deg,#1c1d36 0%,#3f3557 30%,#8a5a66 52%,#e39a76 66%,#3a2b33 88%)}
 .l-day{background:linear-gradient(180deg,#14243f 0%,#224a78 30%,#4a86bf 52%,#9fcdf0 64%,#1e2a3a 88%)}
 .l-evening{background:linear-gradient(180deg,#17142e 0%,#3a2150 30%,#7c3463 50%,#ec7d6a 64%,#2c1a2a 88%)}
@@ -165,7 +166,7 @@ body.in-nauka .main{padding-bottom:14px}
 .sky .orb{position:absolute;left:var(--ox,70%);top:var(--oy,12%);width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;
   transition:left 1.2s ease,top 1.2s ease,opacity 2.4s ease;
   background:radial-gradient(circle,#fff8e6 0 14%,#ffd79a 26%,rgba(255,190,120,.35) 44%,transparent 70%)}
-#view-pulpit[data-tod=night] .sky .orb{width:96px;height:96px;margin:-48px 0 0 -48px;
+.sky[data-tod=night] .orb{width:96px;height:96px;margin:-48px 0 0 -48px;
   background:radial-gradient(circle,#f2f0ff 0 20%,rgba(200,205,255,.28) 34%,transparent 66%)}
 .welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
 .wl-main{min-width:0;flex:1 1 520px}
@@ -180,7 +181,7 @@ body.in-nauka .main{padding-bottom:14px}
 #view-pulpit[data-tod=evening]{--g1:#fff;--g2:#ffd2c8;--g3:#d9b8ff}
 #view-pulpit[data-tod=night]{--g1:#f4f2ff;--g2:#d6d9ff;--g3:#a9b2ff}
 .wl-clock{text-align:right;flex:none}
-@media(max-width:600px){.sky .orb{width:72px;height:72px;margin:-36px 0 0 -36px}#view-pulpit[data-tod=night] .sky .orb{width:60px;height:60px;margin:-30px 0 0 -30px}}
+@media(max-width:600px){.sky .orb{width:72px;height:72px;margin:-36px 0 0 -36px}.sky[data-tod=night] .orb{width:60px;height:60px;margin:-30px 0 0 -30px}}
 .ck-time{font-size:clamp(48px,5.4vw,72px);font-weight:200;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.3)}
 .ck-tod{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -193,11 +194,19 @@ body.in-nauka .main{padding-bottom:14px}
 .wl-chip:active{transform:var(--press)}
 .wl-chip .kico{width:15px;height:15px}
 .portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
-.portal{position:relative;overflow:hidden;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
-  background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 22%,#18181f),color-mix(in srgb,var(--pc2) 10%,#141419) 70%);
-  border:1px solid color-mix(in srgb,var(--pc) 22%,rgba(255,255,255,.06));box-shadow:var(--edge),0 30px 70px -36px rgba(0,0,0,.8);
+.portal{position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 24%,rgba(255,255,255,.07)),rgba(255,255,255,.035) 60%,color-mix(in srgb,var(--pc2) 10%,rgba(255,255,255,.02)));
+  backdrop-filter:blur(28px) saturate(185%);-webkit-backdrop-filter:blur(28px) saturate(185%);
+  border:1px solid color-mix(in srgb,var(--pc) 30%,rgba(255,255,255,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.03),0 30px 70px -34px color-mix(in srgb,var(--pc) 55%,rgba(0,0,0,.8));
   transition:transform .45s var(--spring,ease),box-shadow .45s var(--spring,ease)}
-.portal:hover{transform:translateY(-3px);box-shadow:var(--edge),0 40px 80px -36px rgba(0,0,0,.9)}
+/* akcent: miękka poświata koloru w rogu + odblask na górnej krawędzi szkła */
+.portal::before{content:"";position:absolute;z-index:-1;inset:-30% 40% 45% -20%;border-radius:50%;filter:blur(40px);opacity:.55;
+  background:radial-gradient(closest-side,var(--pc),transparent);transition:opacity .45s var(--spring,ease)}
+.portal::after{content:"";position:absolute;z-index:-1;left:12%;right:12%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.portal:hover::before{opacity:.8}
+.portal:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 40px 80px -34px color-mix(in srgb,var(--pc) 65%,rgba(0,0,0,.85))}
 .portal:active{transform:var(--press);transition-duration:.1s}
 .portal:focus-visible{outline:2px solid var(--pc);outline-offset:3px}
 .portal-art{height:150px;display:flex;align-items:center}
@@ -1154,7 +1163,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}:root{--press:none}}
 @media(prefers-reduced-transparency:reduce){
   .ck-tod{backdrop-filter:none}
-  .glass,.modal,.rail,.combo-list,.spoti-panel{background:#151622!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .glass,.modal,.rail,.combo-list,.spoti-panel,.portal{background:#151622!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .modal-bd{backdrop-filter:none}
 }
 @media(prefers-contrast:more){
@@ -1163,8 +1172,9 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 }
 </style>
 </head>
-<body>
+<body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
+<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div></div>
 
 <div class="app">
   <aside class="rail">
@@ -1201,10 +1211,6 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   <main class="main">
     <!-- PULPIT -->
     <section class="view active" id="view-pulpit">
-      <div class="sky" aria-hidden="true">
-        <div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div>
-        <div class="orb"></div>
-      </div>
       <div class="welcome">
         <div class="wl-main">
           <div class="wl-date" id="pulpit-date"></div>
@@ -1251,6 +1257,8 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
           <input type="date" id="plan-date">
           <button class="btn ghost sm" onclick="setToday()">Dziś</button>
           <button class="btn sm" onclick="openTask(null,$('#plan-date').value)">+ Dodaj wpis</button>
+          <button class="btn ghost sm" onclick="$('#ics-file').click()" title="USOSweb → Mój plan → eksport do iCalendar (.ics)">Importuj plan z USOS</button>
+          <input type="file" id="ics-file" accept=".ics,text/calendar" hidden onchange="importIcs(this)">
         </div>
       </div>
       <div class="panel glass">
@@ -1449,6 +1457,7 @@ function go(v){
   if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources();
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
+  document.body.classList.toggle('on-pulpit', v==='pulpit');
   pushNav();
 }
 
@@ -1533,7 +1542,7 @@ const TOD={morning:['Poranek','Dzień dobry','<circle cx="12" cy="14" r="4"/><pa
 function paintTime(){
   const d=new Date(), m=d.getHours()*60+d.getMinutes(), v=$('#view-pulpit');
   const tod=m>=300&&m<660?'morning':m<1020&&m>=660?'day':m>=1020&&m<1260?'evening':'night';
-  v.dataset.tod=tod;
+  v.dataset.tod=tod; $('#sky').dataset.tod=tod;
   const [lbl,greet,ico]=TOD[tod];
   $('#greet').textContent=greet; $('#ck-tod').textContent=lbl; $('#ck-ico').innerHTML=ico;
   $('#ck-time').textContent=d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
@@ -1541,7 +1550,8 @@ function paintTime(){
   $('#pulpit-date').innerHTML=`${wd[0].toUpperCase()+wd.slice(1)} <span>· ${dm}</span>`;
   // słońce 5:00–21:00, księżyc 21:00–5:00; łuk od lewej do prawej, najwyżej w połowie
   const f=tod==='night'?((m-1260+1440)%1440)/480:(m-300)/960;
-  v.style.setProperty('--ox',(10+f*80).toFixed(1)+'%'); v.style.setProperty('--oy',(16-Math.sin(Math.PI*Math.min(1,Math.max(0,f)))*11).toFixed(1)+'%');   // nad treścią, nie za tekstem
+  const sky=$('#sky');
+  sky.style.setProperty('--ox',(10+f*80).toFixed(1)+'%'); sky.style.setProperty('--oy',(16-Math.sin(Math.PI*Math.min(1,Math.max(0,f)))*11).toFixed(1)+'%');   // nad treścią, nie za tekstem
 }
 setInterval(()=>{ if($('#view-pulpit').classList.contains('active'))paintTime(); },15000);   // zegar i pora bez pobierania danych
 const evSpan=t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;return [a,b>a?b:a+60];};
@@ -1551,8 +1561,9 @@ function renderWelcome(tasks){
   const n=nowMin(), timed=tasks.filter(t=>t.start_time&&!t.done).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
   const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
   const chip=t=>{const k=kindOf(t.kind);return `<span class="wl-chip" style="--kc:${k[2]}" onclick="viewTask(${t.id})">${kico(k)}${esc(t.title)}</span>`;};
-  $('#wl-lead').innerHTML=cur?`Teraz ${chip(cur)} — jeszcze ${evSpan(cur)[1]-n} min.${nxt?` Potem <b>${esc(nxt.title)}</b> o ${nxt.start_time}.`:''}`
-    :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>, ${inTxt(toMin(nxt.start_time)-n)}.`
+  const at=t=>t.room?` w sali <b>${esc(t.room)}</b>${t.building?' ('+esc(t.building.split(' - ')[0])+')':''}`:'';
+  $('#wl-lead').innerHTML=cur?`Teraz ${chip(cur)}${at(cur)} — jeszcze ${evSpan(cur)[1]-n} min.${nxt?` Potem <b>${esc(nxt.title)}</b> o ${nxt.start_time}.`:''}`
+    :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
     :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
     :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
 }
@@ -1600,6 +1611,7 @@ const KINDS=[
   ['Telefon','<path d="M5 4h3.5l1.5 4.5-2 1.5a11 11 0 006 6l1.5-2L20 15.5V19a1.5 1.5 0 01-1.5 1.5A15.5 15.5 0 013.5 5.5 1.5 1.5 0 015 4z"/>','#10b981'],
   ['Dom','<path d="M3.5 11L12 4l8.5 7M5.5 9.5V20h13V9.5M10 20v-5.5h4V20"/>','#fb923c']];
 const TAG_ICON='<path d="M3.5 12.5v-8a1 1 0 011-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.3"/>';
+const roomOf=t=>t.room?`s. ${t.room}${t.building?' · '+t.building.split(' - ')[0]:''}`:'';   // budynek bez opisu: „A23a”
 const kindOf=k=>KINDS.find(x=>x[0]===k)||[k||'',TAG_ICON,'#9ca3af'];
 const kico=k=>`<svg class="kico" viewBox="0 0 24 24" style="--kc:${k[2]}">${k[1]}</svg>`;
 const norm=x=>(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ł/g,'l');
@@ -1669,7 +1681,7 @@ function renderCal(sel,tasks){
     h+=`<div class="d${dt.getMonth()!==mo-1?' out':''}${iso===today?' today':''}${iso===sel?' sel':''}${ev.length?' has':''}" data-date="${iso}" onclick="calPick('${iso}')">
       <span class="n">${dt.getDate()}</span>
       ${ev.slice(0,3).map(t=>{const k=kindOf(t.kind);return `<span class="ev${t.done?' done':''}" style="--kc:${k[2]}" draggable="true" data-id="${t.id}"
-        onclick="event.stopPropagation();viewTask(${t.id})" title="${escAttr(t.title)}">${kico(k)} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' '+kico(['',ICONS.nauka,'var(--ink-soft)']):''}</span>`;}).join('')}
+        onclick="event.stopPropagation();viewTask(${t.id})" title="${escAttr(t.title+(roomOf(t)?' · '+roomOf(t):''))}">${kico(k)} ${t.start_time?t.start_time+' ':''}${t.priority==='high'?'! ':''}${esc(t.title)}${t.note_title?' '+kico(['',ICONS.nauka,'var(--ink-soft)']):''}</span>`;}).join('')}
       ${ev.length>3?`<span class="more">+${ev.length-3} więcej</span>`:''}</div>`;
   }
   $('#cal').innerHTML=h;
@@ -1707,7 +1719,7 @@ async function openDay(iso){
       ${Array.from({length:24},(_,h)=>`<div class="hr" onclick="openTask(null,'${iso}','${String(h).padStart(2,'0')}:00')"><span>${String(h).padStart(2,'0')}:00</span></div>`).join('')}
       ${ev.map(e=>{const k=kindOf(e.t.kind),w=`(100% - 66px) / ${e.n}`;return `<div class="tev${e.t.done?' done':''}" style="--kc:${k[2]};top:${e.a/60*HH+1}px;height:${Math.max(24,(e.b-e.a)/60*HH-3)}px;
         left:calc(62px + ${w} * ${e.col});width:calc(${w} - 4px)" onclick="event.stopPropagation();viewTask(${e.t.id})">
-        <b>${kico(k)} ${esc(e.t.title)}</b><small>${e.t.start_time}${e.t.end_time?'–'+e.t.end_time:''}${k[0]?' · '+esc(k[0]):''}</small></div>`;}).join('')}
+        <b>${kico(k)} ${esc(e.t.title)}</b><small>${e.t.start_time}${e.t.end_time?'–'+e.t.end_time:''}${k[0]?' · '+esc(k[0]):''}${roomOf(e.t)?' · '+esc(roomOf(e.t)):''}</small></div>`;}).join('')}
       ${nowMin!=null?`<div class="nowline" style="top:${nowMin/60*HH}px"></div>`:''}
     </div></div>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Zamknij</button></div>`;
@@ -1752,6 +1764,10 @@ async function openTask(id,date,hour){
       <div class="field"><span>Priorytet</span><div id="tk-pr"></div></div>
       <label class="field"><span>Przypomnij o</span><input type="time" id="tk-rem" value="${t&&t.remind_at?t.remind_at.slice(11,16):''}"></label>
     </div>
+    <div class="frow">
+      <label class="field"><span>Sala</span><input id="tk-room" placeholder="np. 233" value="${v('room')}"></label>
+      <label class="field"><span>Budynek</span><input id="tk-bld" placeholder="np. A30" value="${v('building')}"></label>
+    </div>
     <div class="field"><span>Powiązana notatka (np. do powtórki przed kolokwium)</span><div id="tk-note"></div></div>
     <label class="field"><span>Opis</span><textarea id="tk-notes" placeholder="Miejsce, link, z kim, zakres materiału…">${t?esc(t.notes||''):''}</textarea></label>
     <div class="actions">${t?`<button class="btn danger" style="margin-right:auto" onclick="delTaskBack(${t.id})">Usuń</button>`:''}
@@ -1775,7 +1791,8 @@ async function submitTask(){
   const title=$('#tk-title').value.trim(); if(!title){$('#tk-title').focus();return;}
   const date=$('#tk-date').value||todayISO(), rem=$('#tk-rem').value, nid=cbNote.get();
   const data={title, date, kind:cbKind.get()||'', start_time:$('#tk-start').value||null, end_time:$('#tk-end').value||null,
-    priority:cbPr.get(), remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(), note_id:nid?+nid:null};
+    priority:cbPr.get(), remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(), note_id:nid?+nid:null,
+    room:$('#tk-room').value.trim(), building:$('#tk-bld').value.trim()};
   if(taskEditId!=null)await api('/tasks/'+taskEditId,{method:'PATCH',body:JSON.stringify(data)});
   else await api('/tasks',{method:'POST',body:JSON.stringify(data)});
   if(returnDay)returnDay=date; $('#plan-date').value=date; refresh(); back();
@@ -1787,7 +1804,10 @@ function viewTask(id){
   const rows=[['Kiedy',dlong(t.date)],['Godzina',time],
     ['Priorytet',{high:'Wysoki',low:'Niski'}[t.priority]||'Normalny'],
     t.remind_at&&['Przypomnienie',t.remind_at.slice(11,16)],
+    t.room&&['Sala',`<b>${esc(t.room)}</b>${t.building?' · '+esc(t.building):''}`],
+    t.address&&['Adres',`<a class="notelink" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.address)}" target="_blank" rel="noopener">${esc(t.address)}</a>`],
     ['Status',t.done?'Zrobione':'Do zrobienia'],
+    t.url&&['USOS',`<a class="notelink" href="${escAttr(t.url)}" target="_blank" rel="noopener">Strona zajęć ↗</a>`],
     t.note_title&&['Notatka',`<span class="notelink" onclick="closeModal();openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} ${esc(t.note_title)}</span>`]
   ].filter(Boolean);
   $('#modal').style.maxWidth='520px';
@@ -1814,10 +1834,18 @@ function renderTasks(list,sel,emptyMsg){
       <div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
       <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${kico(k)}</div>
       <div class="time">${time}</div>
-      <div class="body" onclick="viewTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
+      <div class="body" onclick="viewTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${roomOf(t)?`<span>${esc(roomOf(t))}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
       <button class="x" onclick="delTask(${t.id})">✕</button>
     </div>`;
   }).join('');
+}
+async function importIcs(inp){
+  const f=inp.files[0]; inp.value=''; if(!f)return;
+  const r=await api('/import/ics',{method:'POST',body:JSON.stringify({data:await f.text()})});
+  if(r.detail){alert(r.detail);return;}
+  const d=x=>new Date(x+'T00:00').toLocaleDateString('pl-PL',{day:'numeric',month:'short',year:'numeric'});
+  alert(`Plan zaimportowany: ${r.added} nowych, ${r.updated} zaktualizowanych zajęć\n(${d(r.first)} – ${d(r.last)}).\n\nPonowny import tego pliku zaktualizuje plan bez dublowania.`);
+  $('#plan-date').value=r.first>todayISO()?r.first:todayISO(); loadPlan();
 }
 async function toggleTask(id,done){await api('/tasks/'+id,{method:'PATCH',body:JSON.stringify({done:!!done})});refresh();}
 async function delTask(id){await api('/tasks/'+id,{method:'DELETE'});refresh();}

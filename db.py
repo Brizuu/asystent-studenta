@@ -109,6 +109,12 @@ _MIGRATIONS = [
     ("notes",     "group_id",    "ALTER TABLE notes ADD COLUMN group_id INTEGER"),
     ("tasks",     "kind",        "ALTER TABLE tasks ADD COLUMN kind TEXT DEFAULT ''"),
     ("tasks",     "note_id",     "ALTER TABLE tasks ADD COLUMN note_id INTEGER"),
+    # plan z uczelni (import .ics z USOS)
+    ("tasks",     "room",        "ALTER TABLE tasks ADD COLUMN room TEXT DEFAULT ''"),
+    ("tasks",     "building",    "ALTER TABLE tasks ADD COLUMN building TEXT DEFAULT ''"),
+    ("tasks",     "address",     "ALTER TABLE tasks ADD COLUMN address TEXT DEFAULT ''"),
+    ("tasks",     "url",         "ALTER TABLE tasks ADD COLUMN url TEXT DEFAULT ''"),
+    ("tasks",     "ext_uid",     "ALTER TABLE tasks ADD COLUMN ext_uid TEXT"),
 ]
 
 
