@@ -339,10 +339,10 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .us-top .btn{margin-left:auto}
 .us-big{display:flex;align-items:baseline;gap:6px;margin:16px 0 8px} .us-big b{font-family:var(--font-display);font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .us-big span{color:var(--ink-dim);font-size:14px} .us-big em{margin-left:auto;font-style:normal;font-size:13px;color:var(--ink-dim)}
-.bar{height:12px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.3)}
-.bar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--c1),var(--c2));
+.ubar{height:12px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.3)}
+.ubar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--c1),var(--c2));
   box-shadow:0 0 12px color-mix(in srgb,var(--c2) 45%,transparent);transition:width .9s var(--spring,ease)}
-.bar.sm{height:7px}
+.ubar.sm{height:7px}
 .us-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
 .us-grid div{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
 .us-grid small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
@@ -353,8 +353,10 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .us-days{display:flex;align-items:flex-end;gap:5px;height:54px;margin-top:18px}
 .us-days i{flex:1;min-height:3px;border-radius:4px 4px 2px 2px;background:rgba(255,255,255,.12);transition:height .9s var(--spring,ease)}
 .us-days i.on{background:linear-gradient(180deg,var(--lilac),var(--sky))} .us-days i.today{box-shadow:0 0 0 1.5px var(--ink)}
-.us-lim{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px;color:var(--ink-dim)}
-.us-lim input{width:84px;padding:6px 10px;text-align:center}
+.us-tier{font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:99px;background:rgba(116,220,158,.14);color:var(--pos)}
+.us-lims{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.us-lims .us-row{grid-template-columns:150px 1fr 150px} .us-row span:last-child{white-space:nowrap} .us-row b{color:var(--ink);font-weight:600}
+.us-cap{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
 @media(max-width:640px){.us-grid{grid-template-columns:1fr 1fr}.us-row{grid-template-columns:100px 1fr 36px}}
 .st-note{margin-top:14px;font-size:12.5px;color:var(--ink-dim);line-height:1.5}
 .st-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
@@ -2606,30 +2608,37 @@ let AIS={};
 function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
 async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); $('#st-cloud').value=APP.cloud_url||''; loadUsage();}
 const fmtTok=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+' mln':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+' tys.':String(n);
+const usageTone=p=>p>=100?['#ff9088','#ff6b6b']:p>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
+let _usageTimer=null, _usagePrev={};
 async function loadUsage(){
   let U; try{U=await api('/settings/ai/usage');}catch(_){return;}
-  const box=$('#st-usage'); if(!U||!U.today)return;
+  const box=$('#st-usage'); if(!U||!U.today||!U.limits)return;
   const used=U.history.some(d=>d.req); box.hidden=!(AIS.has_key||used); if(box.hidden)return;
-  const t=U.today, lim=U.daily_limit, pct=Math.min(100,t.req/lim*100), full=t.limit_hit||pct>=100;
-  const [c1,c2]=full?['#ff9088','#ff6b6b']:pct>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
+  const t=U.today, L=U.limits, m=U.minute||{req:0,tok:0};
+  const dayPct=t.limit_hit?100:Math.min(100,t.req/L.rpd*100), [c1,c2]=usageTone(dayPct);
   const reset=new Date(U.reset_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+  const bar=(key,pct,tone,cls='')=>`<div class="ubar${cls}" style="--c1:${tone[0]};--c2:${tone[1]}"><i data-k="${key}" data-w="${pct}" style="width:${_usagePrev[key]??0}%"></i></div>`;
+  const rows=[['rpm','Zapytania na minutę',m.req,L.rpm,String],['tpm','Tokeny na minutę',m.tok,L.tpm,fmtTok]];
   const K=[['note','Notatki AI'],['transcribe','Nagrania → tekst'],['test','Test połączenia'],['other','Inne']].filter(k=>t.kinds[k[0]]);
-  const kmax=Math.max(1,...K.map(k=>t.kinds[k[0]]));
-  const hmax=Math.max(1,...U.history.map(d=>d.in+d.out));
-  box.innerHTML=`<div class="us-top"><h3>Zużycie AI</h3><span class="mdl">${esc(U.model)}</span>
-      <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/usage','_blank')">Szczegóły w AI Studio ↗</button></div>
-    <div class="us-big"><b>${t.req}</b><span>/ ${lim} zapytań dziś</span><em>${full?'Limit wyczerpany · ':''}odnowienie o ${reset}</em></div>
-    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${lim}" aria-valuenow="${t.req}" style="--c1:${c1};--c2:${c2}"><i data-w="${full?100:pct}"></i></div>
+  const kmax=Math.max(1,...K.map(k=>t.kinds[k[0]])), hmax=Math.max(1,...U.history.map(d=>d.in+d.out));
+    box.innerHTML=`<div class="us-top"><h3>Zużycie AI</h3><span class="mdl">${esc(U.model)}</span><span class="us-tier">Darmowy plan</span>
+      <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/usage','_blank')">AI Studio ↗</button></div>
+    <div class="us-big"><b>${t.req}</b><span>/ ${L.rpd} zapytań dziś</span><em>${t.limit_hit||dayPct>=100?'Limit wyczerpany · ':''}odnowienie o ${reset}</em></div>
+    ${bar('big',dayPct,[c1,c2])}
+    <div class="us-lims">${rows.map(([k,l,v,lim,f])=>{const p=Math.min(100,v/lim*100);
+      return `<div class="us-row"><span>${l}</span>${bar(k,p,usageTone(p),' sm')}<span><b>${f(v)}</b> / ${f(lim)}</span></div>`;}).join('')}</div>
     <div class="us-grid"><div><small>Tokeny dziś</small><b>${fmtTok(t.in+t.out)}</b></div><div><small>Wysłane</small><b>${fmtTok(t.in)}</b></div><div><small>Odpowiedzi</small><b>${fmtTok(t.out)}</b></div></div>
-    ${K.length?`<div class="us-rows">${K.map(([k,l])=>`<div class="us-row"><span>${l}</span><div class="bar sm" style="--c1:var(--lilac);--c2:var(--sky)"><i data-w="${t.kinds[k]/kmax*100}"></i></div><span>${t.kinds[k]}</span></div>`).join('')}</div>`:''}
-    <div class="us-days" title="Tokeny — ostatnie 14 dni">${U.history.map((d,i)=>`<i class="${d.in+d.out?'on':''}${i===U.history.length-1?' today':''}" data-h="${(d.in+d.out)/hmax*100}" title="${d.date}: ${fmtTok(d.in+d.out)} tokenów, ${d.req} zapytań"></i>`).join('')}</div>
-    <div class="us-lim">Dzienny limit klucza:<input type="number" min="1" id="us-lim" value="${lim}" onchange="setUsageLimit(this.value)">zapytań</div>
-    <p class="st-note">Google nie udostępnia stanu limitu przez sam klucz, więc aplikacja liczy zapytania wysłane z tego komputera (dzień liczony jak w Google — od północy czasu pacyficznego). Darmowy klucz Gemini Flash ma zwykle ok. 250 zapytań dziennie; dokładną wartość dla Twojego klucza zobaczysz w AI Studio.</p>`;
+    ${K.length?`<div class="us-rows"><small class="us-cap">Dziś według rodzaju</small>${K.map(([k,l])=>`<div class="us-row"><span>${l}</span>${bar('k_'+k,t.kinds[k]/kmax*100,['var(--lilac)','var(--sky)'],' sm')}<span>${t.kinds[k]}</span></div>`).join('')}</div>`:''}
+    <small class="us-cap" style="margin-top:18px">Tokeny — ostatnie 14 dni</small>
+    <div class="us-days">${U.history.map((d,i)=>`<i class="${d.in+d.out?'on':''}${i===U.history.length-1?' today':''}" data-h="${(d.in+d.out)/hmax*100}" style="height:${_usagePrev['d'+i]??6}%" title="${d.date}: ${fmtTok(d.in+d.out)} tokenów, ${d.req} zapytań"></i>`).join('')}</div>
+    <p class="st-note">Limity darmowego planu według AI Studio → Rate limits (Gemini 3.6 Flash): 5 zapytań i 250 tys. tokenów na minutę, 20 zapytań dziennie. Google nie podaje zużycia przez sam klucz, więc aplikacja liczy zapytania wysłane z tego komputera; doba liczy się jak w Google, od północy czasu pacyficznego.</p>`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    box.querySelectorAll('.bar>i').forEach(i=>i.style.width=i.dataset.w+'%');
-    box.querySelectorAll('.us-days i').forEach(i=>i.style.height=Math.max(6,+i.dataset.h)+'%');}));
+    box.querySelectorAll('.ubar>i').forEach(i=>{i.style.width=i.dataset.w+'%';_usagePrev[i.dataset.k]=+i.dataset.w;});
+    box.querySelectorAll('.us-days i').forEach((i,ix)=>{const h=Math.max(6,+i.dataset.h);i.style.height=h+'%';_usagePrev['d'+ix]=h;});}));
+  // licznik „na minutę” żyje — odświeżaj, dopóki widać Ustawienia
+  clearTimeout(_usageTimer);
+  _usageTimer=setTimeout(()=>{if($('#view-ustawienia')?.classList.contains('active')&&!$('#st-ai').hidden&&!box.contains(document.activeElement))loadUsage();},5000);
 }
-async function setUsageLimit(v){v=parseInt(v,10);if(!(v>0))return;await api('/settings/ai/usage',{method:'POST',body:JSON.stringify({daily:v})});loadUsage();}
 function renderSettings(){
   const ok=AIS.has_key, chat=AIS.mode==='chat';
   $('#st-status').innerHTML=`<div class="st-stat"><span class="dot" style="--c:${ok?'var(--pos)':chat?'var(--peach)':'var(--ink-dim)'}"></span>

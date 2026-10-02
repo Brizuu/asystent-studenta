@@ -462,6 +462,11 @@ class GeminiError(Exception):
 # ---------- zużycie AI (liczone lokalnie: Google nie udostępnia stanu limitu przez klucz) ----------
 USAGE = DATA_DIR / "ai_usage.json"
 _usage_lock = threading.Lock()
+_recent: list = []   # (czas, tokeny wejściowe) z ostatniej minuty — do RPM/TPM
+# limity darmowego planu wg AI Studio → Rate limits (Free tier); Google nie udostępnia ich przez klucz
+FREE_LIMITS = {
+    "gemini-3.6-flash": {"rpm": 5, "tpm": 250_000, "rpd": 20},
+}
 
 
 def _pacific_now() -> datetime:
@@ -493,6 +498,9 @@ def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit
             d["err"] += 1
         if daily_limit:
             d["limit_hit"] = True
+        now = time.time()
+        _recent.append((now, int((meta or {}).get("promptTokenCount") or 0)))
+        _recent[:] = [r for r in _recent if now - r[0] < 60]
         if meta:
             d["in"] += int(meta.get("promptTokenCount") or 0)
             d["out"] += int(meta.get("candidatesTokenCount") or 0) + int(meta.get("thoughtsTokenCount") or 0)
@@ -645,8 +653,9 @@ def test_ai():
         return {"ok": e.status == 429, "error": msg}
 
 
-class UsageLimit(BaseModel):
-    daily: int
+def _limits() -> dict:
+    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    return FREE_LIMITS.get(model, FREE_LIMITS["gemini-3.6-flash"])
 
 
 @app.get("/api/settings/ai/usage")
@@ -658,19 +667,14 @@ def ai_usage():
     reset = (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).astimezone(timezone.utc)
     last = [(now.date() - timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
     empty = {"req": 0, "in": 0, "out": 0, "err": 0, "kinds": {}}
-    return {"today": {**empty, **days.get(today, {})}, "daily_limit": int(u.get("daily_limit") or 250),
+    t = time.time()
+    with _usage_lock:
+        minute = [r for r in _recent if t - r[0] < 60]
+    return {"today": {**empty, **days.get(today, {})}, "limits": _limits(),
+            "minute": {"req": len(minute), "tok": sum(r[1] for r in minute)},
             "reset_at": reset.isoformat().replace("+00:00", "Z"),
             "history": [{"date": d, **{**empty, **days.get(d, {})}} for d in last],
             "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
-
-
-@app.post("/api/settings/ai/usage")
-def set_ai_usage(p: UsageLimit):
-    with _usage_lock:
-        u = _usage_load()
-        u["daily_limit"] = max(1, min(100000, p.daily))
-        USAGE.write_text(json.dumps(u), encoding="utf-8")
-    return ai_usage()
 
 
 # ---------- logo uczelni (pobierane raz, trzymane lokalnie) ----------
