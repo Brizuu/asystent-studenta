@@ -70,6 +70,20 @@ CREATE TABLE IF NOT EXISTS notes (
     FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE CASCADE
 );
 
+-- Nagrania wykładów (desktop): audio w DATA_DIR/recordings/<id>/part-NNN.ogg, tekst w part-NNN.txt
+CREATE TABLE IF NOT EXISTS recordings (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_id    INTEGER,
+    title      TEXT DEFAULT '',
+    started_at TEXT DEFAULT (datetime('now','localtime')),
+    seconds    REAL DEFAULT 0,
+    parts      INTEGER DEFAULT 0,
+    done_parts INTEGER DEFAULT 0,
+    status     TEXT DEFAULT 'recording',   -- recording | pending | queued | transcribing | done | limit | error
+    error      TEXT DEFAULT '',
+    inserted   INTEGER DEFAULT 0           -- tekst wstawiony do notatki
+);
+
 -- Nauka: grupy notatek wewnątrz zeszytu (ręczne kategorie)
 CREATE TABLE IF NOT EXISTS note_groups (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -28,7 +28,15 @@ Tag `v*` (np. `v1.0`) publikuje exe w zakładce *Releases*.
   **Import danych** wczytuje taką kopię albo sam plik `asystent.db` (np. ze starej wersji
   uruchamianej przez uvicorn). Poprzednia baza zostaje jako `asystent.db.bak`.
 
-Ze źródeł: `pip install -r requirements.txt pywebview` i `python desktop.py`.
+### Nagrywanie wykładów (tylko desktop)
+
+W notatce: **● Nagraj wykład** → mikrofon nagrywa w tle (także gdy przejdziesz do innego widoku),
+plik zapisuje się na bieżąco w `%APPDATA%\Asystent\recordings`, cięty na części po 15 min (~3 MB, OGG/Opus).
+Później **Zamień na tekst** wysyła części po kolei do Gemini (1 część = 1 zapytanie, 7 h ≈ 28 zapytań),
+a gotowy zapis trafia do notatki jako blok „Zapis wykładu”. Po dziennym limicie albo awarii zrobione części
+zostają — **Dokończ zamianę** wznawia od miejsca przerwania. Zamknięcie okna w trakcie nagrywania domyka plik.
+
+Ze źródeł: `pip install -r requirements.txt pywebview sounddevice soundfile` i `python desktop.py`.
 
 ## Konfiguracja
 

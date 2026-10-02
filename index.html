@@ -215,7 +215,26 @@ body.in-nauka .main{padding-bottom:14px}
 .nowline::before{content:"";position:absolute;left:-5px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--neg)}
 .allday{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .allday .ev{font-size:12.5px;padding:4px 10px;border-radius:8px;cursor:pointer;background:color-mix(in srgb,var(--kc) 22%,transparent);border-left:3px solid var(--kc)}
-.notelink{color:var(--accent-2);cursor:pointer} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
+.notelink{color:var(--accent-2);cursor:pointer}
+/* nagrywanie wykładów (desktop) */
+.recbar{margin:4px 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:8px}
+.rec-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rec-hint{font-size:12px;color:var(--ink-dim)}
+.rec-live{display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;font-weight:600}
+.rec-live i,.recpill i{width:9px;height:9px;border-radius:50%;background:var(--neg);animation:recblink 1.2s infinite}
+@keyframes recblink{50%{opacity:.25}}
+.rec-meter{width:120px;height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.rec-meter b{display:block;height:100%;background:linear-gradient(90deg,var(--pos),var(--hi));transition:width .2s}
+.rec-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;padding:7px 0;border-top:1px solid var(--line)}
+.rec-row .rec-t{font-weight:500} .rec-row .rec-m{color:var(--ink-dim)}
+.rec-row .rec-s{font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
+.rec-row .st-done{color:var(--pos);border-color:rgba(84,217,150,.35)} .rec-row .st-transcribing,.rec-row .st-queued{color:var(--accent-2)}
+.rec-row .st-limit,.rec-row .st-error{color:var(--hi);border-color:rgba(255,180,84,.35)}
+.rec-row .rec-err{flex-basis:100%;font-size:12px;color:var(--hi)}
+.rec-row .rec-act{margin-left:auto;display:flex;gap:6px}
+.recpill{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:160;display:flex;align-items:center;gap:9px;padding:9px 16px;
+  border-radius:999px;border:1px solid rgba(255,122,144,.4);background:#1a1016;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.7)}
+.recpill[hidden]{display:none} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
 .cal .more{font-size:10.5px;color:var(--ink-dim)}
 @media(max-width:620px){.cal .d{min-height:54px}.cal .ev{display:none}.cal .d.has .n::after{content:" •";color:var(--accent)}}
 
@@ -1244,6 +1263,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
               </div>
               <span class="saved" id="note-saved"></span>
             </div>
+            <div class="recbar" id="recbar" style="display:none"></div>
             <div class="blocks" id="blocks"></div>
             <div class="addblock" id="addblock">
               <button class="btn ghost sm" onclick="toggleAddMenu(event)">+ Dodaj blok</button>
@@ -1296,6 +1316,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
+<button class="recpill" id="recpill" hidden onclick="recStop()" title="Zatrzymaj nagrywanie"></button>
 
 <script>
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -1699,6 +1720,76 @@ $('#src-form').addEventListener('submit',async e=>{
 async function delSrc(id){await api('/sources/'+id,{method:'DELETE'});loadSources();}
 
 /* ---------- POWIADOMIENIA ---------- */
+/* ===== NAGRYWANIE WYKŁADÓW (tylko desktop) =====
+   nagranie idzie w backendzie (mikrofon → pliki na dysku), na tekst zamieniane później przez Gemini */
+let APP={}, recState={}, recList=[], recTimer=null, recSig='';
+const recInserting=new Set();
+const REC_ST={pending:'czeka na zamianę na tekst',queued:'w kolejce…',transcribing:'zamiana na tekst',done:'gotowe',limit:'limit Gemini',error:'błąd'};
+const fmtDur=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
+api('/config').then(c=>{APP=c||{}; if(APP.desktop)recPoll();});
+async function recPoll(){
+  clearTimeout(recTimer);
+  try{
+    recState=await api('/rec/status')||{};
+    const pill=$('#recpill'); pill.hidden=!recState.id;
+    if(recState.id)pill.innerHTML=`<i></i> Nagrywanie ${fmtDur(recState.seconds)} · kliknij, aby zatrzymać`;
+    if(noteActive)await renderRecBar();
+  }catch(_){}
+  const busy=recState.id||recList.some(r=>r.status==='queued'||r.status==='transcribing');
+  recTimer=setTimeout(recPoll,recState.id?1000:busy?3000:15000);
+}
+async function renderRecBar(){
+  const bar=$('#recbar'); if(!bar)return;
+  if(!APP.desktop||!noteActive){bar.style.display='none';return;}
+  const nid=noteActive, list=await api('/rec?note_id='+nid); if(nid!==noteActive)return;
+  recList=list; bar.style.display='';
+  const mine=recState.id&&recState.note_id===nid, other=recState.id&&!mine;
+  // pełny render tylko gdy coś się zmieniło; co sekundę aktualizujemy sam licznik i poziom dźwięku
+  const sig=JSON.stringify([mine,other,list.filter(r=>r.status!=='recording')]);
+  if(sig!==recSig){ recSig=sig;
+    bar.innerHTML=`<div class="rec-top">${mine
+      ?`<button class="btn danger sm" onclick="recStop()">■ Zatrzymaj</button><span class="rec-live"><i></i><span id="rec-time"></span></span><span class="rec-meter" title="Poziom dźwięku z mikrofonu"><b id="rec-lvl"></b></span><span class="rec-hint">Nagranie zapisuje się na dysku na bieżąco.</span>`
+      :`<button class="btn ghost sm" onclick="recStart()" ${other?'disabled title="Trwa nagrywanie w innej notatce"':''}>● Nagraj wykład</button><span class="rec-hint">${other?'Trwa nagrywanie w innej notatce.':'Nagranie zostaje na dysku — na tekst zamienisz je później jednym kliknięciem.'}</span>`}</div>`
+      +list.filter(r=>r.status!=='recording').map(r=>`<div class="rec-row">
+        <span class="rec-t">${esc(r.title)}</span><span class="rec-m">${fmtDur(r.seconds)} · ${r.parts} ${plural(r.parts,'część','części','części')}</span>
+        <span class="rec-s st-${r.status}">${REC_ST[r.status]||r.status}${r.status==='transcribing'?` ${r.done_parts}/${r.parts}`:''}${r.status==='done'&&r.inserted?' · w notatce ✓':''}</span>
+        <span class="rec-act">${['pending','limit','error'].includes(r.status)?`<button class="btn xs" onclick="recTranscribe(${r.id})">${r.done_parts?'Dokończ zamianę':'Zamień na tekst'}</button>`:''}
+          ${r.status==='done'&&r.inserted?`<button class="btn ghost xs" onclick="recInsert(${r.id},true)">Wstaw ponownie</button>`:''}
+          ${['queued','transcribing'].includes(r.status)?'':`<button class="btn ghost xs" onclick="recDelete(${r.id})" title="Usuń nagranie (audio)">✕</button>`}</span>
+        ${r.error?`<span class="rec-err">${esc(r.error)}</span>`:''}</div>`).join('');
+  }
+  if(mine){$('#rec-time').textContent=fmtDur(recState.seconds);$('#rec-lvl').style.width=Math.round((recState.level||0)*100)+'%';}
+  const todo=list.filter(r=>r.status==='done'&&!r.inserted);
+  for(const r of todo) await recInsert(r.id);
+  if(todo.length)renderRecBar();   // odśwież status „w notatce ✓”
+}
+async function recInsert(id,again=false){
+  if(recInserting.has(id))return; recInserting.add(id);
+  try{
+    const r=recList.find(x=>x.id===id); if(!r||r.note_id!==noteActive||!noteData)return;
+    const {text}=await api('/rec/'+id+'/text');
+    const html=text?text.split(/\n\s*\n/).map(p=>'<p>'+esc(p.trim()).replace(/\n/g,'<br>')+'</p>').join(''):'<p><em>(w nagraniu nie rozpoznano mowy)</em></p>';
+    noteData.content.push({id:uid(),type:'heading',text:'Zapis wykładu · '+r.title},{id:uid(),type:'text',html});
+    renderBlocks(); clearTimeout(saveTimer); await saveNote();
+    if(!again){await api('/rec/'+id+'/inserted',{method:'POST'}); recSig='';}
+  }finally{recInserting.delete(id);}
+}
+async function recStart(){
+  const r=await api('/rec/start',{method:'POST',body:JSON.stringify({note_id:noteActive})});
+  if(!r.id){alert(r.detail||'Nie udało się rozpocząć nagrywania.');return;}
+  recSig=''; recPoll();
+}
+async function recStop(){await api('/rec/stop',{method:'POST'}); recSig=''; recPoll();}
+async function recTranscribe(id){
+  if(!APP.gemini){alert('Brak klucza Gemini. Zapisz go w pliku .gemini_key w folderze danych aplikacji (%APPDATA%\\Asystent).');return;}
+  const r=await api('/rec/'+id+'/transcribe',{method:'POST'}); if(!r.queued)alert(r.detail||'Nie udało się.');
+  recSig=''; recPoll();
+}
+async function recDelete(id){
+  if(!confirm('Usunąć to nagranie (plik audio)? Tekst wstawiony do notatki zostaje.'))return;
+  await api('/rec/'+id,{method:'DELETE'}); recSig=''; renderRecBar();
+}
+
 /* eksport / import danych (kopia ZIP: baza + załączniki) */
 async function exportData(){
   const r=await api('/export',{method:'POST'});
@@ -2112,6 +2203,7 @@ async function openNote(id){
   let m='edit'; try{m=localStorage.getItem('notemode_'+id)||'edit';}catch(_){}
   setMode(m);
   $('#tab-note-label').textContent=noteData.title||'Notatka';
+  renderRecBar();
   showTab('note');
 }
 function sizeTitleInput(){const i=$('#note-title');if(!i)return;i.removeAttribute('size');

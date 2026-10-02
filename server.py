@@ -439,6 +439,49 @@ def _clean_ai_html(s: str) -> str:
     return s.strip()
 
 
+class GeminiError(Exception):
+    def __init__(self, status: int, msg: str):
+        super().__init__(msg)
+        self.status, self.msg = status, msg
+
+
+def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeout: int = 90, tries: int = 3) -> str:
+    """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu."""
+    key = _gemini_key()
+    if not key:
+        raise GeminiError(400, "Brak klucza Gemini. Zapisz go w pliku .gemini_key lub ustaw zmienną GEMINI_API_KEY.")
+    body = json.dumps({
+        "contents": [{"parts": parts}],
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+    }).encode("utf-8")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    base = os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com")
+    url = base + "/v1beta/models/" + model + ":generateContent?key=" + key
+    data = None
+    for attempt in range(tries):
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                data = json.loads(r.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")
+            if e.code in (503, 429) and attempt < tries - 1 and "PerDay" not in detail:
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            raise GeminiError(e.code, f"Gemini API błąd {e.code}: {detail[:300]}")
+        except Exception as e:
+            if attempt < tries - 1:
+                time.sleep(1)
+                continue
+            raise GeminiError(502, f"Nie udało się połączyć z Gemini: {e}")
+    try:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError):
+        fb = (data.get("promptFeedback") or {}).get("blockReason")
+        raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
+
+
 @app.post("/api/ai/note")
 def ai_note(a: AINote):
     key = _gemini_key()
@@ -471,40 +514,12 @@ def ai_note(a: AINote):
         "Treść do przetworzenia:\n" + a.text
     )
 
-    body = json.dumps({
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
-    }).encode("utf-8")
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-           + model + ":generateContent?key=" + key)
-    data = None
-    for attempt in range(3):
-        req = urllib.request.Request(url, data=body,
-                                     headers={"Content-Type": "application/json"}, method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=90) as r:
-                data = json.loads(r.read().decode("utf-8"))
-            break
-        except urllib.error.HTTPError as e:
-            detail = e.read().decode("utf-8", "replace")
-            if e.code in (503, 429) and attempt < 2:      # przeciążenie/limit — ponów
-                time.sleep(1.5 * (attempt + 1))
-                continue
-            if e.code in (503, 429):
-                raise HTTPException(503, "Model Gemini jest chwilowo przeciążony. Spróbuj ponownie za chwilę.")
-            raise HTTPException(502, f"Gemini API błąd {e.code}: {detail[:300]}")
-        except Exception as e:
-            if attempt < 2:
-                time.sleep(1)
-                continue
-            raise HTTPException(502, f"Nie udało się połączyć z Gemini: {e}")
-
     try:
-        out = data["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, TypeError):
-        fb = (data.get("promptFeedback") or {}).get("blockReason")
-        raise HTTPException(502, f"Gemini nie zwrócił notatki{(' (' + fb + ')') if fb else ''}.")
+        out = gemini([{"text": prompt}], max_tokens=4096, temperature=0.4)
+    except GeminiError as e:
+        if e.status in (429, 503):
+            raise HTTPException(503, "Model Gemini jest chwilowo przeciążony. Spróbuj ponownie za chwilę.")
+        raise HTTPException(400 if e.status == 400 else 502, e.msg)
 
     return {"html": _clean_ai_html(out)}
 
@@ -513,8 +528,11 @@ def ai_note(a: AINote):
 @app.post("/api/export")
 def export_data():
     # spójna kopia bazy przez sqlite backup API, zapis do folderu Pobrane
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+    out_dir = Path.home() / "Downloads"
+    if not out_dir.is_dir():
+        out_dir = Path.home()
+    out = out_dir / f"asystent-kopia-{date.today().isoformat()}.zip"
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         tmp = DATA_DIR / "export.tmp.db"
         src, dst = sqlite3.connect(DB_PATH), sqlite3.connect(tmp)
         with dst:
@@ -524,11 +542,8 @@ def export_data():
         for f in UPLOAD_DIR.iterdir():
             if f.is_file():
                 z.write(f, "uploads/" + f.name)
-    out_dir = Path.home() / "Downloads"
-    if not out_dir.is_dir():
-        out_dir = Path.home()
-    out = out_dir / f"asystent-kopia-{date.today().isoformat()}.zip"
-    out.write_bytes(buf.getvalue())
+        for f in (DATA_DIR / "recordings").glob("*/*"):
+            z.write(f, f"recordings/{f.parent.name}/{f.name}")
     return {"path": str(out)}
 
 
@@ -548,7 +563,7 @@ def import_data(u: ImportData):
     if blob[:4] == b"PK\x03\x04":
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
             for n in z.namelist():
-                if n == "asystent.db" or (n.startswith("uploads/") and not n.endswith("/")):
+                if n == "asystent.db" or (n.startswith(("uploads/", "recordings/")) and not n.endswith("/")):
                     files[n] = z.read(n)
     else:
         files["asystent.db"] = blob
@@ -561,6 +576,12 @@ def import_data(u: ImportData):
     for n, b in files.items():
         if n.startswith("uploads/"):
             (UPLOAD_DIR / os.path.basename(n)).write_bytes(b)
+        elif n.startswith("recordings/") and n.count("/") == 2:
+            rid, name = n.split("/")[1:]
+            if rid.isdigit():
+                d = DATA_DIR / "recordings" / rid
+                d.mkdir(parents=True, exist_ok=True)
+                (d / os.path.basename(name)).write_bytes(b)
     init_db()   # migracje, jeśli kopia jest ze starszej wersji
     return {"ok": True, "uploads": sum(n.startswith("uploads/") for n in files)}
 
@@ -588,3 +609,13 @@ def summary():
         "income_by_source": by_source,
         "today": today, "month": month,
     }
+
+
+# ---------- NAGRANIA WYKŁADÓW (tylko aplikacja desktop) ----------
+@app.get("/api/config")
+def config():
+    return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key())}
+
+
+import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta)
+app.include_router(nagrania.router)
