@@ -268,7 +268,7 @@ def del_notebook(nid: int):
 @app.get("/api/notes/all")
 def list_all_notes():
     with get_conn() as c:
-        return rows(c.execute("SELECT id,notebook_id,title FROM notes ORDER BY updated_at DESC"))
+        return rows(c.execute("SELECT id,notebook_id,title,updated_at FROM notes ORDER BY updated_at DESC"))
 
 
 @app.get("/api/notes")

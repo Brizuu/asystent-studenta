@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Space+Grotesk:wght@500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -101,6 +101,7 @@ h3{font-size:var(--fs-h3);font-weight:600;letter-spacing:-.02em}
   padding:11px 12px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink-soft);
   font:inherit;font-weight:500;transition:background .15s,color .15s;
 }
+.navlist button[hidden]{display:none}   /* moduły tymczasowo ukryte (Finanse, Źródła) */
 .navlist button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
 .navlist button:hover{background:var(--glass-2);color:var(--ink)}
 .navlist button.active{background:var(--glass-2);color:var(--ink)}
@@ -141,6 +142,55 @@ body.in-nauka .main{padding-bottom:14px}
 .pos{color:var(--pos)} .neg{color:var(--neg)}
 
 /* kafelki modułów (Pulpit) */
+.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:var(--s3);
+  padding:clamp(24px,4vw,44px);border-radius:28px;margin-bottom:var(--s3);border:1px solid rgba(255,255,255,.1);
+  background:radial-gradient(80% 120% at 0% 0%,rgba(139,124,255,.32),transparent 60%),radial-gradient(70% 110% at 100% 100%,rgba(94,234,212,.22),transparent 60%),
+    radial-gradient(50% 60% at 70% 10%,rgba(255,180,84,.12),transparent 70%),linear-gradient(160deg,#141427,#0d0f19);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:22px 22px;
+  mask-image:radial-gradient(60% 80% at 75% 40%,#000,transparent 75%);-webkit-mask-image:radial-gradient(60% 80% at 75% 40%,#000,transparent 75%)}
+.hero>*{position:relative;z-index:1}
+.hero-h{font-size:clamp(40px,5.6vw,68px);margin-top:10px}
+.hero-h em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--accent-2)}
+.hero-h #greet em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;letter-spacing:-.01em;
+  background:linear-gradient(90deg,#c4b8ff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.06em}
+.hero-date{margin-top:10px;color:var(--ink-soft);font-size:var(--fs-lead)}
+.hero-next{margin-top:22px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;max-width:460px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(6px)}
+.hero-next .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim)}
+.hero-next .t{font-weight:600} .hero-next .m{font-size:13px;color:var(--ink-soft)}
+.hero-next .dot{width:10px;height:10px;border-radius:50%;background:var(--kc,var(--accent-2));box-shadow:0 0 0 4px color-mix(in srgb,var(--kc,var(--accent-2)) 22%,transparent);flex:none}
+.hero-cta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+.hero-art svg{width:100%;height:auto;display:block;overflow:visible}
+.arc-sun{filter:drop-shadow(0 0 10px rgba(255,200,120,.9)) drop-shadow(0 0 26px rgba(255,170,90,.55));animation:sunpulse 3.2s ease-in-out infinite}
+@keyframes sunpulse{50%{filter:drop-shadow(0 0 14px rgba(255,200,120,1)) drop-shadow(0 0 36px rgba(255,170,90,.7))}}
+.arc-ev{cursor:pointer;transition:opacity .15s} .arc-ev:hover{opacity:.75}
+.doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:var(--s3)}
+.door{padding:var(--s3);border-radius:var(--r);position:relative;overflow:hidden}
+.door::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,var(--dc),transparent)}
+.door-h{display:flex;align-items:center;gap:14px;margin-bottom:var(--s2)}
+.door-ic{width:44px;height:44px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--dc) 16%,transparent)}
+.door-ic svg{width:22px;height:22px;stroke:var(--dc);fill:none;stroke-width:1.7}
+.door-t{flex:1;min-width:0} .door-t h3{font-size:19px} .door-sub{font-size:12.5px;color:var(--ink-dim);margin-top:2px}
+.tl,.rn{display:flex;flex-direction:column;gap:6px}
+.tl-row{display:grid;grid-template-columns:52px 3px 30px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s}
+.tl-row:hover,.rn-row:hover{background:var(--glass-2)}
+.tl-row .tm{font-family:'Space Grotesk';font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink-soft)}
+.tl-row .bar{width:3px;height:28px;border-radius:3px;background:var(--kc)}
+.tl-row .kic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kc) 16%,transparent)}
+.tl-row .tt{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .tl-row .tk{font-size:12px;color:var(--ink-dim)}
+.tl-row.past{opacity:.5} .tl-row.done .tt{text-decoration:line-through;color:var(--ink-dim)}
+.tl-row .now{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#0a0b12;background:var(--accent-2)}
+.rn-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s}
+.rn-row .nb{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;
+  color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent)}
+.rn-row .tt{flex:1 1 55%;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn-row .meta{flex:0 1 auto;min-width:0;font-size:12px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.door .empty-cta{padding:18px 12px;color:var(--ink-dim);font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#view-pulpit{padding-top:34px}   /* miejsce na przycisk Spotify w prawym górnym rogu */
+@media(max-width:860px){.hero{grid-template-columns:1fr}.hero-art{max-width:460px}}
+@media(max-width:600px){.rn-row .nbn{display:none}#view-pulpit{padding-top:44px}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s2)}
 .tile{padding:var(--s3);border-radius:var(--r);cursor:pointer;position:relative;overflow:hidden;
   display:flex;flex-direction:column;gap:16px;transition:transform .18s,border-color .18s,box-shadow .18s}
@@ -1091,11 +1141,11 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
         <span class="lbl">Plan dnia</span>
       </button>
-      <button data-v="finanse">
+      <button data-v="finanse" hidden>
         <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16.5 14.5h1.5"/></svg>
         <span class="lbl">Finanse</span>
       </button>
-      <button data-v="zrodla">
+      <button data-v="zrodla" hidden>
         <svg viewBox="0 0 24 24"><path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5M4 16.5l8 4.5 8-4.5"/></svg>
         <span class="lbl">Źródła dochodu</span>
       </button>
@@ -1114,15 +1164,36 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   <main class="main">
     <!-- PULPIT -->
     <section class="view active" id="view-pulpit">
-      <div class="head">
-        <div class="eyebrow">Twój panel</div>
-        <h1 id="greet">Dzień dobry.</h1>
-        <div class="date" id="pulpit-date"></div>
+      <div class="hero">
+        <div class="hero-txt">
+          <div class="eyebrow">Twój dzień</div>
+          <h1 class="hero-h"><span id="greet">Dzień dobry</span><em>.</em></h1>
+          <div class="hero-date" id="pulpit-date"></div>
+          <div class="hero-next" id="hero-next"></div>
+          <div class="hero-cta">
+            <button class="btn" onclick="go('plan');openDay(todayISO())">Zobacz dzisiejszy dzień</button>
+            <button class="btn ghost" onclick="openTask(null,todayISO())">+ Dodaj wpis</button>
+          </div>
+        </div>
+        <div class="hero-art"><svg id="dayarc" viewBox="0 0 400 236" role="img" aria-label="Przebieg dnia"></svg></div>
       </div>
-      <div class="tiles" id="tiles"></div>
-      <div class="panel glass">
-        <div class="ph"><h3>Dziś w kalendarzu</h3><button class="btn ghost sm" onclick="go('plan');openDay(todayISO())">Otwórz dzień →</button></div>
-        <div class="list" id="pulpit-tasks"></div>
+      <div class="doors">
+        <div class="door glass" style="--dc:#8b7cff">
+          <div class="door-h">
+            <div class="door-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg></div>
+            <div class="door-t"><h3>Harmonogram dnia</h3><div class="door-sub" id="door-plan-sub"></div></div>
+            <button class="btn ghost sm" onclick="go('plan')">Kalendarz →</button>
+          </div>
+          <div class="tl" id="pulpit-tasks"></div>
+        </div>
+        <div class="door glass" style="--dc:#5eead4">
+          <div class="door-h">
+            <div class="door-ic"><svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg></div>
+            <div class="door-t"><h3>Notatki</h3><div class="door-sub" id="door-notes-sub"></div></div>
+            <button class="btn ghost sm" onclick="go('nauka')">Zeszyty →</button>
+          </div>
+          <div class="rn" id="pulpit-notes"></div>
+        </div>
       </div>
     </section>
 
@@ -1394,25 +1465,73 @@ const ICONS={
   nauka:'<path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/>',
 };
 async function loadPulpit(){
-  const h=new Date().getHours();
-  $('#greet').textContent=h<6?'Dobrej nocy.':h<12?'Dzień dobry.':h<18?'Miłego dnia.':'Dobry wieczór.';
-  $('#pulpit-date').textContent=dlong(todayISO());
-  const [s,srcs,nbs,today]=await Promise.all([api('/summary'),api('/sources'),api('/notebooks'),api('/tasks?day='+todayISO())]);
-  today.forEach(x=>planTasks[x.id]=x);
-  renderTasks(today,'#pulpit-tasks','Na dziś nic nie zaplanowano.');
-  const tiles=[
-    {v:'plan',   c:'#8b7cff', t:'Plan dnia',      stat:`${s.today_done}/${s.today_tasks}`, cls:'', desc:s.today_tasks?'zadań na dziś':'brak zadań — zaplanuj dzień'},
-    {v:'finanse',c:'#54d996', t:'Finanse',        stat:zl(s.balance), cls:(s.balance<0?'neg':'pos'), desc:'saldo · '+(s.month_net>=0?'+':'−')+zl(Math.abs(s.month_net))+' w tym mies.'},
-    {v:'zrodla', c:'#ffb454', t:'Źródła dochodu', stat:String(srcs.length), cls:'', desc:srcs.length?plural(srcs.length,'źródło','źródła','źródeł'):'dodaj skąd płynie dochód'},
-    {v:'nauka',  c:'#5eead4', t:'Nauka',          stat:String(nbs.length), cls:'', desc:nbs.length?plural(nbs.length,'zeszyt','zeszyty','zeszytów'):'utwórz pierwszy zeszyt'},
-  ];
-  $('#tiles').innerHTML=tiles.map(x=>`
-    <div class="tile glass" onclick="go('${x.v}')" style="--tc:${x.c}">
-      <div class="ic"><svg viewBox="0 0 24 24">${ICONS[x.v]}</svg></div>
-      <div class="tstat num ${x.cls}">${x.stat}</div>
-      <div><h3>${x.t}</h3><div class="tdesc">${x.desc}</div></div>
-      <span class="arr">→</span>
-    </div>`).join('');
+  const h=new Date().getHours(), today=todayISO();
+  const [g1,g2]=h<6?['Dobrej','nocy']:h<12?['Dzień','dobry']:h<18?['Miłego','dnia']:['Dobry','wieczór'];
+  $('#greet').innerHTML=`${g1} <em>${g2}</em>`;
+  $('#pulpit-date').textContent=dlong(today);
+  const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
+  tasks.forEach(x=>planTasks[x.id]=x);
+  renderDayArc(tasks); renderHeroNext(tasks); renderPulpitTasks(tasks); renderRecentNotes(notes,nbs);
+}
+setInterval(()=>{ if($('#view-pulpit').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))loadPulpit(); },60000);   // słońce i „następne” idą z czasem
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes();};
+const evSpan=t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;return [a,b>a?b:a+60];};
+/* grafika „łuk dnia”: 6:00–22:00 na półokręgu, wpisy jako kolorowe łuki, teraz = słońce */
+function renderDayArc(tasks){
+  const cx=200,cy=210,R=168,H0=360,H1=1320;   // minuty 6:00 i 22:00
+  const ang=m=>Math.PI*(1-(Math.min(H1,Math.max(H0,m))-H0)/(H1-H0));
+  const pt=(m,r=R)=>[cx+r*Math.cos(ang(m)),cy-r*Math.sin(ang(m))];
+  const arc=(m0,m1,r=R)=>{const [x0,y0]=pt(m0,r),[x1,y1]=pt(m1,r);return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;};
+  const n=nowMin(), timed=tasks.filter(t=>t.start_time);
+  let svg=`<defs><linearGradient id="arcg" x1="0" x2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#5eead4"/></linearGradient>
+    <radialGradient id="sung"><stop offset="0" stop-color="#fff7e0"/><stop offset=".55" stop-color="#ffcf7a"/><stop offset="1" stop-color="#ff9f5a"/></radialGradient></defs>
+    <path d="${arc(H0,H1)}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
+    <path d="${arc(H0,H1,R-26)}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
+  if(n>H0)svg+=`<path d="${arc(H0,Math.min(n,H1))}" fill="none" stroke="url(#arcg)" stroke-width="3" stroke-linecap="round" opacity=".9"/>`;
+  for(let m=H0;m<=H1;m+=240){const [x,y]=pt(m,R+22);svg+=`<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="rgba(255,255,255,.4)" font-family="Space Grotesk,Inter,sans-serif">${m/60}:00</text>`;}
+  timed.forEach(t=>{const k=kindOf(t.kind),[a,b]=evSpan(t); if(b<H0||a>H1)return;
+    svg+=`<path class="arc-ev" d="${arc(Math.max(a,H0),Math.min(b,H1),R-13)}" fill="none" stroke="${k[2]}" stroke-width="9" stroke-linecap="round" opacity="${t.done?.35:.95}" onclick="viewTask(${t.id})"><title>${esc((t.start_time||'')+' '+t.title)}</title></path>`;});
+  const [sx,sy]=pt(n);
+  svg+=`<circle class="arc-sun" cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="9" fill="url(#sung)"/>`;
+  const left=timed.filter(t=>evSpan(t)[1]>n&&!t.done).length;
+  svg+=`<text x="${cx}" y="${cy-38}" text-anchor="middle" font-size="44" font-weight="700" fill="#eceef5" font-family="Space Grotesk,Inter,sans-serif">${new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</text>
+    <text x="${cx}" y="${cy-12}" text-anchor="middle" font-size="13" fill="rgba(255,255,255,.55)" font-family="Inter,sans-serif">${left?left+' '+plural(left,'wpis','wpisy','wpisów')+' przed Tobą':tasks.length?'wszystko na dziś za Tobą':'wolny dzień'}</text>`;
+  $('#dayarc').innerHTML=svg;
+}
+function renderHeroNext(tasks){
+  const n=nowMin(), timed=tasks.filter(t=>t.start_time&&!t.done).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
+  const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
+  const inTxt=m=>m<60?`za ${m} min`:`za ${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
+  const row=(lbl,t,m)=>{const k=kindOf(t.kind);return `<span class="dot" style="--kc:${k[2]}"></span><div><div class="lbl">${lbl}</div><div class="t">${esc(t.title)}</div><div class="m">${m}</div></div>`;};
+  const el=$('#hero-next');
+  el.innerHTML=cur?row('Teraz',cur,`${cur.start_time}–${cur.end_time||''}${k0(cur)}`)
+    :nxt?row('Następne',nxt,`${nxt.start_time} · ${inTxt(toMin(nxt.start_time)-n)}${k0(nxt)}`)
+    :`<span class="dot"></span><div><div class="lbl">Na dziś</div><div class="t">${tasks.length?'Plan wykonany — dobry moment na powtórkę notatek.':'Nic zaplanowanego. Dodaj pierwszy wpis.'}</div></div>`;
+  el.onclick=()=>{const t=cur||nxt; if(t)viewTask(t.id);}; el.style.cursor=(cur||nxt)?'pointer':'';
+}
+const k0=t=>t.kind?' · '+esc(t.kind):'';
+function renderPulpitTasks(tasks){
+  const n=nowMin(), done=tasks.filter(t=>t.done).length;
+  $('#door-plan-sub').textContent=tasks.length?`${tasks.length} ${plural(tasks.length,'wpis','wpisy','wpisów')} dziś · ${done} zrobione`:'Dziś nic nie zaplanowano';
+  const el=$('#pulpit-tasks');
+  if(!tasks.length){el.innerHTML=`<div class="empty-cta">Pusty dzień — zaplanuj coś. <button class="btn sm" onclick="openTask(null,todayISO())">+ Dodaj wpis</button></div>`;return;}
+  el.innerHTML=tasks.map(t=>{const k=kindOf(t.kind), [a,b]=t.start_time?evSpan(t):[0,0];
+    const isNow=t.start_time&&a<=n&&n<b, past=t.start_time&&b<=n;
+    return `<div class="tl-row${past?' past':''}${t.done?' done':''}" style="--kc:${k[2]}" onclick="viewTask(${t.id})">
+      <span class="tm">${t.start_time||'—'}</span><span class="bar"></span><span class="kic">${kico(k)}</span>
+      <span><div class="tt">${esc(t.title)}</div><div class="tk">${esc(k[0]||'Wpis')}${t.end_time?' · do '+t.end_time:''}</div></span>
+      ${isNow?'<span class="now">teraz</span>':'<span></span>'}</div>`;}).join('');
+}
+function renderRecentNotes(notes,nbs){
+  const nb=Object.fromEntries(nbs.map(x=>[x.id,x]));
+  const list=notes.filter(x=>nb[x.notebook_id]).slice(0,5);
+  $('#door-notes-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Brak zeszytów';
+  const ago=iso=>{if(!iso)return'';const d=(Date.now()-new Date(iso.replace(' ','T')+'Z'))/6e4;
+    return d<60?Math.max(1,Math.round(d))+' min temu':d<1440?Math.round(d/60)+' godz. temu':Math.round(d/1440)+' dni temu';};
+  $('#pulpit-notes').innerHTML=list.length?list.map(x=>{const b=nb[x.notebook_id];
+    return `<div class="rn-row" onclick="openLinkedNote(${b.id},${x.id})"><span class="nb" style="--c:${b.color}">${esc((b.name||'?')[0].toUpperCase())}</span>
+      <span class="tt">${esc(x.title||'Bez tytułu')}</span><span class="meta"><span class="nbn">${esc(b.name)} · </span>${ago(x.updated_at)}</span></div>`;}).join('')
+    :`<div class="empty-cta">Utwórz pierwszy zeszyt i zacznij notować. <button class="btn sm" onclick="go('nauka')">Przejdź do nauki</button></div>`;
 }
 
 /* ---------- PLAN ---------- */
