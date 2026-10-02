@@ -80,7 +80,9 @@ def setup():
         if not c.execute("SELECT 1 FROM sync_state WHERE k='device_uid'").fetchone():
             c.execute("INSERT INTO sync_state VALUES('device_uid', ?)", (uuid.uuid4().hex,))
             name = socket.gethostname() or "Komputer"
-            if not os.getenv("ASYSTENT_DESKTOP"):
+            if os.getenv("ASYSTENT_WEB"):
+                name = "Wersja webowa"
+            elif not os.getenv("ASYSTENT_DESKTOP"):
                 name += " (przeglądarka)"
             c.execute("INSERT INTO sync_state VALUES('device_name', ?)", (name[:60],))
 
@@ -187,6 +189,7 @@ def apply(c, items: list[dict], applied: set | None = None) -> dict:
 
 
 def _cloud(base: str, token: str, method: str, path: str, body=None) -> dict:
+    base = os.getenv("ASYSTENT_SYNC_URL") or base   # wersja webowa: serwer kont w tym samym kontenerze, bez wychodzenia do internetu
     req = urllib.request.Request(base.rstrip("/") + path, method=method,
                                  data=None if body is None else json.dumps(body).encode("utf-8"),
                                  headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
@@ -212,7 +215,8 @@ def _cloud(base: str, token: str, method: str, path: str, body=None) -> dict:
 def _device(c) -> dict:
     st = _state(c)
     return {"uid": st["device_uid"], "name": st.get("device_name") or "Urządzenie",
-            "platform": ("Windows" if os.name == "nt" else platform.system()) + (" · aplikacja" if os.getenv("ASYSTENT_DESKTOP") else " · przeglądarka"),
+            "platform": "Przeglądarka · bte-poland.pl" if os.getenv("ASYSTENT_WEB") else
+                ("Windows" if os.name == "nt" else platform.system()) + (" · aplikacja" if os.getenv("ASYSTENT_DESKTOP") else " · przeglądarka"),
             "summary": summary(c)}
 
 

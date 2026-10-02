@@ -22,7 +22,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
 DB_PATH = Path(os.getenv("CLOUD_DB") or Path(__file__).parent / "cloud.db")
@@ -549,3 +549,25 @@ def sync_forget_device(uid: str, u=Depends(current_user)):
     with db() as c:
         c.execute("DELETE FROM devices WHERE user_id=? AND device_uid=?", (u["id"], uid))
     return {"ok": True}
+
+
+# ---------- wersja webowa aplikacji pod /app (web.py z katalogu projektu) ----------
+def _web_user(token: str):
+    if not token:
+        return None
+    with db() as c:
+        r = c.execute("SELECT user_id FROM sessions WHERE token_hash=? AND expires>?", (_th(token), time.time())).fetchone()
+    return r["user_id"] if r else None
+
+
+try:
+    os.environ.setdefault("WEB_DATA", str(DB_PATH.parent / "web"))
+    import web as _web   # noqa: E402
+
+    @app.get("/app", include_in_schema=False)
+    def _app_slash():   # względne przekierowanie: za nginx (/asystent/app → /app) zachowuje prefiks
+        return Response(status_code=301, headers={"Location": "app/"})
+
+    app.mount("/app", _web.make_app(_web_user))
+except ImportError:   # obraz bez plików aplikacji — sam serwer kont
+    pass

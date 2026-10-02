@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Asystent</title>
-<link rel="icon" type="image/png" href="/logo.png">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0b0b14">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2313,7 +2313,7 @@ body.on-start .c-time{display:none}
 
 <script>
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const api=async(u,o)=>{const r=await fetch('/api'+u,o&&{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});return r.json();};
+const api=async(u,o)=>{const r=await fetch('api'+u,o&&{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});return r.json();};
 const zl=n=>new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(n||0);
 const todayISO=()=>new Date().toLocaleDateString('sv');           // YYYY-MM-DD lokalnie
 const dlong=iso=>new Date(iso+'T00:00').toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -3306,7 +3306,7 @@ async function checkPayReminders(){
     const key='payrem_'+x.id+'_'+x.due_date+'_'+day;
     try{if(localStorage.getItem(key))return;localStorage.setItem(key,'1');}catch(_){}
     const body=`${whenTxt(x.days_left)[0].toUpperCase()+whenTxt(x.days_left).slice(1)} (${dShort(x.due_date)})${x.amount?' · '+zl(x.amount):''}`;
-    if(window.Notification&&Notification.permission==='granted'){try{new Notification('Płatność: '+x.name,{body,icon:'/icon-192.png',tag:key});}catch(_){}}
+    if(window.Notification&&Notification.permission==='granted'){try{new Notification('Płatność: '+x.name,{body,icon:'icon-192.png',tag:key});}catch(_){}}
     payToast(x,body);
   });
 }
@@ -3466,7 +3466,7 @@ window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
 /* ===== KONTA: logowanie, profil, znajomi, udostępnianie (serwer kont: cloud/) ===== */
 const LS={get:k=>{try{return localStorage.getItem(k);}catch(_){return null;}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(_){}}};
 let ME=null, FR=null, authTab='login';
-const cloudUrl=()=>APP.cloud_url||'https://bte-poland.pl/asystent';
+const cloudUrl=()=>APP.web?location.origin+location.pathname.replace(/\/app\/.*$/,''):(APP.cloud_url||'https://bte-poland.pl/asystent');   // wersja webowa: serwer kont pod tym samym adresem
 async function cloud(path,{method='GET',body}={}){
   let r; const tok=LS.get('asys_token');
   try{ r=await fetch(cloudUrl()+path,{method,headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},body:body?JSON.stringify(body):undefined}); }
@@ -3505,7 +3505,7 @@ const uniDomain=n=>{if(!n)return'';const k=norm(n);const hit=UNIS.find(u=>norm(u
 function uniLogo(name,size=28){
   if(!name)return'';
   const d=uniDomain(name), mono=esc(name.split(/\s+/).filter(w=>w.length>2&&w[0]===w[0].toUpperCase()).map(w=>w[0]).join('').slice(0,3)||name[0]);
-  return `<span class="ulogo${d?'':' no'}" style="--s:${size}px" title="${escAttr(name)}">${d?`<img src="/api/unilogo/${d}" alt="" loading="lazy" onerror="this.parentNode.classList.add('no')">`:''}<b>${mono}</b></span>`;
+  return `<span class="ulogo${d?'':' no'}" style="--s:${size}px" title="${escAttr(name)}">${d?`<img src="api/unilogo/${d}" alt="" loading="lazy" onerror="this.parentNode.classList.add('no')">`:''}<b>${mono}</b></span>`;
 }
 function eduHTML(u,size=28){const t=studyLine(u);return t?`<div class="edu">${u.university?uniLogo(u.university,size):''}<span>${esc(t)}</span></div>`:'';}
 
@@ -3538,7 +3538,7 @@ function renderAccount(){
   if(!ME){
     const reg=authTab==='register';
     $('#acc').innerHTML=`<div class="auth-stage">
-      <div class="auth-brand"><div class="auth-logo"><img src="/logo.png" alt=""></div><h1>${reg?'Dołącz do Asystenta':'Witaj w Asystencie'}</h1>
+      <div class="auth-brand"><div class="auth-logo"><img src="logo.png" alt=""></div><h1>${reg?'Dołącz do Asystenta':'Witaj w Asystencie'}</h1>
         <p>${reg?'Załóż konto, żeby dodawać znajomych i wymieniać się notatkami.':'Zaloguj się, aby udostępniać notatki znajomym.'}</p></div>
       <div class="auth-card glass">
       <div class="seg"><button class="${reg?'':'on'}" onclick="authTab='login';renderAccount()">Logowanie</button><button class="${reg?'on':''}" onclick="authTab='register';renderAccount()">Załóż konto</button></div>
@@ -3586,7 +3586,9 @@ async function authSubmit(){
     if(authTab==='register')popout({icon:'ok',title:'Witaj, '+ME.display_name.split(' ')[0]+'!',text:'Konto gotowe. Znajomych dodasz po ich adresie e-mail w zakładce Znajomi.'});
   }catch(e){err.textContent=e.message;}
 }
-async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} clearInterval(SYNC.timer); api('/sync/reset',{method:'POST'}).catch(()=>{}); LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
+async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){}
+  if(APP.web){LS.set('asys_token',null);document.cookie='asys_web=;path='+location.pathname.replace(/[^/]*$/,'')+';max-age=0';location.reload();return;}   // wersja webowa: z powrotem do strony logowania
+  clearInterval(SYNC.timer); api('/sync/reset',{method:'POST'}).catch(()=>{}); LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
 async function saveProfile(){
   try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value,university:_cbUni.get()||'',field:_cbField.get()||'',study_year:window._cbYear?_cbYear.get():''}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
   catch(e){popout({icon:'warn',title:'Nie zapisano profilu',text:e.message});}
@@ -3852,7 +3854,7 @@ async function syncNow(manual){
   if(!ME||SYNC.busy)return; const tok=LS.get('asys_token'); if(!tok)return;
   SYNC.busy=true; paintSyncBtn();
   try{
-    const r=await fetch('/api/sync/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cloud:cloudUrl(),token:tok})});
+    const r=await fetch('api/sync/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cloud:cloudUrl(),token:tok})});
     const d=await r.json(); if(!r.ok)throw new Error(d.detail||'Błąd '+r.status);
     SYNC.last=d;
     const changed=d.added+d.updated+d.deleted;
@@ -3949,7 +3951,7 @@ const ICON_SH={note:['var(--accent-2)','<path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h
 async function loadFriends(){
   const el=$('#fr');
   $('#view-znajomi .head').hidden=!ME;
-  if(!ME){el.innerHTML=`<div class="auth-stage"><div class="auth-brand"><div class="auth-logo"><img src="/logo.png" alt=""></div><h1>Znajomi</h1>
+  if(!ME){el.innerHTML=`<div class="auth-stage"><div class="auth-brand"><div class="auth-logo"><img src="logo.png" alt=""></div><h1>Znajomi</h1>
       <p>Dodawaj znajomych, wysyłaj im notatki i całe zeszyty,<br>importuj to, co udostępnią Tobie.</p></div>
       <div class="auth-card glass" style="text-align:center"><p style="color:var(--ink-soft);margin-bottom:16px">Do tego potrzebne jest konto — zajmie chwilę.</p>
       <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
@@ -5389,7 +5391,7 @@ async function aiNoteFromBlock(id,btnEl){
   }
   const oldHTML=btnEl?btnEl.innerHTML:''; if(btnEl){btnEl.classList.add('busy');btnEl.innerHTML='⏳ AI…';}
   try{
-    const res=await fetch('/api/ai/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,topic})});
+    const res=await fetch('api/ai/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,topic})});
     const data=await res.json();
     if(!res.ok) throw new Error(data.detail||('Błąd '+res.status));
     insertAiBlock(id,data.html);
@@ -5847,7 +5849,7 @@ function buildEmbed(d,b){
       up.textContent='⬆ Wgrywanie…'; up.disabled=true;
       const rd=new FileReader();
       rd.onload=async()=>{ try{
-          const res=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,data:rd.result})});
+          const res=await fetch('api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,data:rd.result})});
           const data=await res.json(); if(!res.ok)throw new Error(data.detail||'Błąd wgrywania');
           b.url=data.url; inp.value=data.url; render(); scheduleSave();
         }catch(err){alert('Nie udało się wgrać pliku:\n'+err.message);}

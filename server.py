@@ -22,7 +22,6 @@ from typing import Any
 from datetime import date
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from db import init_db, get_conn, rows, DATA_DIR, DB_PATH
@@ -32,9 +31,15 @@ init_db()
 
 # pliki aplikacji (w .exe rozpakowane do sys._MEIPASS), dane użytkownika w DATA_DIR
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
-UPLOAD_DIR = DATA_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+UPLOAD_DIR = DATA_DIR / "uploads"   # względem bieżącego katalogu danych (w wersji webowej — konta)
+
+
+@app.get("/uploads/{name}")
+def serve_upload(name: str):
+    f = UPLOAD_DIR / os.path.basename(name)
+    if not f.exists():
+        raise HTTPException(404, "Nie ma takiego pliku.")
+    return FileResponse(f.path())
 
 
 @app.get("/")
@@ -59,10 +64,10 @@ def manifest():
     """Instalacja na telefonie („Dodaj do ekranu głównego”)."""
     return Response(json.dumps({
         "name": "Asystent studenta", "short_name": "Asystent", "lang": "pl",
-        "start_url": "/", "scope": "/", "display": "standalone",
+        "start_url": "./", "scope": "./", "display": "standalone",
         "background_color": "#0b0b14", "theme_color": "#0b0b14",
-        "icons": [{"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-                  {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}],
+        "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+                  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}],
     }, ensure_ascii=False), media_type="application/manifest+json")
 
 
@@ -437,8 +442,9 @@ def upload_file(u: Upload):
         raise HTTPException(400, "Dozwolone: PDF lub obraz.")
     safe = re.sub(r"[^a-zA-Z0-9._-]", "_", os.path.basename(u.filename))[:60] or ("plik" + ext)
     name = uuid.uuid4().hex[:10] + "_" + safe
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     (UPLOAD_DIR / name).write_bytes(blob)
-    return {"url": "/uploads/" + name, "name": u.filename}
+    return {"url": "uploads/" + name, "name": u.filename}   # względny: działa pod / i pod /asystent/app/
 
 
 # ---------- AI: notatka z Gemini 2.0 Flash ----------
@@ -868,9 +874,7 @@ def import_data(u: ImportData):
                 d = DATA_DIR / "recordings" / rid
                 d.mkdir(parents=True, exist_ok=True)
                 (d / os.path.basename(name)).write_bytes(b)
-    init_db()   # migracje, jeśli kopia jest ze starszej wersji
-    import zadania as _z, finanse as _f, sync as _s   # noqa: F401  (tabele i triggery w nowej bazie)
-    _s.setup()
+    init_all()   # migracje, tabele i triggery, jeśli kopia jest ze starszej wersji
     return {"ok": True, "uploads": sum(n.startswith("uploads/") for n in files)}
 
 
@@ -904,7 +908,7 @@ def summary():
 def config():
     cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "https://bte-poland.pl/asystent")
     return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/"),
-            "version": aktualizacje.app_version(), "windows": os.name == "nt"}
+            "version": aktualizacje.app_version(), "windows": os.name == "nt", "web": bool(os.getenv("ASYSTENT_WEB"))}
 
 
 class CloudUrl(BaseModel):
@@ -928,6 +932,16 @@ import finanse   # noqa: E402
 import zadania   # noqa: E402
 import aktualizacje   # noqa: E402
 import sync   # noqa: E402
+
+
+def init_all():
+    """Wszystkie tabele, migracje i triggery synchronizacji dla bieżącego katalogu danych."""
+    init_db()
+    finanse.init()
+    zadania.init()
+    sync.setup()
+
+
 sync.setup()   # po utworzeniu wszystkich tabel (finanse, zadania)
 app.include_router(nagrania.router)
 app.include_router(usos.router)
