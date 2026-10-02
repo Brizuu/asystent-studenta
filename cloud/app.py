@@ -86,6 +86,11 @@ def db() -> sqlite3.Connection:
 
 with db() as _c:
     _c.executescript(SCHEMA)
+    # migracje: kolumny dodane później (istniejące konta zostają)
+    _have = {r[1] for r in _c.execute("PRAGMA table_info(users)")}
+    for _col in ("university", "field", "study_year"):
+        if _col not in _have:
+            _c.execute(f"ALTER TABLE users ADD COLUMN {_col} TEXT DEFAULT ''")
 
 
 # ---------- hasła i sesje (stdlib: scrypt + losowe tokeny, w bazie tylko ich hash) ----------
@@ -141,7 +146,8 @@ def rate_limit(request: Request, limit: int = 10, window: int = 300, record: boo
 
 def public(u, full=False) -> dict:
     # e-mail widoczny dla znajomych — po nim się wyszukują
-    d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"], "email": u["email"]}
+    d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"], "email": u["email"],
+         "university": u["university"] or "", "field": u["field"] or "", "study_year": u["study_year"] or ""}
     if full:
         d.update(bio=u["bio"], created_at=u["created_at"])
     return d
@@ -214,6 +220,9 @@ def me(u=Depends(current_user)):
 class Profile(BaseModel):
     display_name: str | None = None
     bio: str | None = None
+    university: str | None = None
+    field: str | None = None
+    study_year: str | None = None
     avatar: str | None = None       # data:image/...;base64,… albo "" (usuń)
 
 
@@ -224,6 +233,10 @@ def update_me(p: Profile, u=Depends(current_user)):
         f["display_name"] = " ".join(p.display_name.split())[:60] or u["display_name"]
     if p.bio is not None:
         f["bio"] = p.bio.strip()[:300]
+    for k in ("university", "field", "study_year"):
+        v = getattr(p, k)
+        if v is not None:
+            f[k] = " ".join(v.split())[:80]
     if p.avatar is not None:
         if p.avatar and (not re.match(r"^data:image/(png|jpeg|webp);base64,", p.avatar) or len(p.avatar) > MAX_AVATAR):
             raise HTTPException(400, "Avatar: obraz PNG/JPG/WebP, do ok. 200 KB.")
