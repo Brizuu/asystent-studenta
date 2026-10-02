@@ -461,7 +461,7 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
     """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu."""
     key = _gemini_key()
     if not key:
-        raise GeminiError(400, "Brak klucza Gemini. Zapisz go w pliku .gemini_key lub ustaw zmienną GEMINI_API_KEY.")
+        raise GeminiError(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
     body = json.dumps({
         "contents": [{"parts": parts}],
         "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
@@ -494,15 +494,14 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
         raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
 
 
-@app.post("/api/ai/note")
-def ai_note(a: AINote):
-    key = _gemini_key()
-    if not key:
-        raise HTTPException(400, "Brak klucza Gemini. Zapisz go w pliku .gemini_key lub ustaw zmienną GEMINI_API_KEY.")
-    if not a.text.strip():
-        raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
-
-    topic = a.topic.strip()
+def _note_prompt(text: str, topic: str, fmt: str = "html") -> str:
+    fmt_rule = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
+                "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>. "
+                "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
+                "Nie dodawaj komentarzy, wstępu ani znaczników ```.\n\n") if fmt == "html" else (
+               "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (nagłówki ###, listy -, **pogrubienia**). "
+               "Bez wstępu i komentarzy.\n\n")
+    topic = topic.strip()
     topic_line = (f"Temat przewodni podany przez studenta: „{topic}”. Trzymaj się go.\n"
                   if topic else
                   "Temat nie został podany — sam rozpoznaj główny temat na podstawie treści.\n")
@@ -519,12 +518,94 @@ def ai_note(a: AINote):
         "- Uporządkuj: krótki tytuł (nagłówek), wprowadzenie, sekcje tematyczne, listy punktowane, "
         "pogrubione kluczowe pojęcia, a na końcu sekcję „Najważniejsze do zapamiętania”.\n"
         "- Jeśli czegoś brakuje w wypowiedzi, nie zmyślaj faktów.\n"
-        "Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
-        "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>. "
-        "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
-        "Nie dodawaj komentarzy, wstępu ani znaczników ```.\n\n"
-        "Treść do przetworzenia:\n" + a.text
+        + fmt_rule +
+        "Treść do przetworzenia:\n" + text
     )
+
+    return prompt
+
+
+class NotePrompt(BaseModel):
+    text: str
+    topic: str = ""
+
+
+@app.post("/api/ai/note/prompt")
+def ai_note_prompt(a: NotePrompt):
+    """Tryb bez klucza: gotowe polecenie do wklejenia w zwykły czat (Gemini/ChatGPT)."""
+    if not a.text.strip():
+        raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
+    return {"prompt": _note_prompt(a.text, a.topic, "markdown")}
+
+
+# ---------- USTAWIENIA: połączenie z AI ----------
+SETTINGS = DATA_DIR / "settings.json"
+
+
+def _settings() -> dict:
+    try:
+        return json.loads(SETTINGS.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+class AiSettings(BaseModel):
+    key: str | None = None        # nowy klucz Gemini ("" = usuń)
+    mode: str | None = None       # key | chat
+    chat: str | None = None       # gemini | chatgpt
+
+
+@app.get("/api/settings/ai")
+def get_ai_settings():
+    k = _gemini_key()
+    st = _settings()
+    return {"has_key": bool(k), "masked": (k[:4] + "…" + k[-4:]) if k and len(k) > 10 else ("•••" if k else ""),
+            "from_env": bool(os.getenv("GEMINI_API_KEY")), "mode": st.get("mode", "key"), "chat": st.get("chat", "gemini")}
+
+
+@app.post("/api/settings/ai")
+def set_ai_settings(p: AiSettings):
+    st = _settings()
+    if p.mode in ("key", "chat"):
+        st["mode"] = p.mode
+    if p.chat in ("gemini", "chatgpt"):
+        st["chat"] = p.chat
+    SETTINGS.write_text(json.dumps(st), encoding="utf-8")
+    kf = DATA_DIR / ".gemini_key"
+    if p.key is not None:
+        k = _norm_key(p.key)
+        if not k:
+            kf.unlink(missing_ok=True)
+        else:
+            if not re.fullmatch(r"[A-Za-z0-9_\-]{20,}", k):
+                raise HTTPException(400, "To nie wygląda na klucz Gemini (zwykle zaczyna się od „AIza…”).")
+            kf.write_text(k, encoding="utf-8")
+    return get_ai_settings()
+
+
+@app.post("/api/settings/ai/test")
+def test_ai():
+    try:
+        out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=10, temperature=0, timeout=30, tries=1)
+        return {"ok": True, "reply": out.strip()[:40]}
+    except GeminiError as e:
+        msg = e.msg
+        if e.status in (400, 403) and "API key" in msg:
+            msg = "Klucz jest nieprawidłowy albo wyłączony. Skopiuj go jeszcze raz z Google AI Studio."
+        elif e.status == 429:
+            msg = "Klucz działa, ale chwilowo przekroczono limit. Spróbuj za minutę."
+        return {"ok": e.status == 429, "error": msg}
+
+
+@app.post("/api/ai/note")
+def ai_note(a: AINote):
+    key = _gemini_key()
+    if not key:
+        raise HTTPException(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
+    if not a.text.strip():
+        raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
+
+    prompt = _note_prompt(a.text, a.topic)
 
     try:
         out = gemini([{"text": prompt}], max_tokens=4096, temperature=0.4)
