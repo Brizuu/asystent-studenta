@@ -67,6 +67,27 @@ CREATE TABLE IF NOT EXISTS friendships (
     created_at TEXT DEFAULT (datetime('now')),
     UNIQUE(requester, addressee)
 );
+CREATE TABLE IF NOT EXISTS sync_items (
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tbl        TEXT NOT NULL,
+    uid        TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted    INTEGER DEFAULT 0,
+    data       TEXT,
+    seq        INTEGER NOT NULL,
+    device     TEXT DEFAULT '',
+    PRIMARY KEY (user_id, tbl, uid)
+);
+CREATE INDEX IF NOT EXISTS ix_sync_seq ON sync_items(user_id, seq);
+CREATE TABLE IF NOT EXISTS devices (
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_uid TEXT NOT NULL,
+    name       TEXT DEFAULT '',
+    platform   TEXT DEFAULT '',
+    summary    TEXT DEFAULT '{}',
+    last_seen  TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, device_uid)
+);
 CREATE TABLE IF NOT EXISTS shares (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     sender     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -429,3 +450,90 @@ def admin_reset_password(uid: int, a=Depends(admin_user)):
         c.execute("UPDATE users SET pw_hash=? WHERE id=?", (hash_pw(pw), uid))
         c.execute("DELETE FROM sessions WHERE user_id=?", (uid,))   # stare logowania tracą ważność
     return {"password": pw, "email": u["email"], "display_name": u["display_name"]}
+
+
+# ---------- synchronizacja urządzeń (dane z aplikacji jednego konta) ----------
+SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes"}
+MAX_SYNC_ITEM = 2_000_000       # jedna notatka (JSON bloków)
+MAX_SYNC_USER = 200_000_000     # łączny rozmiar danych konta
+
+
+class SyncDevice(BaseModel):
+    uid: str
+    name: str = ""
+    platform: str = ""
+    summary: dict = {}
+
+
+class SyncItem(BaseModel):
+    tbl: str
+    uid: str
+    updated_at: str
+    deleted: bool = False
+    data: dict | None = None
+
+
+class SyncPush(BaseModel):
+    device: SyncDevice
+    items: list[SyncItem] = []
+
+
+@app.post("/sync/push")
+def sync_push(p: SyncPush, u=Depends(current_user)):
+    if len(p.items) > 2000:
+        raise HTTPException(413, "Za dużo zmian w jednej paczce.")
+    accepted = 0
+    with db() as c:
+        c.execute("""INSERT INTO devices(user_id, device_uid, name, platform, summary, last_seen) VALUES(?,?,?,?,?,datetime('now'))
+                     ON CONFLICT(user_id, device_uid) DO UPDATE SET name=excluded.name, platform=excluded.platform,
+                     summary=excluded.summary, last_seen=excluded.last_seen""",
+                  (u["id"], p.device.uid[:64], p.device.name[:60], p.device.platform[:60], json.dumps(p.device.summary)[:4000]))
+        used = c.execute("SELECT COALESCE(SUM(LENGTH(data)),0) FROM sync_items WHERE user_id=?", (u["id"],)).fetchone()[0]
+        seq = c.execute("SELECT COALESCE(MAX(seq),0) FROM sync_items WHERE user_id=?", (u["id"],)).fetchone()[0]
+        for it in p.items:
+            if it.tbl not in SYNC_TABLES or not it.uid or len(it.uid) > 64:
+                continue
+            data = None if it.deleted else json.dumps(it.data or {}, ensure_ascii=False)
+            if data and len(data) > MAX_SYNC_ITEM:
+                raise HTTPException(413, "Jedna z notatek jest za duża do synchronizacji.")
+            old = c.execute("SELECT updated_at FROM sync_items WHERE user_id=? AND tbl=? AND uid=?", (u["id"], it.tbl, it.uid)).fetchone()
+            if old and old["updated_at"] >= it.updated_at:
+                continue   # serwer ma tę samą albo nowszą wersję
+            used += len(data or "")
+            if used > MAX_SYNC_USER:
+                raise HTTPException(413, "Przekroczono limit danych synchronizacji na koncie.")
+            seq += 1
+            c.execute("""INSERT INTO sync_items(user_id, tbl, uid, updated_at, deleted, data, seq, device) VALUES(?,?,?,?,?,?,?,?)
+                         ON CONFLICT(user_id, tbl, uid) DO UPDATE SET updated_at=excluded.updated_at, deleted=excluded.deleted,
+                         data=excluded.data, seq=excluded.seq, device=excluded.device""",
+                      (u["id"], it.tbl, it.uid, it.updated_at, int(it.deleted), data, seq, p.device.uid[:64]))
+            accepted += 1
+    return {"accepted": accepted, "seq": seq}
+
+
+@app.get("/sync/pull")
+def sync_pull(since: int = 0, device: str = "", u=Depends(current_user)):
+    limit = 1000
+    with db() as c:
+        rows = c.execute("SELECT * FROM sync_items WHERE user_id=? AND seq>? ORDER BY seq LIMIT ?", (u["id"], since, limit + 1)).fetchall()
+    more = len(rows) > limit
+    rows = rows[:limit]
+    items = [{"tbl": r["tbl"], "uid": r["uid"], "updated_at": r["updated_at"], "deleted": bool(r["deleted"]),
+              "data": json.loads(r["data"]) if r["data"] else None} for r in rows if r["device"] != device]
+    return {"items": items, "cursor": rows[-1]["seq"] if rows else since, "more": more}
+
+
+@app.get("/sync/devices")
+def sync_devices(u=Depends(current_user)):
+    with db() as c:
+        rows = c.execute("SELECT * FROM devices WHERE user_id=? ORDER BY last_seen DESC", (u["id"],)).fetchall()
+        total = c.execute("SELECT COUNT(*) FROM sync_items WHERE user_id=? AND deleted=0", (u["id"],)).fetchone()[0]
+    return {"devices": [{"uid": r["device_uid"], "name": r["name"], "platform": r["platform"], "last_seen": r["last_seen"],
+                         "summary": json.loads(r["summary"] or "{}")} for r in rows], "items": total}
+
+
+@app.delete("/sync/devices/{uid}")
+def sync_forget_device(uid: str, u=Depends(current_user)):
+    with db() as c:
+        c.execute("DELETE FROM devices WHERE user_id=? AND device_uid=?", (u["id"], uid))
+    return {"ok": True}
