@@ -390,9 +390,9 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .sh-ic svg{width:18px;height:18px;stroke:var(--c);fill:none;stroke-width:1.8}
 .empty-soft{padding:18px;color:var(--ink-dim);font-size:14px;text-align:center}
 .pick-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;margin:6px 0 4px}
-.pick{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.03);text-align:left}
-.pick:hover{background:rgba(255,255,255,.06)} .pick input{width:18px!important;height:18px;flex:none;padding:0;margin:0;accent-color:var(--accent)}
-.pick .who{flex:1}
+.fpick{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.03);text-align:left}
+.fpick:hover{background:rgba(255,255,255,.06)} .fpick input{width:18px!important;height:18px;flex:none;padding:0;margin:0;accent-color:var(--accent)}
+.fpick .who{flex:1}
 .pv{max-height:62vh;overflow:auto;padding:4px 2px;line-height:1.6}
 .pv h3.pvh{font-size:19px;margin:16px 0 6px} .pv .pvb{margin:8px 0} .pv table{border-collapse:collapse;margin:8px 0} .pv td{border:1px solid var(--line);padding:5px 9px}
 .pv pre{background:rgba(0,0,0,.3);padding:10px 12px;border-radius:10px;overflow:auto;font-size:13px}
@@ -2423,11 +2423,11 @@ async function shareCurrent(kind){
   }
   $('#modal').style.maxWidth='460px';
   $('#modal').innerHTML=`<h3>Udostępnij ${kind==='note'?'notatkę':'zeszyt'}</h3><div class="msub">„${esc(title)}” — wybierz, komu wysłać kopię.</div>
-    <div class="pick-list">${FR.friends.map(f=>`<label class="pick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">@${esc(f.username)}</small></span></label>`).join('')}</div>
+    <div class="pick-list">${FR.friends.map(f=>`<label class="fpick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">@${esc(f.username)}</small></span></label>`).join('')}</div>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="sh-go">Wyślij</button></div>`;
   openModal();
   $('#sh-go').onclick=async()=>{
-    const to=$$('.pick input:checked').map(i=>+i.value); if(!to.length)return;
+    const to=$$('.fpick input:checked').map(i=>+i.value); if(!to.length)return;
     try{const r=await cloud('/shares',{method:'POST',body:{to,kind,title,payload}}); closeModal();
       popout({icon:'ok',title:'Udostępniono',text:`${kind==='note'?'Notatka':'Zeszyt'} „${title}” → ${r.sent} ${plural(r.sent,'osoba','osoby','osób')}.`,hint:'Znajomi zobaczą to u siebie w zakładce Znajomi.'});}
     catch(e){popout({icon:'warn',title:'Nie udostępniono',text:e.message});}
