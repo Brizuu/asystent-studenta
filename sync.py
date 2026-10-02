@@ -36,6 +36,7 @@ TABLES = {
 }
 REQUIRED_FK = {("note_groups", "notebook_id"), ("notes", "notebook_id"), ("todo_items", "list_id"), ("todo_checks", "item_id")}
 NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Asystent-sync"
 
 
 def _now() -> str:
@@ -188,15 +189,21 @@ def apply(c, items: list[dict], applied: set | None = None) -> dict:
 def _cloud(base: str, token: str, method: str, path: str, body=None) -> dict:
     req = urllib.request.Request(base.rstrip("/") + path, method=method,
                                  data=None if body is None else json.dumps(body).encode("utf-8"),
-                                 headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+                                 headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
+                                          # Cloudflare (Browser Integrity Check / Bot Fight) blokuje domyślny „Python-urllib”
+                                          "User-Agent": UA, "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
+        raw = e.read().decode("utf-8", "replace")
         try:
-            msg = json.loads(e.read().decode("utf-8")).get("detail")
+            msg = json.loads(raw).get("detail")
         except Exception:
             msg = None
+            if e.code in (403, 503) and ("cloudflare" in raw.lower() or "cf-" in raw.lower()):
+                msg = ("Cloudflare zablokował połączenie z serwerem kont. W panelu Cloudflare dodaj regułę "
+                       "pomijającą ochronę dla ścieżki /asystent/ (Security → WAF → Custom rules → Skip).")
         raise HTTPException(e.code if e.code in (400, 401, 403, 413) else 502, msg or f"Serwer kont: błąd {e.code}")
     except Exception as e:
         raise HTTPException(502, f"Nie udało się połączyć z serwerem kont: {e}")
