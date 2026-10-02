@@ -107,6 +107,14 @@ def list_tasks(day: str | None = None, month: str | None = None):
         return rows(cur)
 
 
+@app.get("/api/tasks/next-day")
+def next_day(after: str):
+    """Najbliższy dzień po `after`, w którym coś jest w kalendarzu (do subtelnej zapowiedzi na pulpicie)."""
+    with get_conn() as c:
+        r = c.execute("SELECT MIN(date) d FROM tasks WHERE date>?", (after,)).fetchone()
+    return {"date": r["d"], "tasks": list_tasks(day=r["d"])} if r["d"] else {}
+
+
 @app.post("/api/tasks")
 def add_task(t: Task):
     with get_conn() as c:
