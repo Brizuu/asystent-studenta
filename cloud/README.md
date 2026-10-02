@@ -18,7 +18,9 @@ Lokalny serwer: uruchom aplikację z `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` 
 python cloud/demo.py twoj@email.pl
 ```
 Zakłada konto „Anna Testowa”, wysyła Ci zaproszenie, po jego akceptacji w aplikacji udostępnia
-Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do ## Produkcja: https://zenfix.pl/asystent (za nginx)
+Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do testu w drugą stronę).
+
+## Produkcja: https://bte-poland.pl/asystent (za nginx)
 
 API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HTTPS obsługuje istniejący nginx.
 
@@ -27,9 +29,9 @@ API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HT
    curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
    ```
    albo z wgranego folderu: `bash deploy.sh` (opcjonalnie: `bash deploy.sh admin1@mail.pl,admin2@mail.pl 8100`).
-2. **nginx** — wklej zawartość `nginx-asystent.conf` do bloku `server { … }` domeny zenfix.pl (tego z SSL), potem
-   `sudo nginx -t && sudo systemctl reload nginx`. Sprawdzenie: `curl https://zenfix.pl/asystent/health` → `{"ok":true}`.
-3. **Aplikacja** łączy się z `https://zenfix.pl/asystent` domyślnie (od wersji 1.1.1). Do testów lokalnych:
+2. **nginx** — wklej zawartość `nginx-asystent.conf` do bloku `server { … }` domeny bte-poland.pl (tego z SSL), potem
+   `sudo nginx -t && sudo systemctl reload nginx`. Sprawdzenie: `curl https://bte-poland.pl/asystent/health` → `{"ok":true}`.
+3. **Aplikacja** łączy się z `https://bte-poland.pl/asystent` domyślnie (od wersji 1.1.2). Do testów lokalnych:
    zmienna `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo link „zmień” pod logowaniem.
 
 **Aktualizacja:** ta sama komenda co przy instalacji (dane zostają w wolumenie `cloud-data`).
