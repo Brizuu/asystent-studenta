@@ -213,6 +213,10 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 #view-pulpit[data-tod=evening]{--g1:#fff;--g2:#ffd2c8;--g3:#d9b8ff}
 #view-pulpit[data-tod=night]{--g1:#f4f2ff;--g2:#d6d9ff;--g3:#a9b2ff}
 .wl-clock{text-align:right;flex:none}
+.tod-test{display:block;margin:8px 0 0 auto;padding:4px 10px;border-radius:99px;border:1px dashed rgba(255,255,255,.28);background:transparent;
+  color:rgba(255,255,255,.7);font:inherit;font-size:11.5px;cursor:pointer;transition:background .15s,color .15s}
+.tod-test:hover{background:rgba(255,255,255,.08);color:#fff} .tod-test.on{border-style:solid;background:rgba(255,255,255,.12);color:#fff}
+@media(max-width:600px){.tod-test{margin-left:0}}
 @media(max-width:600px){.sky .orb{width:72px;height:72px;margin:-36px 0 0 -36px}.sky[data-tod=night] .orb{width:60px;height:60px;margin:-30px 0 0 -30px}}
 .ck-time{font-size:clamp(48px,5.4vw,72px);font-weight:200;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.3)}
 .ck-tod{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;
@@ -1830,6 +1834,7 @@ body.on-start .c-time{display:none}
         <div class="wl-clock">
           <div class="ck-time" id="ck-time"></div>
           <div class="ck-tod"><svg class="ck-ico" viewBox="0 0 24 24" id="ck-ico"></svg><span id="ck-tod"></span></div>
+          <button class="tod-test" id="tod-test" onclick="cycleTod()" title="Test: podgląd innych pór dnia">Pora dnia: auto</button>
         </div>
       </div>
       <div class="portals">
@@ -2254,6 +2259,14 @@ async function loadPulpit(){
   if(last){lb.textContent='Ostatnio: '+(last.title||'Bez tytułu'); lb.onclick=e=>{e.stopPropagation();openLinkedNote(last.notebook_id,last.id);};}
 }
 setInterval(()=>{ if($('#view-pulpit').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))loadPulpit(); },60000);   // słońce i „następne” idą z czasem
+/* test: przełącznik pory dnia (auto → poranek → dzień → wieczór → noc) */
+let todOverride=null;
+function cycleTod(){
+  const seq=[null,'morning','day','evening','night'];
+  todOverride=seq[(seq.indexOf(todOverride)+1)%seq.length];
+  $('#tod-test').textContent='Pora dnia: '+(todOverride?TOD[todOverride][0].toLowerCase():'auto');
+  $('#tod-test').classList.toggle('on',!!todOverride); paintTime();
+}
 const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes();};
 /* pora dnia → niebo, słońce/księżyc na łuku, powitanie, zegar */
 const TOD={morning:['Poranek','Dzień dobry','<circle cx="12" cy="14" r="4"/><path d="M3 18h18M12 4v3M5.6 8.6l1.8 1.8M18.4 8.6l-1.8 1.8"/>'],
@@ -2261,7 +2274,8 @@ const TOD={morning:['Poranek','Dzień dobry','<circle cx="12" cy="14" r="4"/><pa
   evening:['Wieczór','Dobry wieczór','<path d="M3 18h18M7 18a5 5 0 0110 0M12 8v3M6 11.5l1.5 1.5M18 11.5L16.5 13"/>'],
   night:['Noc','Dobranoc','<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>']};
 function paintTime(){
-  const d=new Date(), m=d.getHours()*60+d.getMinutes(), v=$('#view-pulpit');
+  const d=new Date(), v=$('#view-pulpit');
+  const m=todOverride?{morning:480,day:780,evening:1140,night:60}[todOverride]:d.getHours()*60+d.getMinutes();   // test: wymuszona pora dnia
   const tod=m>=300&&m<660?'morning':m<1020&&m>=660?'day':m>=1020&&m<1260?'evening':'night';
   v.dataset.tod=tod; $('#sky').dataset.tod=tod;
   const [lbl,greet,ico]=TOD[tod];
