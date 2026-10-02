@@ -1,0 +1,22 @@
+# Produkcja na VPS: serwer kont za Caddy (automatyczny HTTPS z Let's Encrypt).
+#   cp .env.example .env   # uzupełnij DOMAIN i ALLOWED_ORIGINS
+#   docker compose up -d
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - cloud-data:/data
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [api]
+volumes:
+  cloud-data:
+  caddy-data:

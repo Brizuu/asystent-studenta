@@ -349,6 +349,55 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .switch input:focus-visible+i{outline:2px solid var(--accent);outline-offset:2px}
 #chat-answer{width:100%;min-height:200px;font-family:inherit}
 #modal .actions .btn{white-space:nowrap}
+.nav-av{width:22px;height:22px;flex:none;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.nav-av svg{width:19px;height:19px} .nav-av img{width:100%;height:100%;object-fit:cover}
+.rail .bell .nav-av,.rail .bell .nav-av *{opacity:1}   /* avatar widoczny też w zwiniętym pasku */
+#nav-account.active{background:var(--glass-2);color:var(--ink)}
+.navlist button{position:relative}
+.nav-badge{position:absolute;left:28px;top:6px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--neg);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nav-badge[hidden]{display:none}
+.av{width:var(--s,44px);height:var(--s,44px);border-radius:50%;flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:calc(var(--s,44px)*.38);color:#fff;background:var(--c,#6c5fd8);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.av img{width:100%;height:100%;object-fit:cover}
+.acc-wrap,#fr{max-width:820px;display:flex;flex-direction:column;gap:18px}
+.auth-card{max-width:440px;padding:26px;border-radius:24px}
+.auth-card .seg{margin-bottom:18px}
+.auth-card .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px} .auth-card .field>span{font-size:12.5px;color:var(--ink-dim)}
+.auth-err{color:var(--neg);font-size:13.5px;min-height:18px;margin-bottom:6px}
+.auth-foot{margin-top:14px;font-size:12.5px;color:var(--ink-dim)}
+.prof{display:flex;align-items:center;gap:20px;padding:24px;border-radius:24px}
+.prof .av{--s:96px;cursor:pointer;position:relative}
+.prof .av::after{content:"Zmień";position:absolute;inset:auto 0 0 0;height:30px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:rgba(0,0,0,.45);opacity:0;transition:opacity .15s}
+.prof .av:hover::after{opacity:1}
+.prof h2{font-size:26px} .prof .un{color:var(--ink-dim);font-size:14px;margin-top:2px}
+.prof .since{color:var(--ink-dim);font-size:12.5px;margin-top:6px}
+.prof .btn{margin-left:auto}
+.form-card{padding:22px 24px;border-radius:22px}
+.form-card h3{font-size:17px;margin-bottom:14px}
+.form-card .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px} .form-card .field>span{font-size:12.5px;color:var(--ink-dim)}
+.form-card textarea{min-height:70px;resize:vertical;font-family:inherit}
+.fr-add{display:flex;gap:10px;padding:18px;border-radius:20px;flex-wrap:wrap} .fr-add input{flex:1;min-width:200px}
+.fr-sec h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);margin:4px 4px 10px}
+.fr-list{display:flex;flex-direction:column;gap:8px}
+.fr-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.fr-row.click{cursor:pointer;transition:transform .1s ease-out,background .15s} .fr-row.click:hover{background:rgba(255,255,255,.06)} .fr-row.click:active{transform:var(--press)}
+.fr-row .who{flex:1;min-width:0} .fr-row .who b{display:block} .fr-row .who small{color:var(--ink-dim);font-size:12.5px}
+.fr-row .acts{display:flex;gap:6px;flex-wrap:wrap}
+.fr-pill{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;color:var(--accent-2);background:color-mix(in srgb,var(--accent-2) 16%,transparent)}
+.fr-head{display:flex;align-items:center;gap:16px;padding:20px;border-radius:22px}
+.fr-head .who{flex:1} .fr-head h2{font-size:22px}
+.sh-ic{width:36px;height:36px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 18%,transparent)}
+.sh-ic svg{width:18px;height:18px;stroke:var(--c);fill:none;stroke-width:1.8}
+.empty-soft{padding:18px;color:var(--ink-dim);font-size:14px;text-align:center}
+.pick-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;margin:6px 0 4px}
+.pick{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.03);text-align:left}
+.pick:hover{background:rgba(255,255,255,.06)} .pick input{width:18px!important;height:18px;flex:none;padding:0;margin:0;accent-color:var(--accent)}
+.pick .who{flex:1}
+.pv{max-height:62vh;overflow:auto;padding:4px 2px;line-height:1.6}
+.pv h3.pvh{font-size:19px;margin:16px 0 6px} .pv .pvb{margin:8px 0} .pv table{border-collapse:collapse;margin:8px 0} .pv td{border:1px solid var(--line);padding:5px 9px}
+.pv pre{background:rgba(0,0,0,.3);padding:10px 12px;border-radius:10px;overflow:auto;font-size:13px}
+.pv .pvc{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.05);border-left:3px solid var(--accent)}
+.pv .muted{color:var(--ink-dim);font-size:13px;font-style:italic}
 .pop-bd{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,8,12,.45)}
 .pop-bd[hidden]{display:none}
 .pop{width:min(340px,100%);border-radius:24px;padding:24px 22px 18px;text-align:center;color:var(--ink);
@@ -1249,7 +1298,12 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg>
         <span class="lbl">Nauka</span>
       </button>
+      <button data-v="znajomi">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0112 0"/><circle cx="17" cy="9" r="2.4"/><path d="M16 13.6a4.6 4.6 0 015.5 4.4"/></svg>
+        <span class="lbl">Znajomi</span><span class="nav-badge" id="friends-badge" hidden></span>
+      </button>
     </nav>
+    <button class="bell" id="nav-account" onclick="go('konto')" title="Konto"><span class="nav-av" id="nav-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg></span><span id="nav-account-lbl">Konto</span></button>
     <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span></button>
     <div class="foot">Dane lokalnie w Twojej bazie.</div>
@@ -1375,6 +1429,18 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
     </section>
 
     <!-- NAUKA -->
+    <!-- KONTO -->
+    <section class="view" id="view-konto">
+      <div class="head"><div class="eyebrow">Twoje konto</div><h1 id="acc-h">Konto</h1></div>
+      <div class="acc-wrap" id="acc"></div>
+    </section>
+
+    <!-- ZNAJOMI -->
+    <section class="view" id="view-znajomi">
+      <div class="head"><div class="eyebrow">Udostępnianie</div><h1>Znajomi</h1></div>
+      <div id="fr"></div>
+    </section>
+
     <!-- USTAWIENIA -->
     <section class="view" id="view-ustawienia">
       <div class="head"><div class="eyebrow">Aplikacja</div><h1>Ustawienia</h1></div>
@@ -1402,6 +1468,10 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         </div>
       </div>
       <div class="st-pane" id="st-dane" hidden>
+        <div class="st-card glass">
+          <div class="st-h"><h3>Serwer kont</h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, po wdrożeniu — adres z VPS-a (https://…).</p></div>
+          <div class="st-key"><input id="st-cloud" placeholder="https://konta.twojadomena.pl" spellcheck="false"><button class="btn" onclick="saveCloudUrl()">Zapisz</button></div>
+        </div>
         <div class="st-card glass">
           <div class="st-h"><h3>Kopia danych</h3><p>Baza, załączniki i nagrania w jednym pliku ZIP — do przeniesienia na inny komputer albo na zapas.</p></div>
           <div class="st-actions"><button class="btn" onclick="exportData()">Eksportuj dane</button>
@@ -1441,6 +1511,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
             <div class="hbox"><span class="eyebrow">Notatki w zeszycie</span>
               <span class="htitle"><span class="cover" id="notes-cover" style="--c:#8b7cff"></span><span id="notes-head">—</span></span></div>
             <div class="pnbtns">
+              <button class="btn ghost sm" onclick="shareCurrent('notebook')" title="Udostępnij cały zeszyt znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
               <button class="btn ghost sm" onclick="openGroupCreator()">+ Grupa</button>
               <button class="btn ghost sm" onclick="openNoteCreator()">+ Nowa notatka</button>
             </div>
@@ -1465,6 +1536,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
                 </div>
                 <div class="nhead-row2">
                   <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
+                  <button class="btn ghost xs nexport" onclick="shareCurrent('note')" title="Udostępnij notatkę znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
                   <button class="btn ghost xs nexport" onclick="exportNotePdf()" title="Eksportuj notatkę do PDF"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 21h14"/></svg> PDF</button>
                 </div>
                 <span class="saved" id="note-saved"></span>
@@ -1540,8 +1612,8 @@ function go(v){
   $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   $$('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
   if(v==='pulpit')loadPulpit(); if(v==='plan')loadPlan();
-  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources(); if(v==='ustawienia')loadSettings();
-  $('#nav-settings')?.classList.toggle('active',v==='ustawienia');
+  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources(); if(v==='ustawienia')loadSettings(); if(v==='konto')renderAccount(); if(v==='znajomi')loadFriends();
+  $('#nav-settings')?.classList.toggle('active',v==='ustawienia'); $('#nav-account')?.classList.toggle('active',v==='konto');
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
@@ -2019,7 +2091,7 @@ let APP={}, recState={}, recList=[], recTimer=null, recSig='';
 const recInserting=new Set();
 const REC_ST={pending:'czeka na zamianę na tekst',queued:'w kolejce…',transcribing:'zamiana na tekst',done:'gotowe',limit:'limit Gemini',error:'błąd'};
 const fmtDur=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
-api('/config').then(c=>{APP=c||{}; if(APP.desktop)recPoll();});
+api('/config').then(c=>{APP=c||{}; if(APP.desktop)recPoll(); initAccount();});
 async function recPoll(){
   clearTimeout(recTimer);
   try{
@@ -2107,10 +2179,265 @@ function popout({title='',text='',hint='',icon='info',ok='OK'}={}){
 window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
   popout({title:t,text:rest.join('\n').trim(),icon:/nie udało|nie udalo|błąd|brak|za duży|nie jest|nie wspiera|za mało|starej wersji|najpierw/i.test(msg)?'warn':'info'});};
 
+/* ===== KONTA: logowanie, profil, znajomi, udostępnianie (serwer kont: cloud/) ===== */
+const LS={get:k=>{try{return localStorage.getItem(k);}catch(_){return null;}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(_){}}};
+let ME=null, FR=null, authTab='login';
+const cloudUrl=()=>APP.cloud_url||'http://127.0.0.1:8100';
+async function cloud(path,{method='GET',body}={}){
+  let r; const tok=LS.get('asys_token');
+  try{ r=await fetch(cloudUrl()+path,{method,headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},body:body?JSON.stringify(body):undefined}); }
+  catch(_){ throw new Error(`Brak połączenia z serwerem kont (${cloudUrl()}). Uruchom go albo sprawdź adres w Ustawieniach → Dane.`); }
+  const d=await r.json().catch(()=>({}));
+  if(r.status===401&&!path.startsWith('/auth/')){LS.set('asys_token',null);ME=null;paintNavAccount();}
+  if(!r.ok)throw new Error(d.detail||('Błąd '+r.status));
+  return d;
+}
+const AV_COL=['#6c5fd8','#e8875a','#3f86e0','#2fa37c','#d0568f','#b0892b'];
+function avatarHTML(u,size=44){
+  if(!u)return '';
+  if(u.avatar)return `<span class="av" style="--s:${size}px"><img src="${escAttr(u.avatar)}" alt=""></span>`;
+  const n=(u.display_name||u.username||'?').trim(), ini=n.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  const c=AV_COL[[...(u.username||n)].reduce((a,ch)=>a+ch.charCodeAt(0),0)%AV_COL.length];
+  return `<span class="av" style="--s:${size}px;--c:${c}">${esc(ini)}</span>`;
+}
+function paintNavAccount(){
+  $('#nav-av').innerHTML=ME?avatarHTML(ME,22):'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg>';
+  $('#nav-account-lbl').textContent=ME?ME.display_name:'Konto';
+}
+async function initAccount(){
+  if(LS.get('asys_token')){ try{ME=await cloud('/me');}catch(_){ME=null;} }
+  paintNavAccount(); refreshFriendsBadge();
+}
+async function refreshFriendsBadge(){
+  const b=$('#friends-badge'); if(!ME){b.hidden=true;return;}
+  try{FR=await cloud('/friends'); const n=FR.incoming.length; b.hidden=!n; b.textContent=n;}catch(_){b.hidden=true;}
+}
+/* --- widok Konto --- */
+function renderAccount(){
+  $('#acc-h').textContent=ME?'Konto':'Zaloguj się';
+  if(!ME){
+    const reg=authTab==='register';
+    $('#acc').innerHTML=`<div class="auth-card glass">
+      <div class="seg"><button class="${reg?'':'on'}" onclick="authTab='login';renderAccount()">Logowanie</button><button class="${reg?'on':''}" onclick="authTab='register';renderAccount()">Załóż konto</button></div>
+      <form onsubmit="event.preventDefault();authSubmit()">
+        ${reg?`<label class="field"><span>Imię lub pseudonim</span><input id="au-name" autocomplete="name" placeholder="np. Fabian"></label>
+        <label class="field"><span>Nazwa użytkownika (po niej znajdą Cię znajomi)</span><input id="au-user" autocomplete="username" placeholder="np. fabian_k" required></label>
+        <label class="field"><span>E-mail</span><input id="au-mail" type="email" autocomplete="email" required></label>`
+        :`<label class="field"><span>E-mail lub nazwa użytkownika</span><input id="au-login" autocomplete="username" required></label>`}
+        <label class="field"><span>Hasło${reg?' (min. 8 znaków)':''}</span><input id="au-pass" type="password" autocomplete="${reg?'new-password':'current-password'}" required></label>
+        <div class="auth-err" id="au-err"></div>
+        <button class="btn" style="width:100%" type="submit">${reg?'Załóż konto':'Zaloguj się'}</button>
+      </form>
+      <div class="auth-foot">Konto służy do znajomych i udostępniania. Twoje notatki i plan zostają na tym komputerze.<br>Serwer: ${esc(cloudUrl())}</div></div>`;
+    setTimeout(()=>$(reg?'#au-name':'#au-login')?.focus(),50); return;
+  }
+  const since=ME.created_at?new Date(ME.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{month:'long',year:'numeric'}):'';
+  $('#acc').innerHTML=`<div class="prof glass">
+      <label title="Zmień zdjęcie">${avatarHTML(ME,96)}<input type="file" accept="image/*" hidden onchange="pickAvatar(this)"></label>
+      <div><h2>${esc(ME.display_name)}</h2><div class="un">@${esc(ME.username)} · ${esc(ME.email)}</div>${since?`<div class="since">Konto od ${since}</div>`:''}</div>
+      <button class="btn ghost sm" onclick="logout()">Wyloguj</button></div>
+    <div class="form-card glass"><h3>Profil</h3>
+      <label class="field"><span>Imię lub pseudonim</span><input id="pf-name" value="${escAttr(ME.display_name)}"></label>
+      <label class="field"><span>O mnie</span><textarea id="pf-bio" placeholder="np. Zarządzanie, I rok, PUT">${esc(ME.bio||'')}</textarea></label>
+      <div class="st-actions"><button class="btn" onclick="saveProfile()">Zapisz profil</button>${ME.avatar?'<button class="btn ghost" onclick="removeAvatar()">Usuń zdjęcie</button>':''}</div></div>
+    <div class="form-card glass"><h3>Zmiana hasła</h3>
+      <div class="frow"><label class="field"><span>Obecne hasło</span><input id="pw-old" type="password" autocomplete="current-password"></label>
+      <label class="field"><span>Nowe hasło</span><input id="pw-new" type="password" autocomplete="new-password"></label></div>
+      <div class="st-actions"><button class="btn ghost" onclick="changePassword()">Zmień hasło</button></div></div>`;
+}
+async function authSubmit(){
+  const err=$('#au-err'); err.textContent='';
+  try{
+    const r=authTab==='register'
+      ?await cloud('/auth/register',{method:'POST',body:{display_name:$('#au-name').value,username:$('#au-user').value,email:$('#au-mail').value,password:$('#au-pass').value}})
+      :await cloud('/auth/login',{method:'POST',body:{login:$('#au-login').value,password:$('#au-pass').value}});
+    LS.set('asys_token',r.token); ME=await cloud('/me'); paintNavAccount(); refreshFriendsBadge(); renderAccount();
+    if(authTab==='register')popout({icon:'ok',title:'Witaj, '+ME.display_name+'!',text:'Konto gotowe. Dodaj znajomych w zakładce Znajomi.'});
+  }catch(e){err.textContent=e.message;}
+}
+async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} LS.set('asys_token',null); ME=null; paintNavAccount(); refreshFriendsBadge(); renderAccount(); }
+async function saveProfile(){
+  try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
+  catch(e){popout({icon:'warn',title:'Nie zapisano profilu',text:e.message});}
+}
+async function pickAvatar(inp){
+  const f=inp.files[0]; inp.value=''; if(!f)return;
+  try{
+    // kadrowanie do kwadratu 256 px (środek), JPEG — mały plik, szybkie wczytywanie u znajomych
+    const img=await createImageBitmap(f), S=256, c=document.createElement('canvas'); c.width=c.height=S;
+    const k=Math.max(S/img.width,S/img.height); c.getContext('2d').drawImage(img,(S-img.width*k)/2,(S-img.height*k)/2,img.width*k,img.height*k);
+    ME=await cloud('/me',{method:'PATCH',body:{avatar:c.toDataURL('image/jpeg',.85)}}); paintNavAccount(); renderAccount();
+  }catch(e){popout({icon:'warn',title:'Nie udało się ustawić zdjęcia',text:e.message});}
+}
+async function removeAvatar(){ ME=await cloud('/me',{method:'PATCH',body:{avatar:''}}); paintNavAccount(); renderAccount(); }
+async function changePassword(){
+  try{await cloud('/me/password',{method:'POST',body:{old:$('#pw-old').value,new:$('#pw-new').value}}); $('#pw-old').value=$('#pw-new').value=''; popout({icon:'ok',title:'Hasło zmienione'});}
+  catch(e){popout({icon:'warn',title:'Nie zmieniono hasła',text:e.message});}
+}
+async function saveCloudUrl(){
+  const r=await api('/settings/cloud',{method:'POST',body:JSON.stringify({url:$('#st-cloud').value})});
+  if(r.detail){popout({icon:'warn',title:'Nieprawidłowy adres',text:r.detail});return;}
+  APP.cloud_url=r.cloud_url; await initAccount();
+  let ok=false; try{ok=(await fetch(cloudUrl()+'/health')).ok;}catch(_){}
+  popout(ok?{icon:'ok',title:'Połączono z serwerem kont',text:cloudUrl()}:{icon:'warn',title:'Zapisano, ale serwer nie odpowiada',text:cloudUrl()});
+}
+/* --- widok Znajomi --- */
+const ICON_SH={note:['var(--accent-2)','<path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10A.5.5 0 017 20z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h5"/>'],
+  notebook:['var(--peach)',ICONS.nauka]};
+async function loadFriends(){
+  const el=$('#fr');
+  if(!ME){el.innerHTML=`<div class="auth-card glass"><h3>Zaloguj się</h3><p style="color:var(--ink-soft);margin:8px 0 16px">Znajomi i udostępnianie notatek wymagają konta.</p><button class="btn" onclick="go('konto')">Zaloguj się lub załóż konto</button></div>`;return;}
+  try{FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
+  refreshFriendsBadge();
+  const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>@${esc(f.username)}</small></div>${acts}</div>`;
+  el.innerHTML=`<form class="fr-add glass" onsubmit="event.preventDefault();addFriend()"><input id="fr-user" placeholder="Nazwa użytkownika lub e-mail znajomego"><button class="btn" type="submit">Dodaj znajomego</button></form>
+    ${FR.incoming.length?`<div class="fr-sec"><h4>Zaproszenia</h4><div class="fr-list">${FR.incoming.map(f=>row(f,`<div class="acts"><button class="btn sm" onclick="frAct('accept',${f.fid})">Akceptuj</button><button class="btn ghost sm" onclick="frAct('del',${f.fid})">Odrzuć</button></div>`)).join('')}</div></div>`:''}
+    <div class="fr-sec"><h4>Znajomi</h4><div class="fr-list">${FR.friends.length?FR.friends.map(f=>row(f,`${f.shared_with_me?`<span class="fr-pill">${f.shared_with_me} ${plural(f.shared_with_me,'udostępnienie','udostępnienia','udostępnień')}</span>`:''}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-dim)"><path d="M9 6l6 6-6 6"/></svg>`,true)).join('')
+      :'<div class="empty-soft">Nie masz jeszcze znajomych. Dodaj kogoś po nazwie użytkownika.</div>'}</div></div>
+    ${FR.outgoing.length?`<div class="fr-sec"><h4>Wysłane zaproszenia</h4><div class="fr-list">${FR.outgoing.map(f=>row(f,`<button class="btn ghost sm" onclick="frAct('del',${f.fid})">Anuluj</button>`)).join('')}</div></div>`:''}`;
+}
+async function addFriend(){
+  const u=$('#fr-user').value.trim(); if(!u)return;
+  try{const r=await cloud('/friends/request',{method:'POST',body:{username:u}});
+    popout({icon:'ok',title:r.status==='accepted'?'Jesteście znajomymi':'Zaproszenie wysłane',text:r.status==='accepted'?'':'Gdy '+u+' je zaakceptuje, pojawi się na liście.'}); loadFriends();}
+  catch(e){popout({icon:'warn',title:'Nie wysłano zaproszenia',text:e.message});}
+}
+async function frAct(a,fid){ try{ a==='accept'?await cloud(`/friends/${fid}/accept`,{method:'POST'}):await cloud('/friends/'+fid,{method:'DELETE'}); }catch(e){popout({icon:'warn',title:'Nie udało się',text:e.message});} loadFriends(); }
+async function openFriend(id){
+  const f=FR.friends.find(x=>x.id===id); if(!f)return;
+  const list=await cloud('/shares?from_user='+id), el=$('#fr');
+  el.innerHTML=`<button class="btn ghost sm" style="align-self:flex-start" onclick="loadFriends()">← Wszyscy znajomi</button>
+    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2><div class="un" style="color:var(--ink-dim)">@${esc(f.username)}</div></div>
+      <button class="btn ghost sm" onclick="removeFriend(${f.fid},'${escAttr(f.display_name)}')">Usuń ze znajomych</button></div>
+    <div class="fr-sec"><h4>Udostępnione Tobie</h4><div class="fr-list">${list.length?list.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
+      return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
+        <div class="who"><b>${esc(sh.title)}</b><small>${sh.kind==='notebook'?'Zeszyt':'Notatka'} · ${new Date(sh.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{day:'numeric',month:'short'})}</small></div>
+        <div class="acts"><button class="btn ghost sm" onclick="previewShare(${sh.id})">Podgląd</button><button class="btn sm" onclick="importShare(${sh.id})">Importuj</button>
+        <button class="btn ghost sm" title="Usuń z listy" onclick="delShare(${sh.id},${id})">✕</button></div></div>`;}).join('')
+      :`<div class="empty-soft">${esc(f.display_name)} nic Ci jeszcze nie udostępnił(a).</div>`}</div></div>`;
+}
+async function removeFriend(fid,name){ if(!confirm('Usunąć '+name+' ze znajomych?'))return; await cloud('/friends/'+fid,{method:'DELETE'}); loadFriends(); }
+async function delShare(sid,fid){ await cloud('/shares/'+sid,{method:'DELETE'}); openFriend(fid); }
+/* --- bezpieczeństwo: HTML z cudzej notatki tylko z dozwolonych znaczników, bez skryptów i złych linków --- */
+const SAFE_TAGS=new Set('P BR B STRONG I EM U S STRIKE DEL H1 H2 H3 H4 H5 H6 UL OL LI A SPAN DIV CODE PRE BLOCKQUOTE MARK SUB SUP HR TABLE THEAD TBODY TR TD TH IMG FONT'.split(' '));
+const DROP_TAGS=new Set('SCRIPT STYLE IFRAME OBJECT EMBED LINK META TEMPLATE FORM INPUT BUTTON TEXTAREA SELECT SVG MATH NOSCRIPT'.split(' '));
+function sanitizeHtml(html){
+  const root=new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html').body.firstChild;
+  const walk=n=>[...n.childNodes].forEach(c=>{
+    if(c.nodeType===8){c.remove();return;}
+    if(c.nodeType!==1)return;
+    const tag=c.tagName.toUpperCase();
+    if(DROP_TAGS.has(tag)){c.remove();return;}
+    walk(c);
+    if(!SAFE_TAGS.has(tag)){c.replaceWith(...c.childNodes);return;}
+    [...c.attributes].forEach(a=>{const k=a.name.toLowerCase(),v=a.value.trim();
+      const keep=(k==='href'&&/^(https?:|mailto:)/i.test(v))||(k==='src'&&tag==='IMG'&&/^(https?:|data:image\/(png|jpe?g|gif|webp);)/i.test(v))
+        ||(k==='style'&&!/url\(|expression|position|@import|behavior/i.test(v))||['color','colspan','rowspan','alt','title'].includes(k);
+      if(!keep)c.removeAttribute(a.name);});
+    if(tag==='A'){c.setAttribute('target','_blank');c.setAttribute('rel','noopener noreferrer');}
+  });
+  walk(root); return root.innerHTML;
+}
+function sanitizeBlocks(content){
+  return (Array.isArray(content)?content:[]).filter(b=>b&&typeof b==='object').map(b=>{
+    const x=JSON.parse(JSON.stringify(b)); x.id=uid();
+    if(typeof x.html==='string')x.html=sanitizeHtml(x.html);
+    if(typeof x.summary==='string')x.summary=sanitizeHtml(x.summary);
+    if(typeof x.url==='string'&&!/^https?:\/\//i.test(x.url))x.url='';
+    return x;});
+}
+function previewBlocks(content){
+  return sanitizeBlocks(content).map(b=>{
+    switch(b.type){
+      case 'heading':return `<h3 class="pvh">${esc(b.text||'')}</h3>`;
+      case 'text':return `<div class="pvb">${b.html||''}</div>`;
+      case 'callout':return `<div class="pvb pvc">${b.html||''}</div>`;
+      case 'toggle':return `<details class="pvb"${b.open?' open':''}><summary>${b.summary||''}</summary>${b.html||''}</details>`;
+      case 'checklist':return `<ul class="pvb" style="list-style:none;padding:0">${(b.items||[]).map(i=>`<li>${i.done?'☑':'☐'} ${esc(i.text||'')}</li>`).join('')}</ul>`;
+      case 'table':return `<table class="pvb">${(b.data||[]).map(r=>`<tr>${r.map(c=>`<td>${esc(String(c??''))}</td>`).join('')}</tr>`).join('')}</table>`;
+      case 'code':return `<pre class="pvb">${esc(b.code||'')}</pre>`;
+      case 'latex':return `<pre class="pvb">${esc(b.tex||'')}</pre>`;
+      case 'embed':return b.url?`<p class="pvb"><a href="${escAttr(b.url)}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>`:'';
+      case 'divider':return '<hr>';
+      default:return `<p class="muted pvb">[${esc(b.type==='chart'?'wykres':b.type||'blok')} — widoczny po imporcie]</p>`;
+    }}).join('')||'<p class="muted">Pusta notatka.</p>';
+}
+async function previewShare(sid){
+  let sh; try{sh=await cloud('/shares/'+sid);}catch(e){popout({icon:'warn',title:'Nie udało się otworzyć',text:e.message});return;}
+  const P=sh.payload||{};
+  const body=sh.kind==='notebook'
+    ?(P.notes||[]).map(n=>`<h3 class="pvh">${esc(n.title||'Bez tytułu')}</h3>${previewBlocks(n.content)}`).join('<hr>')||'<p class="muted">Pusty zeszyt.</p>'
+    :previewBlocks(P.content);
+  $('#modal').style.maxWidth='760px';
+  $('#modal').innerHTML=`<h3>${esc(sh.title)}</h3><div class="msub">${sh.kind==='notebook'?`Zeszyt · ${(P.notes||[]).length} ${plural((P.notes||[]).length,'notatka','notatki','notatek')}`:'Notatka'} · podgląd tylko do odczytu</div>
+    <div class="pv">${body}</div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Zamknij</button><button class="btn" onclick="importShare(${sh.id})">Importuj do moich notatek</button></div>`;
+  openModal();
+}
+async function importShare(sid){
+  let sh; try{sh=await cloud('/shares/'+sid);}catch(e){popout({icon:'warn',title:'Nie udało się pobrać',text:e.message});return;}
+  const P=sh.payload||{}, nbs=await api('/notebooks'), isNb=sh.kind==='notebook';
+  $('#modal').style.maxWidth='480px';
+  $('#modal').innerHTML=`<h3>Importuj ${isNb?'zeszyt':'notatkę'}</h3><div class="msub">„${esc(sh.title)}” trafi do Twoich notatek jako kopia.</div>
+    ${isNb?'':`<div class="field"><span>Do zeszytu</span><div id="imp-nb"></div></div>`}
+    <label class="field"><span>${isNb?'Nazwa zeszytu':'Nazwa notatki'}</span><input id="imp-name" value="${escAttr(isNb?(P.name||sh.title):(P.title||sh.title))}"></label>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="imp-go">Importuj</button></div>`;
+  let cb=null;
+  if(!isNb)cb=combo($('#imp-nb'),{items:[...nbs.map(n=>({v:n.id,label:n.name,icon:ICONS.nauka,color:n.color})),{v:'new',label:'+ Nowy zeszyt „Udostępnione”'}],
+    value:nbActive&&nbs.some(n=>n.id===nbActive)?nbActive:(nbs[0]?.id??'new'),readonly:true});
+  openModal();
+  $('#imp-go').onclick=async()=>{
+    const name=$('#imp-name').value.trim()||sh.title;
+    const mkNote=async(nbId,n,title)=>{const r=await api('/notes',{method:'POST',body:JSON.stringify({notebook_id:nbId,title:title||n.title||'Bez tytułu',purpose:n.purpose||'',description:n.description||''})});
+      await api('/notes/'+r.id,{method:'PATCH',body:JSON.stringify({content:sanitizeBlocks(n.content)})}); return r.id;};
+    let nbId, noteId;
+    if(isNb){
+      nbId=(await api('/notebooks',{method:'POST',body:JSON.stringify({name,color:/^#[0-9a-f]{6}$/i.test(P.color||'')?P.color:'#8b7cff',purpose:P.purpose||'',description:P.description||'',teacher:P.teacher||'',room:P.room||''})})).id;
+      for(const n of (P.notes||[]))await mkNote(nbId,n);
+    }else{
+      nbId=cb.get();
+      if(nbId==='new')nbId=(await api('/notebooks',{method:'POST',body:JSON.stringify({name:'Udostępnione',color:'#80dcc2'})})).id;
+      noteId=await mkNote(nbId,P,name);
+    }
+    closeModal(); await loadNauka();
+    await popout({icon:'ok',title:'Zaimportowano',text:`„${name}” jest w Twoich ${isNb?'zeszytach':'notatkach'}.`});
+    go('nauka'); selectNotebook(nbId); if(noteId)setTimeout(()=>openNote(noteId),250);
+  };
+}
+/* --- udostępnianie: aktualna notatka albo zeszyt → wybrani znajomi --- */
+async function shareCurrent(kind){
+  if(!ME){await popout({icon:'info',title:'Zaloguj się, aby udostępniać',text:'Udostępniać można znajomym — potrzebne jest konto.'});go('konto');return;}
+  try{FR=await cloud('/friends');}catch(e){popout({icon:'warn',title:'Brak połączenia',text:e.message});return;}
+  if(!FR.friends.length){await popout({icon:'info',title:'Nie masz jeszcze znajomych',text:'Dodaj kogoś w zakładce Znajomi, a potem udostępnij.'});go('znajomi');return;}
+  let title, payload;
+  if(kind==='note'){
+    if(!noteActive)return; clearTimeout(saveTimer); await saveNote();
+    const n=await api('/notes/'+noteActive); title=n.title||'Bez tytułu';
+    payload={title, purpose:n.purpose, description:n.description, content:n.content};
+  }else{
+    const nb=allNotebooks.find(x=>x.id===nbActive); if(!nb)return; title=nb.name;
+    const list=await api('/notes?notebook_id='+nb.id);
+    const notes=await Promise.all(list.map(x=>api('/notes/'+x.id)));
+    payload={name:nb.name,color:nb.color,purpose:nb.purpose,description:nb.description,teacher:nb.teacher,room:nb.room,
+      notes:notes.map(n=>({title:n.title,purpose:n.purpose,description:n.description,content:n.content}))};
+  }
+  $('#modal').style.maxWidth='460px';
+  $('#modal').innerHTML=`<h3>Udostępnij ${kind==='note'?'notatkę':'zeszyt'}</h3><div class="msub">„${esc(title)}” — wybierz, komu wysłać kopię.</div>
+    <div class="pick-list">${FR.friends.map(f=>`<label class="pick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">@${esc(f.username)}</small></span></label>`).join('')}</div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="sh-go">Wyślij</button></div>`;
+  openModal();
+  $('#sh-go').onclick=async()=>{
+    const to=$$('.pick input:checked').map(i=>+i.value); if(!to.length)return;
+    try{const r=await cloud('/shares',{method:'POST',body:{to,kind,title,payload}}); closeModal();
+      popout({icon:'ok',title:'Udostępniono',text:`${kind==='note'?'Notatka':'Zeszyt'} „${title}” → ${r.sent} ${plural(r.sent,'osoba','osoby','osób')}.`,hint:'Znajomi zobaczą to u siebie w zakładce Znajomi.'});}
+    catch(e){popout({icon:'warn',title:'Nie udostępniono',text:e.message});}
+  };
+}
+
 /* ===== USTAWIENIA: połączenie z AI ===== */
 let AIS={};
 function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
-async function loadSettings(){AIS=await api('/settings/ai'); renderSettings();}
+async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); $('#st-cloud').value=APP.cloud_url||'';}
 function renderSettings(){
   const ok=AIS.has_key, chat=AIS.mode==='chat';
   $('#st-status').innerHTML=`<div class="st-stat"><span class="dot" style="--c:${ok?'var(--pos)':chat?'var(--peach)':'var(--ink-dim)'}"></span>

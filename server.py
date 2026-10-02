@@ -707,7 +707,23 @@ def summary():
 # ---------- NAGRANIA WYKŁADÓW (tylko aplikacja desktop) ----------
 @app.get("/api/config")
 def config():
-    return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key())}
+    cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "http://127.0.0.1:8100")
+    return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/")}
+
+
+class CloudUrl(BaseModel):
+    url: str
+
+
+@app.post("/api/settings/cloud")
+def set_cloud(p: CloudUrl):
+    url = p.url.strip().rstrip("/")
+    if url and not re.match(r"^https?://[^\s/]+", url):
+        raise HTTPException(400, "Adres musi zaczynać się od http:// albo https://")
+    st = _settings()
+    st["cloud_url"] = url
+    SETTINGS.write_text(json.dumps(st), encoding="utf-8")
+    return config()
 
 
 import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta)
