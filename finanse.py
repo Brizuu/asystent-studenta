@@ -1,4 +1,4 @@
-"""Koszty studiów: cykliczne wydatki (dojazd, jedzenie, opłaty…), terminy płatności i symulacja miesięczna.
+"""Budżet (głównie studencki): dochody, cykliczne wydatki (dojazd, jedzenie, opłaty…), terminy płatności i symulacja miesięczna.
 
 Kwoty nie są wymuszane — koszt może być szacunkiem („~”, np. paliwo), a faktyczne wydatki
 dopisuje się na bieżąco (np. każde tankowanie) i porównuje z planem.
@@ -44,12 +44,27 @@ with get_conn() as _c:
         FOREIGN KEY (cost_id) REFERENCES costs(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS cost_settings (k TEXT PRIMARY KEY, v TEXT);
+    CREATE TABLE IF NOT EXISTS incomes (
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        name      TEXT NOT NULL,
+        kind      TEXT DEFAULT 'inne',     -- praca | stypendium | rodzice | freelance | inne
+        amount    REAL,
+        period    TEXT DEFAULT 'month',    -- week | month | semester | year | once
+        variable  INTEGER DEFAULT 0,
+        pay_day   INTEGER,                 -- dzień miesiąca wypłaty (1–31), opcjonalnie
+        note      TEXT DEFAULT ''
+    );
     """)
+INCOME_KINDS = {"praca", "stypendium", "rodzice", "freelance", "inne"}
 
 
 def _settings(c) -> dict:
     s = {r["k"]: r["v"] for r in c.execute("SELECT k, v FROM cost_settings")}
-    return {"study_days": int(s.get("study_days") or 5)}
+    try:
+        goal = max(0.0, float(s.get("savings_goal") or 0))
+    except ValueError:
+        goal = 0.0
+    return {"study_days": int(s.get("study_days") or 5), "savings_goal": goal}
 
 
 def _params(row) -> dict:
@@ -126,16 +141,94 @@ def list_costs():
         by_cat[x["category"]] = round(by_cat.get(x["category"], 0) + x["monthly"], 2)
     monthly = round(sum(x["monthly"] for x in costs), 2)
     upcoming = sorted([x for x in costs if x["days_left"] is not None], key=lambda x: x["days_left"])
+    with get_conn() as c:
+        incomes = [_income(r) for r in c.execute("SELECT * FROM incomes ORDER BY amount IS NULL, amount DESC, name")]
+    income = round(sum(x["monthly"] for x in incomes), 2)
     return {
-        "costs": costs, "settings": st, "entries": entries, "upcoming": upcoming,
+        "costs": costs, "incomes": incomes, "settings": st, "entries": entries, "upcoming": upcoming,
         "summary": {
             "monthly": monthly,
+            "income": income,
+            "left": round(income - monthly, 2),
             "variable": round(sum(x["monthly"] for x in costs if x["variable"]), 2),
             "by_cat": by_cat,
             "spent_month": round(sum(e["amount"] for e in entries), 2),
             "once": round(sum((x["per_period"] or 0) for x in costs if x["period"] == "once" and not x["paid"]), 2),
         },
     }
+
+
+def _income(row) -> dict:
+    d = dict(row)
+    d["variable"] = bool(d["variable"])
+    a = d["amount"] or 0
+    d["monthly"] = round(a * {"week": WEEKS_PER_MONTH, "month": 1, "semester": 1 / 6, "year": 1 / 12, "once": 0}.get(d["period"], 1), 2)
+    d["days_to_pay"] = None
+    if d["pay_day"]:
+        t = date.today()
+        def on(y, m):
+            last = (date(y + (m == 12), m % 12 + 1, 1) - timedelta(days=1)).day
+            return date(y, m, min(d["pay_day"], last))
+        nxt = on(t.year, t.month)
+        if nxt < t:
+            nxt = on(t.year + (t.month == 12), t.month % 12 + 1)
+        d["days_to_pay"] = (nxt - t).days
+    return d
+
+
+class Income(BaseModel):
+    name: str | None = None
+    kind: str | None = None
+    amount: float | None = None
+    period: str | None = None
+    variable: bool | None = None
+    pay_day: int | None = None
+    note: str | None = None
+
+
+def _clean_income(p: Income, partial: bool) -> dict:
+    f = p.model_dump(exclude_unset=True)
+    if "name" in f or not partial:
+        f["name"] = (f.get("name") or "").strip()[:80]
+        if not f["name"]:
+            raise HTTPException(400, "Podaj nazwę dochodu.")
+    if f.get("kind") is not None and f["kind"] not in INCOME_KINDS:
+        f["kind"] = "inne"
+    if f.get("period") is not None and f["period"] not in PERIODS - {"day"}:
+        f["period"] = "month"
+    if f.get("amount") is not None:
+        f["amount"] = max(0.0, min(1e7, float(f["amount"])))
+    if "pay_day" in f:
+        f["pay_day"] = f["pay_day"] if f["pay_day"] and 1 <= f["pay_day"] <= 31 else None
+    if f.get("variable") is not None:
+        f["variable"] = int(bool(f["variable"]))
+    if "note" in f:
+        f["note"] = (f["note"] or "")[:300]
+    return {k: v for k, v in f.items() if v is not None or k in ("amount", "pay_day")}
+
+
+@router.post("/api/incomes")
+def add_income(p: Income):
+    f = _clean_income(p, False)
+    with get_conn() as c:
+        cur = c.execute(f"INSERT INTO incomes({','.join(f)}) VALUES({','.join('?' * len(f))})", tuple(f.values()))
+        return {"id": cur.lastrowid}
+
+
+@router.patch("/api/incomes/{iid}")
+def edit_income(iid: int, p: Income):
+    f = _clean_income(p, True)
+    if f:
+        with get_conn() as c:
+            c.execute(f"UPDATE incomes SET {','.join(k + '=?' for k in f)} WHERE id=?", (*f.values(), iid))
+    return {"ok": True}
+
+
+@router.delete("/api/incomes/{iid}")
+def del_income(iid: int):
+    with get_conn() as c:
+        c.execute("DELETE FROM incomes WHERE id=?", (iid,))
+    return {"ok": True}
 
 
 @router.get("/api/costs/reminders")
@@ -280,11 +373,15 @@ def del_entry(eid: int):
 
 
 class CostSettings(BaseModel):
-    study_days: int
+    study_days: int | None = None
+    savings_goal: float | None = None
 
 
 @router.post("/api/costs/settings")
 def set_cost_settings(s: CostSettings):
     with get_conn() as c:
-        c.execute("INSERT OR REPLACE INTO cost_settings(k, v) VALUES('study_days', ?)", (str(max(1, min(7, s.study_days))),))
+        if s.study_days is not None:
+            c.execute("INSERT OR REPLACE INTO cost_settings(k, v) VALUES('study_days', ?)", (str(max(1, min(7, s.study_days))),))
+        if s.savings_goal is not None:
+            c.execute("INSERT OR REPLACE INTO cost_settings(k, v) VALUES('savings_goal', ?)", (str(max(0.0, min(1e7, s.savings_goal))),))
     return {"ok": True}
