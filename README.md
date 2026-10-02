@@ -47,9 +47,10 @@ termin, sala, budynek, adres i link do zajęć. Ponowny import aktualizuje plan 
 
 ## Konfiguracja
 
-- **Notatki AI (Gemini):** wklej swój klucz do pliku `.gemini_key` (wzór: `.gemini_key.example`;
-  w aplikacji desktop: `%APPDATA%\Asystent\.gemini_key`)
-  albo ustaw zmienną środowiskową `GEMINI_API_KEY`.
+- **AI:** Ustawienia (⚙ na dole paska) → *Sztuczna inteligencja*: wklej darmowy klucz Gemini
+  (aistudio.google.com/apikey) — aplikacja od razu sprawdzi połączenie. Bez klucza można włączyć
+  tryb **przez zwykły czat** (Gemini/ChatGPT w przeglądarce, kopiuj–wklej) dla notatek AI.
+  Nadal działa też plik `.gemini_key` i zmienna `GEMINI_API_KEY`.
 - **Spotify:** utwórz darmową aplikację na developer.spotify.com, a w jej ustawieniach
   dodaj Redirect URI: `http://127.0.0.1:8000/` (musi być `127.0.0.1`, nie `localhost`).
   Sterowanie odtwarzaniem wymaga konta Premium.

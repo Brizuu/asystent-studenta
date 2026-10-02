@@ -118,6 +118,7 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
 .bell~.bell{margin-top:0}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
 .bell.on svg{stroke:var(--pos)}
+#nav-settings.active{background:var(--glass-2);color:var(--ink)} #nav-settings.active svg{stroke:var(--accent-2)}
 .bell.on::after{content:"";position:absolute;left:28px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 2px rgba(13,14,21,.9)}
 
 .main{padding:var(--s4) var(--s4) var(--s4);max-width:1560px;margin:0;width:100%}
@@ -320,6 +321,34 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .rec-row .st-limit,.rec-row .st-error{color:var(--hi);border-color:rgba(255,180,84,.35)}
 .rec-row .rec-err{flex-basis:100%;font-size:12px;color:var(--hi)}
 .rec-row .rec-act{margin-left:auto;display:flex;gap:6px}
+.st-tabs{margin-bottom:var(--s3)}
+.st-pane{max-width:760px;display:flex;flex-direction:column;gap:18px}
+.st-pane[hidden]{display:none}
+.st-card{padding:22px 24px;border-radius:22px}
+.st-h h3{font-size:19px;margin-top:6px} .st-h p{margin-top:6px;color:var(--ink-soft);font-size:14.5px;line-height:1.5}
+.st-badge{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;color:var(--pos);background:color-mix(in srgb,var(--pos) 16%,transparent)}
+.st-badge.alt{color:var(--peach);background:color-mix(in srgb,var(--peach) 16%,transparent)}
+.st-steps{margin:16px 0 0 20px;display:flex;flex-direction:column;gap:9px;color:var(--ink-soft);font-size:14.5px}
+.st-steps li::marker{color:var(--ink-dim);font-weight:600}
+.st-steps .btn{margin-left:8px}
+.st-key{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap} .st-key input{flex:1;min-width:220px}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);margin-top:12px;font-size:14.5px}
+.st-row+.st-row{margin-top:0}
+.st-note{margin-top:14px;font-size:12.5px;color:var(--ink-dim);line-height:1.5}
+.st-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.st-stat{display:flex;align-items:center;gap:14px}
+.st-stat .dot{width:12px;height:12px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 20%,transparent)}
+.st-stat b{font-size:16px} .st-stat small{display:block;color:var(--ink-dim);font-size:13px;margin-top:2px}
+.st-stat .btn{margin-left:auto}
+.seg button.on{background:var(--glass-2);color:var(--ink)}
+.switch{position:relative;width:46px;height:28px;flex:none;cursor:pointer}
+.switch input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.switch i{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.14);transition:background .25s var(--spring,ease)}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .3s var(--spring,ease)}
+.switch input:checked+i{background:var(--pos)} .switch input:checked+i::after{transform:translateX(18px)}
+.switch input:focus-visible+i{outline:2px solid var(--accent);outline-offset:2px}
+#chat-answer{width:100%;min-height:200px;font-family:inherit}
+#modal .actions .btn{white-space:nowrap}
 .pop-bd{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,8,12,.45)}
 .pop-bd[hidden]{display:none}
 .pop{width:min(340px,100%);border-radius:24px;padding:24px 22px 18px;text-align:center;color:var(--ink);
@@ -615,8 +644,9 @@ label.f>*{color:var(--ink)}
 /* przyciski przenieś/usuń — na dolnej linii (przy dacie), by nie zasłaniać oznaczenia rodzaju w prawym górnym rogu */
 .note-item .move,.note-item .del{position:absolute;bottom:8px;top:auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
   border-radius:8px;border:1px solid transparent;color:var(--ink-dim);font-size:17px;line-height:1;cursor:pointer;opacity:0;transition:.12s;background:transparent;float:none}
-.note-item .move{right:38px}
-.note-item .del{right:8px}
+/* akcje w wierszu z datą (pod plakietką typu) — nic na siebie nie nachodzi */
+.note-item .acts{margin-left:auto;display:flex;gap:4px}
+.note-item .acts .move,.note-item .acts .del{position:static}
 .note-item:hover .move,.note-item:hover .del{opacity:1}
 .note-item:hover .move,.note-item:hover .del{opacity:1;border-color:var(--line);background:rgba(20,21,29,.6)}
 .note-item .move:hover{color:var(--ink);background:var(--glass-2)}
@@ -778,7 +808,7 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
   font-size:23px;letter-spacing:-.02em;color:var(--ink);padding:0}
 .ntitle-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .note-tbadge{flex:none}
-.editor .saved{position:absolute;right:var(--s4);bottom:10px;font-size:11px;color:var(--ink-dim);white-space:nowrap;opacity:.7;pointer-events:none}
+.editor .saved{font-size:11px;color:var(--ink-dim);white-space:nowrap;opacity:.7;pointer-events:none;min-height:14px;margin-top:-3px}
 .nmade{margin-top:2px;font-size:11px;color:var(--ink-dim);opacity:.85}
 /* wyróżniona góra notatki (tytuł + info + tryb) */
 .nhead{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
@@ -1220,9 +1250,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <span class="lbl">Nauka</span>
       </button>
     </nav>
-    <button class="bell" onclick="exportData()" title="Zapisz kopię danych (ZIP) w folderze Pobrane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M4.5 19.5h15"/></svg><span>Eksport danych</span></button>
-    <button class="bell" onclick="$('#import-file').click()" title="Wczytaj kopię (.zip z eksportu albo plik asystent.db)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4.5 19.5h15"/></svg><span>Import danych</span></button>
-    <input type="file" id="import-file" accept=".zip,.db" hidden onchange="importData(this)">
+    <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span></button>
     <div class="foot">Dane lokalnie w Twojej bazie.</div>
   </aside>
@@ -1347,6 +1375,41 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
     </section>
 
     <!-- NAUKA -->
+    <!-- USTAWIENIA -->
+    <section class="view" id="view-ustawienia">
+      <div class="head"><div class="eyebrow">Aplikacja</div><h1>Ustawienia</h1></div>
+      <div class="seg st-tabs" id="st-tabs"><button class="on" data-t="ai" onclick="stTab('ai')">Sztuczna inteligencja</button><button data-t="dane" onclick="stTab('dane')">Dane</button></div>
+      <div class="st-pane" id="st-ai">
+        <div class="st-card glass" id="st-status"></div>
+        <div class="st-card glass">
+          <div class="st-h"><span class="st-badge">Zalecane · darmowe</span><h3>Klucz Gemini</h3>
+            <p>Pełne możliwości: notatki AI i zamiana nagrań wykładów na tekst. Klucz jest darmowy, bez karty płatniczej, założysz go w minutę.</p></div>
+          <ol class="st-steps">
+            <li>Otwórz Google AI Studio i zaloguj się kontem Google. <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/apikey','_blank')">Otwórz AI Studio ↗</button></li>
+            <li>Kliknij <b>Create API key</b> (Utwórz klucz) i skopiuj go.</li>
+            <li>Wklej poniżej i zapisz — aplikacja od razu sprawdzi połączenie.</li>
+          </ol>
+          <div class="st-key"><input id="st-key" type="password" placeholder="Wklej klucz (AIza…)" autocomplete="off" spellcheck="false">
+            <button class="btn" onclick="stSaveKey()">Zapisz i sprawdź</button></div>
+        </div>
+        <div class="st-card glass">
+          <div class="st-h"><span class="st-badge alt">Bez klucza</span><h3>Przez zwykły czat</h3>
+            <p>Dla osób bez klucza: przy „Notatce AI” aplikacja skopiuje gotowe polecenie i otworzy czat w przeglądarce. Wklejasz je tam, a odpowiedź wklejasz z powrotem do notatki.
+            Zamiana nagrań na tekst wymaga klucza.</p></div>
+          <div class="st-row"><span>Używaj czatu zamiast klucza</span><label class="switch"><input type="checkbox" id="st-chatmode" onchange="stSave({mode:this.checked?'chat':'key'})"><i></i></label></div>
+          <div class="st-row"><span>Czat</span><div class="seg" id="st-chat"><button data-c="gemini" onclick="stSave({chat:'gemini'})">Gemini</button><button data-c="chatgpt" onclick="stSave({chat:'chatgpt'})">ChatGPT</button></div></div>
+          <p class="st-note">Logowanie zwykłym kontem Gemini lub ChatGPT bezpośrednio w aplikacji nie jest możliwe — subskrypcje czatów nie udostępniają modelu innym programom. Stąd dwie drogi powyżej.</p>
+        </div>
+      </div>
+      <div class="st-pane" id="st-dane" hidden>
+        <div class="st-card glass">
+          <div class="st-h"><h3>Kopia danych</h3><p>Baza, załączniki i nagrania w jednym pliku ZIP — do przeniesienia na inny komputer albo na zapas.</p></div>
+          <div class="st-actions"><button class="btn" onclick="exportData()">Eksportuj dane</button>
+            <button class="btn ghost" onclick="$('#import-file').click()">Importuj kopię…</button></div>
+              </div>
+      </div>
+    </section>
+
     <section class="view" id="view-nauka">
       <div class="head" id="nauka-head">
         <div class="eyebrow">Nauka</div>
@@ -1404,8 +1467,8 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
                   <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
                   <button class="btn ghost xs nexport" onclick="exportNotePdf()" title="Eksportuj notatkę do PDF"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 21h14"/></svg> PDF</button>
                 </div>
+                <span class="saved" id="note-saved"></span>
               </div>
-              <span class="saved" id="note-saved"></span>
             </div>
             <div class="recbar" id="recbar" style="display:none"></div>
             <div class="blocks" id="blocks"></div>
@@ -1477,7 +1540,8 @@ function go(v){
   $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   $$('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
   if(v==='pulpit')loadPulpit(); if(v==='plan')loadPlan();
-  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources();
+  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources(); if(v==='ustawienia')loadSettings();
+  $('#nav-settings')?.classList.toggle('active',v==='ustawienia');
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
@@ -2010,7 +2074,7 @@ async function recStart(){
 }
 async function recStop(){await api('/rec/stop',{method:'POST'}); recSig=''; recPoll();}
 async function recTranscribe(id){
-  if(!APP.gemini){alert('Brak klucza Gemini. Zapisz go w pliku .gemini_key w folderze danych aplikacji (%APPDATA%\\Asystent).');return;}
+  if(!APP.gemini){popout({icon:'warn',title:'Brak klucza Gemini',text:'Zamiana nagrań na tekst wymaga klucza. Dodasz go w Ustawieniach (⚙ na dole paska) — to darmowe i zajmie minutę.'});return;}
   const r=await api('/rec/'+id+'/transcribe',{method:'POST'}); if(!r.queued)alert(r.detail||'Nie udało się.');
   recSig=''; recPoll();
 }
@@ -2042,6 +2106,70 @@ function popout({title='',text='',hint='',icon='info',ok='OK'}={}){
 // wszystkie dotychczasowe alert() → ten sam komunikat (pierwsza linia = tytuł, reszta = opis)
 window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
   popout({title:t,text:rest.join('\n').trim(),icon:/nie udało|nie udalo|błąd|brak|za duży|nie jest|nie wspiera|za mało|starej wersji|najpierw/i.test(msg)?'warn':'info'});};
+
+/* ===== USTAWIENIA: połączenie z AI ===== */
+let AIS={};
+function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
+async function loadSettings(){AIS=await api('/settings/ai'); renderSettings();}
+function renderSettings(){
+  const ok=AIS.has_key, chat=AIS.mode==='chat';
+  $('#st-status').innerHTML=`<div class="st-stat"><span class="dot" style="--c:${ok?'var(--pos)':chat?'var(--peach)':'var(--ink-dim)'}"></span>
+    <div><b>${ok?'Połączono z Gemini':chat?'Tryb: przez zwykły czat':'AI nie jest połączone'}</b>
+    <small>${ok?`Klucz ${esc(AIS.masked)}${AIS.from_env?' · ze zmiennej GEMINI_API_KEY':''}${chat?' · notatki AI idą przez czat':''}`:chat?'Notatki AI przez '+(AIS.chat==='chatgpt'?'ChatGPT':'Gemini')+' w przeglądarce':'Dodaj darmowy klucz albo włącz tryb czatu poniżej'}</small></div>
+    ${ok?`<button class="btn ghost sm" onclick="stTest()">Sprawdź połączenie</button>${AIS.from_env?'':'<button class="btn ghost sm" onclick="stDelKey()">Usuń klucz</button>'}`:''}</div>`;
+  $('#st-chatmode').checked=chat;
+  $$('#st-chat button').forEach(b=>b.classList.toggle('on',b.dataset.c===(AIS.chat||'gemini')));
+}
+async function stSave(p){AIS=await api('/settings/ai',{method:'POST',body:JSON.stringify(p)}); renderSettings(); APP.gemini=AIS.has_key;}
+async function stSaveKey(){
+  const k=$('#st-key').value.trim(); if(!k){$('#st-key').focus();return;}
+  const r=await api('/settings/ai',{method:'POST',body:JSON.stringify({key:k,mode:'key'})});
+  if(r.detail){popout({icon:'warn',title:'Nie zapisano klucza',text:r.detail});return;}
+  AIS=r; APP.gemini=r.has_key; $('#st-key').value=''; renderSettings(); stTest(true);
+}
+async function stTest(fresh){
+  const r=await api('/settings/ai/test',{method:'POST'});
+  if(r.ok)popout({icon:'ok',title:fresh?'Połączono z Gemini':'Połączenie działa',text:r.reply?'':(r.error||''),hint:'Notatki AI i zamiana nagrań na tekst są gotowe.'});
+  else popout({icon:'warn',title:'Połączenie nie działa',text:r.error||'Spróbuj ponownie.'});
+}
+async function stDelKey(){ if(!confirm('Usunąć zapisany klucz Gemini?'))return; await stSave({key:''}); }
+
+/* tryb „przez zwykły czat”: polecenie do schowka → czat w przeglądarce → wklejona odpowiedź (Markdown) → blok */
+const CHAT_URL={gemini:'https://gemini.google.com/app',chatgpt:'https://chatgpt.com/'};
+function mdToHtml(md){
+  const inl=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*]+)\*/g,'$1<em>$2</em>');
+  let html='',list=null;
+  const close=()=>{if(list){html+=`</${list}>`;list=null;}};
+  for(const raw of md.replace(/\r/g,'').split('\n')){
+    const l=raw.trim(); let m;
+    if(!l){close();continue;}
+    if(m=l.match(/^(#{1,6})\s+(.*)$/)){close();html+=`<${m[1].length<=2?'h3':'h4'}>${inl(m[2])}</${m[1].length<=2?'h3':'h4'}>`;continue;}
+    if(m=l.match(/^[-*•]\s+(.*)$/)){if(list!=='ul'){close();html+='<ul>';list='ul';}html+=`<li>${inl(m[1])}</li>`;continue;}
+    if(m=l.match(/^\d+[.)]\s+(.*)$/)){if(list!=='ol'){close();html+='<ol>';list='ol';}html+=`<li>${inl(m[1])}</li>`;continue;}
+    close(); html+=`<p>${inl(l)}</p>`;
+  }
+  close(); return html;
+}
+async function aiNoteViaChat(text,topic){
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  const r=await api('/ai/note/prompt',{method:'POST',body:JSON.stringify({text,topic})});
+  if(!r.prompt){popout({icon:'warn',title:'Nie udało się przygotować polecenia',text:r.detail||''});return null;}
+  let copied=false; try{await navigator.clipboard.writeText(r.prompt);copied=true;}catch(_){}
+  const chat=AIS.chat==='chatgpt'?'chatgpt':'gemini', name=chat==='chatgpt'?'ChatGPT':'Gemini';
+  window.open(CHAT_URL[chat],'_blank');
+  return new Promise(res=>{
+    $('#modal').style.maxWidth='620px';
+    $('#modal').innerHTML=`<h3>Notatka AI przez ${name}</h3>
+      <div class="msub">${copied?'Polecenie jest już w schowku.':'Skopiuj polecenie poniżej.'} W otwartym czacie wklej je (Ctrl+V) i wyślij, potem skopiuj odpowiedź i wklej tutaj.</div>
+      ${copied?'':`<label class="field"><span>Polecenie</span><textarea readonly onclick="this.select()">${esc(r.prompt)}</textarea></label>`}
+      <label class="field chatpaste"><span>Odpowiedź z czatu</span><textarea id="chat-answer" placeholder="Wklej tutaj odpowiedź…"></textarea></label>
+      <div class="actions"><button class="btn ghost" id="chat-reopen" style="margin-right:auto">Otwórz ${name} ↗</button><button class="btn ghost" id="chat-cancel">Anuluj</button><button class="btn" id="chat-ok">Wstaw do notatki</button></div>`;
+    openModal(); setTimeout(()=>$('#chat-answer').focus(),80);
+    $('#chat-reopen').onclick=()=>window.open(CHAT_URL[chat],'_blank');
+    $('#chat-cancel').onclick=()=>{closeModal();res(null);};
+    $('#chat-ok').onclick=()=>{const v=$('#chat-answer').value.trim(); if(!v){$('#chat-answer').focus();return;} closeModal(); res(mdToHtml(v));};
+  });
+}
 
 /* eksport / import danych (kopia ZIP: baza + załączniki) */
 async function exportData(){
@@ -2175,10 +2303,9 @@ function typeBadge(p,size){ if(!p)return ''; const t=findType(p); return `<span 
 function noteCardHTML(n,col){
   return `<div class="note-item ${n.id===noteActive?'on':''}" draggable="true" data-nid="${n.id}" style="--nc:${col}" onclick="openNote(${n.id})" title="${escAttr(n.description||'')}">
       <span class="grab" title="Przeciągnij do grupy">⠿</span>
-      <span class="del" onclick="event.stopPropagation();delNote(${n.id})">✕</span>
-      <span class="move" title="Przenieś do grupy" onclick="event.stopPropagation();openGroupMenu(event,${n.id})">⋯</span>
       <div class="nt-row"><span class="nt">${esc(n.title||'Bez tytułu')}</span>${typeBadge(n.purpose||'notatka','big')}</div>
-      <div class="nmeta"><span class="dt">${fmtDate(n.updated_at)}</span></div>
+      <div class="nmeta"><span class="dt">${fmtDate(n.updated_at)}</span>
+        <span class="acts"><span class="move" title="Przenieś do grupy" onclick="event.stopPropagation();openGroupMenu(event,${n.id})">⋯</span><span class="del" title="Usuń notatkę" onclick="event.stopPropagation();delNote(${n.id})">✕</span></span></div>
     </div>`;
 }
 function sectionHTML(key,label,count,items,col,{group=null}={}){
@@ -3231,20 +3358,28 @@ async function aiNoteFromBlock(id,btnEl){
   const tmp=document.createElement('div'); tmp.innerHTML=b.html||''; const text=(tmp.textContent||'').trim();
   if(text.length<10){alert('Za mało tekstu w tym bloku, aby zrobić notatkę.');return;}
   const topic=await aiTopicDialog(); if(topic===null)return;   // anulowano
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  if(AIS.mode==='chat'||!AIS.has_key){   // bez klucza → przez zwykły czat
+    const html=await aiNoteViaChat(text,topic); if(!html)return;
+    insertAiBlock(id,html); return;
+  }
   const oldHTML=btnEl?btnEl.innerHTML:''; if(btnEl){btnEl.classList.add('busy');btnEl.innerHTML='⏳ AI…';}
   try{
     const res=await fetch('/api/ai/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,topic})});
     const data=await res.json();
     if(!res.ok) throw new Error(data.detail||('Błąd '+res.status));
-    const nb={id:uid(),type:'text',html:data.html};
+    insertAiBlock(id,data.html);
+  }catch(err){alert('Nie udało się utworzyć notatki AI:\n'+err.message);}
+  finally{ if(btnEl){btnEl.classList.remove('busy');btnEl.innerHTML=oldHTML;} }
+}
+function insertAiBlock(id,html){
+    const nb={id:uid(),type:'text',html};
     const idx=noteData.content.findIndex(x=>x.id===id);
     noteData.content.splice(idx+1,0,nb);
     renderBlocks(); scheduleSave();
     const el=[...$('#blocks').children].find(x=>x.dataset.bid===nb.id);
     if(el){document.querySelectorAll('#blocks .block.editing').forEach(x=>x.classList.remove('editing'));
       el.classList.add('editing'); el.scrollIntoView({block:'center'});}
-  }catch(err){alert('Nie udało się utworzyć notatki AI:\n'+err.message);}
-  finally{ if(btnEl){btnEl.classList.remove('busy');btnEl.innerHTML=oldHTML;} }
 }
 
 /* ===== EKSPORT NOTATKI DO PDF ===== */
