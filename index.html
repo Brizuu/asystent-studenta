@@ -125,6 +125,7 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
 .bell svg{width:19px;height:19px;flex:none}
 .bell~.bell{margin-top:0}
 .bell[hidden]{display:none}
+.rail>.navlist{margin-bottom:auto}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
 .bell.on svg{stroke:var(--pos)}
 #nav-settings.active{background:var(--glass-2);color:var(--ink)} #nav-settings.active svg{stroke:var(--accent-2)}
@@ -281,18 +282,18 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
 .wl-next[hidden],.wl-now[hidden]{display:none}
 /* trwa teraz: kolor rodzaju wpisu + pasek postępu */
-.wl-now{display:inline-flex;align-items:center;gap:10px;margin:14px 10px 0 0;padding:7px 14px 7px 10px;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px;color:var(--ink);
+.wl-now{display:inline-flex;align-items:center;gap:10px;margin:14px 10px 0 0;padding:6px 14px 6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px;line-height:1.35;color:var(--ink);vertical-align:middle;min-height:34px;box-sizing:border-box;
   border:1px solid color-mix(in srgb,var(--kc) 45%,transparent);background:color-mix(in srgb,var(--kc) 16%,rgba(20,20,30,.35));
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out}
 .wl-now:active{transform:var(--press)}
 .wl-now .live{width:8px;height:8px;border-radius:50%;background:var(--kc);box-shadow:0 0 0 0 color-mix(in srgb,var(--kc) 60%,transparent);animation:live 2s ease-out infinite}
 @keyframes live{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
-.wl-now small{color:var(--ink-soft);font-size:12.5px}
+.wl-now small{color:var(--ink-soft);font-size:13.5px}
 .wl-now .pg{width:64px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
 .wl-now .pg i{display:block;height:100%;background:var(--kc)}
 .wl-now.brk{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)} .wl-now.brk .live{animation:none;background:rgba(255,255,255,.55)}
 @media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
-.wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
+.wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px 6px 12px;line-height:1.35;vertical-align:middle;min-height:34px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
 .wl-next:hover{background:rgba(255,255,255,.1);color:var(--ink)} .wl-next:active{transform:var(--press)}
 .wl-next b{color:var(--ink);font-weight:600} .wl-next .dots{display:inline-flex;gap:3px} .wl-next .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
@@ -2606,10 +2607,10 @@ function renderWelcome(tasks){
     el.innerHTML=`<span class="live"></span><span><b>Trwa:</b> ${esc(now.title)} <small>· jeszcze ${dur(b-n)}, do ${now.end_time||hm(b)}${now.room?' · s. '+esc(now.room):''}${gap>0?` · potem ${dur(gap)} przerwy`:''}</small></span>
       <span class="pg"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></span>`;
     el.onclick=()=>viewTask(now.id); el.hidden=false;
-  }else if(next){
+  }else if(next&&all.some(t=>evSpan(t)[1]<=n)){
     const prev=all.filter(t=>evSpan(t)[1]<=n).pop(), from=prev?evSpan(prev)[1]:null, to=toMin(next.start_time), k=kindOf(next.kind);
     el.style.setProperty('--kc',k[2]); el.classList.add('brk');
-    el.innerHTML=`<span class="live"></span><span><b>${prev?'Przerwa':'Do zajęć'}:</b> jeszcze ${dur(to-n)} <small>· potem ${esc(next.title)} o ${next.start_time}</small></span>
+    el.innerHTML=`<span class="live"></span><span><b>Przerwa:</b> jeszcze ${dur(to-n)} <small>· potem ${esc(next.title)} o ${next.start_time}</small></span>
       ${from!=null?`<span class="pg"><i style="width:${Math.round((n-from)/(to-from)*100)}%"></i></span>`:''}`;
     el.onclick=()=>viewTask(next.id); el.hidden=false;
   }else el.hidden=true;
