@@ -14,6 +14,8 @@ import base64
 import uuid
 import urllib.request
 import urllib.error
+import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from datetime import date
@@ -457,7 +459,50 @@ class GeminiError(Exception):
         self.status, self.msg = status, msg
 
 
-def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeout: int = 90, tries: int = 3) -> str:
+# ---------- zużycie AI (liczone lokalnie: Google nie udostępnia stanu limitu przez klucz) ----------
+USAGE = DATA_DIR / "ai_usage.json"
+_usage_lock = threading.Lock()
+
+
+def _pacific_now() -> datetime:
+    """Darmowe limity Gemini odnawiają się o północy czasu pacyficznego."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/Los_Angeles"))
+    except Exception:   # brak bazy stref (np. Windows bez tzdata) — przybliżenie DST USA
+        u = datetime.now(timezone.utc)
+        off = -7 if 3 <= u.month <= 10 else -8
+        return u.astimezone(timezone(timedelta(hours=off)))
+
+
+def _usage_load() -> dict:
+    try:
+        return json.loads(USAGE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit: bool = False):
+    with _usage_lock:
+        u = _usage_load()
+        days = u.setdefault("days", {})
+        d = days.setdefault(_pacific_now().date().isoformat(), {"req": 0, "in": 0, "out": 0, "err": 0, "kinds": {}})
+        d["req"] += 1
+        d["kinds"][kind] = d["kinds"].get(kind, 0) + 1
+        if not ok:
+            d["err"] += 1
+        if daily_limit:
+            d["limit_hit"] = True
+        if meta:
+            d["in"] += int(meta.get("promptTokenCount") or 0)
+            d["out"] += int(meta.get("candidatesTokenCount") or 0) + int(meta.get("thoughtsTokenCount") or 0)
+        for k in sorted(days)[:-60]:          # trzymamy ostatnie 60 dni
+            days.pop(k)
+        USAGE.write_text(json.dumps(u), encoding="utf-8")
+
+
+def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeout: int = 90, tries: int = 3,
+           kind: str = "other") -> str:
     """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu."""
     key = _gemini_key()
     if not key:
@@ -481,12 +526,15 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
             if e.code in (503, 429) and attempt < tries - 1 and "PerDay" not in detail:
                 time.sleep(1.5 * (attempt + 1))
                 continue
+            if e.code == 429:   # odrzucone przez limit — liczy się do dziennego wykorzystania
+                _usage_add(kind, ok=False, daily_limit="PerDay" in detail or "per day" in detail.lower())
             raise GeminiError(e.code, f"Gemini API błąd {e.code}: {detail[:300]}")
         except Exception as e:
             if attempt < tries - 1:
                 time.sleep(1)
                 continue
             raise GeminiError(502, f"Nie udało się połączyć z Gemini: {e}")
+    _usage_add(kind, (data or {}).get("usageMetadata"))
     try:
         return data["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError):
@@ -586,7 +634,7 @@ def set_ai_settings(p: AiSettings):
 @app.post("/api/settings/ai/test")
 def test_ai():
     try:
-        out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=10, temperature=0, timeout=30, tries=1)
+        out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=10, temperature=0, timeout=30, tries=1, kind="test")
         return {"ok": True, "reply": out.strip()[:40]}
     except GeminiError as e:
         msg = e.msg
@@ -595,6 +643,70 @@ def test_ai():
         elif e.status == 429:
             msg = "Klucz działa, ale chwilowo przekroczono limit. Spróbuj za minutę."
         return {"ok": e.status == 429, "error": msg}
+
+
+class UsageLimit(BaseModel):
+    daily: int
+
+
+@app.get("/api/settings/ai/usage")
+def ai_usage():
+    u = _usage_load()
+    now = _pacific_now()
+    today = now.date().isoformat()
+    days = u.get("days", {})
+    reset = (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).astimezone(timezone.utc)
+    last = [(now.date() - timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
+    empty = {"req": 0, "in": 0, "out": 0, "err": 0, "kinds": {}}
+    return {"today": {**empty, **days.get(today, {})}, "daily_limit": int(u.get("daily_limit") or 250),
+            "reset_at": reset.isoformat().replace("+00:00", "Z"),
+            "history": [{"date": d, **{**empty, **days.get(d, {})}} for d in last],
+            "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
+
+
+@app.post("/api/settings/ai/usage")
+def set_ai_usage(p: UsageLimit):
+    with _usage_lock:
+        u = _usage_load()
+        u["daily_limit"] = max(1, min(100000, p.daily))
+        USAGE.write_text(json.dumps(u), encoding="utf-8")
+    return ai_usage()
+
+
+# ---------- logo uczelni (pobierane raz, trzymane lokalnie) ----------
+LOGOS = DATA_DIR / "logos"
+
+
+@app.get("/api/unilogo/{domain}")
+def uni_logo(domain: str):
+    domain = domain.lower()
+    if not re.fullmatch(r"[a-z0-9-]+(\.[a-z0-9-]+)+", domain) or len(domain) > 80:
+        raise HTTPException(400, "Zła domena")
+    LOGOS.mkdir(parents=True, exist_ok=True)
+    f, miss = LOGOS / (domain + ".img"), LOGOS / (domain + ".miss")
+    if not f.exists():
+        if miss.exists() and time.time() - miss.stat().st_mtime < 86400:
+            raise HTTPException(404, "Brak logo")
+        for src in (f"https://www.google.com/s2/favicons?domain={domain}&sz=128",
+                    f"https://icons.duckduckgo.com/ip3/{domain}.ico",
+                    f"https://{domain}/apple-touch-icon.png"):
+            try:
+                req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0 Asystent"})
+                with urllib.request.urlopen(req, timeout=6) as r:
+                    b = r.read(512_000)
+                if len(b) > 200 and (b[:8] == b"\x89PNG\r\n\x1a\n" or b[:4] == b"\x00\x00\x01\x00"
+                                     or b[:3] == b"\xff\xd8\xff" or b[:4] == b"GIF8" or b[8:12] == b"WEBP"):
+                    f.write_bytes(b)
+                    break
+            except Exception:
+                continue
+        else:
+            miss.touch()
+            raise HTTPException(404, "Brak logo")
+    b = f.read_bytes()
+    mt = ("image/png" if b[:4] == b"\x89PNG" else "image/x-icon" if b[:4] == b"\x00\x00\x01\x00"
+          else "image/jpeg" if b[:3] == b"\xff\xd8\xff" else "image/gif" if b[:4] == b"GIF8" else "image/webp")
+    return Response(b, media_type=mt, headers={"Cache-Control": "public, max-age=604800"})
 
 
 @app.post("/api/ai/note")
@@ -608,7 +720,7 @@ def ai_note(a: AINote):
     prompt = _note_prompt(a.text, a.topic)
 
     try:
-        out = gemini([{"text": prompt}], max_tokens=4096, temperature=0.4)
+        out = gemini([{"text": prompt}], max_tokens=4096, temperature=0.4, kind="note")
     except GeminiError as e:
         if e.status in (429, 503):
             raise HTTPException(503, "Model Gemini jest chwilowo przeciążony. Spróbuj ponownie za chwilę.")

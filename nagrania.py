@@ -196,7 +196,7 @@ def _transcribe(rid: int):
         for attempt in range(6):
             try:
                 text = gemini([{"inline_data": {"mime_type": "audio/ogg", "data": audio}}, {"text": PROMPT}],
-                              max_tokens=16384, temperature=0, timeout=300)
+                              max_tokens=16384, temperature=0, timeout=300, kind="transcribe")
                 break
             except GeminiError as e:
                 daily = "PerDay" in e.msg or "per day" in e.msg.lower()
