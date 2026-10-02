@@ -3472,7 +3472,7 @@ const cloudUrl=()=>APP.cloud_url||'http://127.0.0.1:8100';
 async function cloud(path,{method='GET',body}={}){
   let r; const tok=LS.get('asys_token');
   try{ r=await fetch(cloudUrl()+path,{method,headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},body:body?JSON.stringify(body):undefined}); }
-  catch(_){ throw new Error(`Brak połączenia z serwerem kont (${cloudUrl()}). Uruchom go albo sprawdź adres w Ustawieniach → Dane.`); }
+  catch(_){ throw new Error(`Brak połączenia z serwerem kont (${cloudUrl()}). Uruchom go albo zmień adres — link „zmień” pod formularzem.`); }
   const d=await r.json().catch(()=>({}));
   if(r.status===401&&!path.startsWith('/auth/')){LS.set('asys_token',null);ME=null;paintNavAccount();}
   if(!r.ok)throw new Error(d.detail||('Błąd '+r.status));
