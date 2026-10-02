@@ -126,7 +126,8 @@ def current_user(authorization: str = Header(default="")) -> sqlite3.Row:
 _attempts: dict[str, deque] = defaultdict(deque)
 
 
-def rate_limit(request: Request, limit: int = 10, window: int = 300):
+def rate_limit(request: Request, limit: int = 10, window: int = 300, record: bool = True):
+    """Sprawdza limit dla IP; record=False — tylko sprawdź (przy logowaniu liczymy same nieudane próby)."""
     ip = request.client.host if request.client else "?"
     q = _attempts[ip]
     now = time.time()
@@ -134,26 +135,27 @@ def rate_limit(request: Request, limit: int = 10, window: int = 300):
         q.popleft()
     if len(q) >= limit:
         raise HTTPException(429, "Za dużo prób. Spróbuj za kilka minut.")
-    q.append(now)
+    if record:
+        q.append(now)
 
 
 def public(u, full=False) -> dict:
-    d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"]}
+    # e-mail widoczny dla znajomych — po nim się wyszukują
+    d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"], "email": u["email"]}
     if full:
-        d.update(email=u["email"], bio=u["bio"], created_at=u["created_at"])
+        d.update(bio=u["bio"], created_at=u["created_at"])
     return d
 
 
 # ---------- konto ----------
 class Register(BaseModel):
+    display_name: str       # imię i nazwisko — widoczne u znajomych
     email: str
-    username: str
     password: str
-    display_name: str = ""
 
 
 class Login(BaseModel):
-    login: str      # e-mail albo nazwa użytkownika
+    login: str      # e-mail
     password: str
 
 
@@ -165,29 +167,35 @@ def health():
 @app.post("/auth/register")
 def register(p: Register, request: Request):
     rate_limit(request)
-    email, username = p.email.strip().lower(), p.username.strip()
+    email, name = p.email.strip().lower(), " ".join(p.display_name.split())[:60]
+    if len(name) < 2:
+        raise HTTPException(400, "Podaj imię i nazwisko.")
     if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
         raise HTTPException(400, "Podaj poprawny adres e-mail.")
-    if not re.fullmatch(r"[A-Za-z0-9_.]{3,24}", username):
-        raise HTTPException(400, "Nazwa użytkownika: 3–24 znaki, litery, cyfry, „_” lub „.”.")
     if len(p.password) < 8:
         raise HTTPException(400, "Hasło musi mieć co najmniej 8 znaków.")
-    try:
-        with db() as c:
-            uid = c.execute("INSERT INTO users(email,username,display_name,pw_hash) VALUES(?,?,?,?)",
-                            (email, username, p.display_name.strip()[:60] or username, hash_pw(p.password))).lastrowid
-    except sqlite3.IntegrityError:
-        raise HTTPException(409, "Ten e-mail albo nazwa użytkownika jest już zajęta.")
+    with db() as c:
+        if c.execute("SELECT 1 FROM users WHERE email=?", (email,)).fetchone():
+            raise HTTPException(409, "Konto z tym adresem e-mail już istnieje. Zaloguj się.")
+        # wewnętrzny identyfikator (niewidoczny): z e-maila, unikalny
+        base = re.sub(r"[^a-z0-9_.]", "", email.split("@")[0])[:20] or "user"
+        username, n = base, 1
+        while c.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
+            n += 1
+            username = f"{base}{n}"
+        uid = c.execute("INSERT INTO users(email,username,display_name,pw_hash) VALUES(?,?,?,?)",
+                        (email, username, name, hash_pw(p.password))).lastrowid
     return {"token": new_session(uid)}
 
 
 @app.post("/auth/login")
 def login(p: Login, request: Request):
-    rate_limit(request)
+    rate_limit(request, record=False)
     with db() as c:
-        u = c.execute("SELECT * FROM users WHERE email=? OR username=?", (p.login.strip(), p.login.strip())).fetchone()
+        u = c.execute("SELECT * FROM users WHERE email=?", (p.login.strip().lower(),)).fetchone()
     if not u or not check_pw(p.password, u["pw_hash"]):
-        raise HTTPException(401, "Nieprawidłowy login lub hasło.")
+        rate_limit(request)   # nieudana próba się liczy
+        raise HTTPException(401, "Nieprawidłowy e-mail lub hasło.")
     return {"token": new_session(u["id"])}
 
 
@@ -213,7 +221,7 @@ class Profile(BaseModel):
 def update_me(p: Profile, u=Depends(current_user)):
     f = {}
     if p.display_name is not None:
-        f["display_name"] = p.display_name.strip()[:60] or u["username"]
+        f["display_name"] = " ".join(p.display_name.split())[:60] or u["display_name"]
     if p.bio is not None:
         f["bio"] = p.bio.strip()[:300]
     if p.avatar is not None:
@@ -269,15 +277,15 @@ def friends(u=Depends(current_user)):
 
 
 class FriendRequest(BaseModel):
-    username: str
+    email: str
 
 
 @app.post("/friends/request")
 def friend_request(p: FriendRequest, u=Depends(current_user)):
     with db() as c:
-        t = c.execute("SELECT * FROM users WHERE username=? OR email=?", (p.username.strip(), p.username.strip())).fetchone()
+        t = c.execute("SELECT * FROM users WHERE email=?", (p.email.strip().lower(),)).fetchone()
         if not t:
-            raise HTTPException(404, "Nie ma takiego użytkownika.")
+            raise HTTPException(404, "Nie ma konta z tym adresem e-mail.")
         if t["id"] == u["id"]:
             raise HTTPException(400, "To Twoje konto.")
         ex = c.execute("SELECT * FROM friendships WHERE (requester=? AND addressee=?) OR (requester=? AND addressee=?)",

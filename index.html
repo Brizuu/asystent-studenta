@@ -361,11 +361,38 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .av img{width:100%;height:100%;object-fit:cover}
 .acc-wrap,#fr{max-width:820px;display:flex;flex-direction:column;gap:18px}
 /* jaśniejsze, pastelowe tło dla Konta i Znajomych */
-.aura{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
+.aura{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;overflow:hidden;
   background:radial-gradient(55% 45% at 18% 12%,rgba(195,181,255,.5),transparent 70%),radial-gradient(48% 42% at 88% 18%,rgba(255,185,140,.42),transparent 70%),
     radial-gradient(55% 50% at 72% 92%,rgba(143,200,255,.36),transparent 70%),radial-gradient(42% 40% at 8% 88%,rgba(128,220,194,.32),transparent 70%),
     linear-gradient(160deg,#2c2946,#21223a 55%,#2a2236)}
 body.on-social .aura{opacity:1}
+/* zorza: miękkie wstęgi w kolorach aplikacji zamiast przypadkowych plam */
+.au-ribbon{position:absolute;left:-20%;right:-20%;top:18%;height:46%;border-radius:50%;filter:blur(70px);opacity:.55;transform:rotate(-12deg);
+  background:linear-gradient(90deg,transparent 2%,#9fabff 22%,#c3b5ff 38%,#ffb98c 58%,#ff9db4 72%,transparent 96%)}
+.au-ribbon.r2{top:52%;height:34%;opacity:.32;transform:rotate(8deg);background:linear-gradient(90deg,transparent 8%,#80dcc2 30%,#8fc8ff 55%,#9fabff 75%,transparent 98%)}
+.au-grid{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.22) 1px,transparent 1.2px);background-size:26px 26px;
+  mask-image:radial-gradient(70% 60% at 50% 45%,transparent 18%,#000 60%,transparent 92%);-webkit-mask-image:radial-gradient(70% 60% at 50% 45%,transparent 18%,#000 60%,transparent 92%)}
+/* szklane kafelki z elementami aplikacji — tylko przy ekranie logowania, lekko podążają za kursorem */
+.au-cards{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}
+body.on-auth .au-cards{opacity:1}
+.au-card{position:absolute;padding:14px 16px;border-radius:20px;color:#fff;font-size:13px;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 24px 50px -24px rgba(10,8,30,.7);
+  transform:translate(calc(var(--px,0) * var(--d) * 1px),calc(var(--py,0) * var(--d) * 1px)) rotate(var(--r,0deg));transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+.c-cal{left:12%;top:16%;--r:-8deg;width:96px;text-align:center;background:rgba(251,248,243,.92);color:#1d1d1f}
+.au-cal-h{font-size:11px;font-weight:700;color:#ff5f57;letter-spacing:.04em} .au-cal-d{font-size:40px;font-weight:300;line-height:1.1}
+.au-dots{display:flex;gap:4px;justify-content:center} .au-dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.c-note{left:8%;bottom:16%;--r:5deg;width:210px}
+.au-note-t{font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px} .au-note-t i{width:8px;height:8px;border-radius:50%;background:#80dcc2}
+.au-line{height:6px;border-radius:4px;background:rgba(255,255,255,.22);margin-top:7px}
+.c-fr{right:11%;top:14%;--r:6deg;display:flex;align-items:center;gap:10px}
+.au-avs{display:flex} .au-avs span{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--c);border:2px solid rgba(255,255,255,.7);margin-left:-8px}
+.au-avs span:first-child{margin-left:0} .au-fr-t{font-weight:600}
+.c-share{right:8%;bottom:20%;--r:-5deg;display:flex;align-items:center;gap:12px}
+.au-sh-ic{width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,#ffb98c,#ff9db4)} .au-sh-t{font-weight:600} .au-sh-s{font-size:11.5px;color:rgba(255,255,255,.7)}
+.c-time{left:24%;top:58%;--r:-3deg;opacity:.85} .au-time{font-size:22px;font-weight:300;letter-spacing:-.02em}
+@media(max-width:1000px){.au-cards{display:none}}
+@media(prefers-reduced-motion:reduce){.au-card{transition:none}}
 body.on-social .glass{background:rgba(30,29,48,.5);border-color:rgba(255,255,255,.12)}
 #view-konto .head[hidden],#view-znajomi .head[hidden]{display:none}
 #acc:has(.auth-stage),#fr:has(.auth-stage){max-width:none}   /* ekran logowania wyśrodkowany na całej szerokości */
@@ -452,6 +479,10 @@ input,select,textarea{
   border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;outline:none;transition:border-color .15s,background .15s;
 }
 input::placeholder{color:var(--ink-dim)}
+/* autouzupełnianie przeglądarki: bez żółtego tła, kolory jak zwykłe pole */
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill,select:-webkit-autofill{
+  -webkit-text-fill-color:var(--ink);caret-color:var(--ink);-webkit-box-shadow:0 0 0 1000px #262539 inset;box-shadow:0 0 0 1000px #262539 inset;
+  transition:background-color 99999s ease-out 0s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rgba(255,255,255,.06)}
 select option{background:#14151d}
 label.f{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--ink-dim)}
@@ -1300,7 +1331,16 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 </head>
 <body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
-<div class="aura" aria-hidden="true"></div>
+<div class="aura" aria-hidden="true">
+  <div class="au-ribbon"></div><div class="au-ribbon r2"></div><div class="au-grid"></div>
+  <div class="au-cards">
+    <div class="au-card c-cal" style="--d:18"><div class="au-cal-h">PIĄTEK</div><div class="au-cal-d">3</div><div class="au-dots"><i style="--c:#80dcc2"></i><i style="--c:#9fabff"></i><i style="--c:#ffb98c"></i></div></div>
+    <div class="au-card c-note" style="--d:28"><div class="au-note-t"><i></i>Całki oznaczone</div><div class="au-line" style="width:88%"></div><div class="au-line" style="width:72%"></div><div class="au-line" style="width:80%"></div><div class="au-line" style="width:46%"></div></div>
+    <div class="au-card c-fr" style="--d:22"><div class="au-avs"><span style="--c:#d0568f">OK</span><span style="--c:#3f86e0">MW</span><span style="--c:#2fa37c">JN</span></div><div class="au-fr-t">3 znajomych</div></div>
+    <div class="au-card c-share" style="--d:34"><div class="au-sh-ic"></div><div><div class="au-sh-t">Mikroekonomia</div><div class="au-sh-s">Zeszyt · udostępniony</div></div></div>
+    <div class="au-card c-time" style="--d:14"><div class="au-time">11:30</div><div class="au-sh-s">Wykład · s. 233</div></div>
+  </div>
+</div>
 <div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div></div>
 
 <div class="app">
@@ -1647,6 +1687,7 @@ function go(v){
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
   document.body.classList.toggle('on-social', v==='konto'||v==='znajomi');
+  document.body.classList.toggle('on-auth', (v==='konto'||v==='znajomi')&&!ME);
   pushNav();
 }
 
@@ -2222,6 +2263,11 @@ async function cloud(path,{method='GET',body}={}){
   if(!r.ok)throw new Error(d.detail||('Błąd '+r.status));
   return d;
 }
+addEventListener('pointermove',e=>{
+  if(!document.body.classList.contains('on-auth')||reduceMotion())return;
+  if(window._pxRaf)return; window._pxRaf=requestAnimationFrame(()=>{window._pxRaf=0;
+    const a=$('.aura'); a.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(3)); a.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(3));});
+});
 const AV_COL=['#6c5fd8','#e8875a','#3f86e0','#2fa37c','#d0568f','#b0892b'];
 function avatarHTML(u,size=44){
   if(!u)return '';
@@ -2253,10 +2299,9 @@ function renderAccount(){
       <div class="auth-card glass">
       <div class="seg"><button class="${reg?'':'on'}" onclick="authTab='login';renderAccount()">Logowanie</button><button class="${reg?'on':''}" onclick="authTab='register';renderAccount()">Załóż konto</button></div>
       <form onsubmit="event.preventDefault();authSubmit()">
-        ${reg?`<label class="field"><span>Imię lub pseudonim</span><input id="au-name" autocomplete="name" placeholder="np. Fabian"></label>
-        <label class="field"><span>Nazwa użytkownika (po niej znajdą Cię znajomi)</span><input id="au-user" autocomplete="username" placeholder="np. fabian_k" required></label>
-        <label class="field"><span>E-mail</span><input id="au-mail" type="email" autocomplete="email" placeholder="ty@przyklad.pl" required></label>`
-        :`<label class="field"><span>E-mail lub nazwa użytkownika</span><input id="au-login" autocomplete="username" required></label>`}
+        ${reg?`<label class="field"><span>Imię i nazwisko (tak zobaczą Cię znajomi)</span><input id="au-name" autocomplete="name" placeholder="np. Jan Kowalski" required></label>
+        <label class="field"><span>E-mail (po nim znajdą Cię znajomi)</span><input id="au-mail" type="email" autocomplete="email" placeholder="ty@przyklad.pl" required></label>`
+        :`<label class="field"><span>E-mail</span><input id="au-login" type="email" autocomplete="email" placeholder="ty@przyklad.pl" required></label>`}
         <label class="field"><span>Hasło${reg?' (min. 8 znaków)':''}</span><div class="pw-wrap"><input id="au-pass" type="password" autocomplete="${reg?'new-password':'current-password'}" required>
           <button type="button" class="pw-eye" title="Pokaż hasło" onclick="const i=$('#au-pass');i.type=i.type==='password'?'text':'password'"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
         <div class="auth-err" id="au-err"></div>
@@ -2268,10 +2313,10 @@ function renderAccount(){
   const since=ME.created_at?new Date(ME.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{month:'long',year:'numeric'}):'';
   $('#acc').innerHTML=`<div class="prof glass">
       <label title="Zmień zdjęcie">${avatarHTML(ME,96)}<input type="file" accept="image/*" hidden onchange="pickAvatar(this)"></label>
-      <div><h2>${esc(ME.display_name)}</h2><div class="un">@${esc(ME.username)} · ${esc(ME.email)}</div>${since?`<div class="since">Konto od ${since}</div>`:''}</div>
+      <div><h2>${esc(ME.display_name)}</h2><div class="un">${esc(ME.email)}</div>${since?`<div class="since">Konto od ${since}</div>`:''}</div>
       <button class="btn ghost sm" onclick="logout()">Wyloguj</button></div>
     <div class="form-card glass"><h3>Profil</h3>
-      <label class="field"><span>Imię lub pseudonim</span><input id="pf-name" value="${escAttr(ME.display_name)}"></label>
+      <label class="field"><span>Imię i nazwisko</span><input id="pf-name" value="${escAttr(ME.display_name)}"></label>
       <label class="field"><span>O mnie</span><textarea id="pf-bio" placeholder="np. Zarządzanie, I rok, PUT">${esc(ME.bio||'')}</textarea></label>
       <div class="st-actions"><button class="btn" onclick="saveProfile()">Zapisz profil</button>${ME.avatar?'<button class="btn ghost" onclick="removeAvatar()">Usuń zdjęcie</button>':''}</div></div>
     <div class="form-card glass"><h3>Zmiana hasła</h3>
@@ -2283,13 +2328,13 @@ async function authSubmit(){
   const err=$('#au-err'); err.textContent='';
   try{
     const r=authTab==='register'
-      ?await cloud('/auth/register',{method:'POST',body:{display_name:$('#au-name').value,username:$('#au-user').value,email:$('#au-mail').value,password:$('#au-pass').value}})
+      ?await cloud('/auth/register',{method:'POST',body:{display_name:$('#au-name').value,email:$('#au-mail').value,password:$('#au-pass').value}})
       :await cloud('/auth/login',{method:'POST',body:{login:$('#au-login').value,password:$('#au-pass').value}});
-    LS.set('asys_token',r.token); ME=await cloud('/me'); paintNavAccount(); refreshFriendsBadge(); renderAccount();
-    if(authTab==='register')popout({icon:'ok',title:'Witaj, '+ME.display_name+'!',text:'Konto gotowe. Dodaj znajomych w zakładce Znajomi.'});
+    LS.set('asys_token',r.token); ME=await cloud('/me'); paintNavAccount(); refreshFriendsBadge(); document.body.classList.remove('on-auth'); renderAccount();
+    if(authTab==='register')popout({icon:'ok',title:'Witaj, '+ME.display_name.split(' ')[0]+'!',text:'Konto gotowe. Znajomych dodasz po ich adresie e-mail w zakładce Znajomi.'});
   }catch(e){err.textContent=e.message;}
 }
-async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} LS.set('asys_token',null); ME=null; paintNavAccount(); refreshFriendsBadge(); renderAccount(); }
+async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
 async function saveProfile(){
   try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
   catch(e){popout({icon:'warn',title:'Nie zapisano profilu',text:e.message});}
@@ -2327,16 +2372,16 @@ async function loadFriends(){
       <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
   try{FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
   refreshFriendsBadge();
-  const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>@${esc(f.username)}</small></div>${acts}</div>`;
-  el.innerHTML=`<form class="fr-add glass" onsubmit="event.preventDefault();addFriend()"><input id="fr-user" placeholder="Nazwa użytkownika lub e-mail znajomego"><button class="btn" type="submit">Dodaj znajomego</button></form>
+  const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>${esc(f.email||'')}</small></div>${acts}</div>`;
+  el.innerHTML=`<form class="fr-add glass" onsubmit="event.preventDefault();addFriend()"><input id="fr-user" type="email" placeholder="E-mail znajomego"><button class="btn" type="submit">Dodaj znajomego</button></form>
     ${FR.incoming.length?`<div class="fr-sec"><h4>Zaproszenia</h4><div class="fr-list">${FR.incoming.map(f=>row(f,`<div class="acts"><button class="btn sm" onclick="frAct('accept',${f.fid})">Akceptuj</button><button class="btn ghost sm" onclick="frAct('del',${f.fid})">Odrzuć</button></div>`)).join('')}</div></div>`:''}
     <div class="fr-sec"><h4>Znajomi</h4><div class="fr-list">${FR.friends.length?FR.friends.map(f=>row(f,`${f.shared_with_me?`<span class="fr-pill">${f.shared_with_me} ${plural(f.shared_with_me,'udostępnienie','udostępnienia','udostępnień')}</span>`:''}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-dim)"><path d="M9 6l6 6-6 6"/></svg>`,true)).join('')
-      :'<div class="empty-soft">Nie masz jeszcze znajomych. Dodaj kogoś po nazwie użytkownika.</div>'}</div></div>
+      :'<div class="empty-soft">Nie masz jeszcze znajomych. Dodaj kogoś po adresie e-mail.</div>'}</div></div>
     ${FR.outgoing.length?`<div class="fr-sec"><h4>Wysłane zaproszenia</h4><div class="fr-list">${FR.outgoing.map(f=>row(f,`<button class="btn ghost sm" onclick="frAct('del',${f.fid})">Anuluj</button>`)).join('')}</div></div>`:''}`;
 }
 async function addFriend(){
   const u=$('#fr-user').value.trim(); if(!u)return;
-  try{const r=await cloud('/friends/request',{method:'POST',body:{username:u}});
+  try{const r=await cloud('/friends/request',{method:'POST',body:{email:u}});
     popout({icon:'ok',title:r.status==='accepted'?'Jesteście znajomymi':'Zaproszenie wysłane',text:r.status==='accepted'?'':'Gdy '+u+' je zaakceptuje, pojawi się na liście.'}); loadFriends();}
   catch(e){popout({icon:'warn',title:'Nie wysłano zaproszenia',text:e.message});}
 }
@@ -2345,7 +2390,7 @@ async function openFriend(id){
   const f=FR.friends.find(x=>x.id===id); if(!f)return;
   const list=await cloud('/shares?from_user='+id), el=$('#fr');
   el.innerHTML=`<button class="btn ghost sm" style="align-self:flex-start" onclick="loadFriends()">← Wszyscy znajomi</button>
-    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2><div class="un" style="color:var(--ink-dim)">@${esc(f.username)}</div></div>
+    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2><div class="un" style="color:var(--ink-dim)">${esc(f.email||'')}</div></div>
       <button class="btn ghost sm" onclick="removeFriend(${f.fid},'${escAttr(f.display_name)}')">Usuń ze znajomych</button></div>
     <div class="fr-sec"><h4>Udostępnione Tobie</h4><div class="fr-list">${list.length?list.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
       return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
@@ -2461,7 +2506,7 @@ async function shareCurrent(kind){
   }
   $('#modal').style.maxWidth='460px';
   $('#modal').innerHTML=`<h3>Udostępnij ${kind==='note'?'notatkę':'zeszyt'}</h3><div class="msub">„${esc(title)}” — wybierz, komu wysłać kopię.</div>
-    <div class="pick-list">${FR.friends.map(f=>`<label class="fpick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">@${esc(f.username)}</small></span></label>`).join('')}</div>
+    <div class="pick-list">${FR.friends.map(f=>`<label class="fpick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">${esc(f.email||'')}</small></span></label>`).join('')}</div>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="sh-go">Wyślij</button></div>`;
   openModal();
   $('#sh-go').onclick=async()=>{

@@ -55,7 +55,8 @@ pip install -r cloud/requirements.txt
 python -m uvicorn cloud.app:app --port 8100
 ```
 
-W aplikacji: ikona **Konto** (na dole paska) → rejestracja/logowanie, **Znajomi** → zaproszenia,
+W aplikacji: ikona **Konto** (na dole paska) → rejestracja (imię i nazwisko, e-mail, hasło) / logowanie e-mailem,
+**Znajomi** → zaproszenia po adresie e-mail,
 udostępnione notatki (podgląd albo import do wybranego zeszytu pod własną nazwą),
 **Udostępnij** w notatce i w zeszycie. Wdrożenie na VPS (Docker + HTTPS): `cloud/README.md`.
 
