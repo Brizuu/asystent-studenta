@@ -21,6 +21,16 @@ python cloud/demo.py twoj@email.pl
 Zakłada konto „Anna Testowa”, wysyła Ci zaproszenie, po jego akceptacji w aplikacji udostępnia
 Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do ## Produkcja na VPS (Docker + automatyczny HTTPS)
 
+**Najszybciej — jedna komenda na serwerze** (Ubuntu/Debian, instaluje Dockera, sam dobiera adres z HTTPS):
+```bash
+curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
+# z własną domeną:  … | bash -s -- konta.twojadomena.pl
+```
+Bez własnej domeny adres to `https://<ip-serwera-z-myślnikami>.sslip.io` (np. `https://51-68-123-45.sslip.io`).
+Z wgranego folderu zamiast z GitHuba: `bash deploy.sh [domena] [admini]`. Ponowne uruchomienie = aktualizacja.
+
+Ręcznie, krok po kroku:
+
 Wystarczy najmniejszy VPS (1 vCPU, 1 GB RAM, Ubuntu 24.04) i domena (albo subdomena).
 
 1. **DNS:** rekord **A** `konta.twojadomena.pl` → IP VPS-a (propagacja zwykle kilka minut).
