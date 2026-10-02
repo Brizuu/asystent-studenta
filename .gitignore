@@ -29,3 +29,4 @@ dist/
 # Serwer kont (cloud/)
 cloud/cloud.db*
 cloud/.env
+cloud/app/

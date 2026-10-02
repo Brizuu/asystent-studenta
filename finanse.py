@@ -18,43 +18,49 @@ CATEGORIES = {"dojazd", "jedzenie", "mieszkanie", "oplaty", "materialy", "abonam
 PERIODS = {"day", "week", "month", "semester", "year", "once"}
 MODES = {"samochod", "komunikacja", "pociag", "rower", "hulajnoga", "pieszo"}
 
-with get_conn() as _c:
-    _c.executescript("""
-    CREATE TABLE IF NOT EXISTS costs (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        name        TEXT NOT NULL,
-        category    TEXT DEFAULT 'inne',
-        amount      REAL,                  -- kwota za okres (NULL = nie podano)
-        period      TEXT DEFAULT 'month',  -- day (dzień zajęć) | week | month | semester | year | once
-        variable    INTEGER DEFAULT 0,     -- 1 = szacunek, kwota się waha
-        mode        TEXT DEFAULT '',       -- dojazd: samochod | komunikacja | pociag | rower | hulajnoga | pieszo
-        params      TEXT DEFAULT '{}',     -- dojazd samochodem: km, l100, price, days
-        due_date    TEXT DEFAULT '',       -- termin płatności YYYY-MM-DD
-        remind_days INTEGER DEFAULT 7,
-        paid        INTEGER DEFAULT 0,
-        note        TEXT DEFAULT '',
-        created_at  TEXT DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS cost_entries (
-        id       INTEGER PRIMARY KEY AUTOINCREMENT,
-        cost_id  INTEGER,
-        amount   REAL NOT NULL,
-        date     TEXT NOT NULL,
-        note     TEXT DEFAULT '',
-        FOREIGN KEY (cost_id) REFERENCES costs(id) ON DELETE CASCADE
-    );
-    CREATE TABLE IF NOT EXISTS cost_settings (k TEXT PRIMARY KEY, v TEXT);
-    CREATE TABLE IF NOT EXISTS incomes (
-        id        INTEGER PRIMARY KEY AUTOINCREMENT,
-        name      TEXT NOT NULL,
-        kind      TEXT DEFAULT 'inne',     -- praca | stypendium | rodzice | freelance | inne
-        amount    REAL,
-        period    TEXT DEFAULT 'month',    -- week | month | semester | year | once
-        variable  INTEGER DEFAULT 0,
-        pay_day   INTEGER,                 -- dzień miesiąca wypłaty (1–31), opcjonalnie
-        note      TEXT DEFAULT ''
-    );
-    """)
+def init():
+    """Tabele modułu (idempotentne) — przy starcie i dla każdej nowej bazy (wersja webowa)."""
+    with get_conn() as _c:
+        _c.executescript("""
+        CREATE TABLE IF NOT EXISTS costs (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT NOT NULL,
+            category    TEXT DEFAULT 'inne',
+            amount      REAL,                  -- kwota za okres (NULL = nie podano)
+            period      TEXT DEFAULT 'month',  -- day (dzień zajęć) | week | month | semester | year | once
+            variable    INTEGER DEFAULT 0,     -- 1 = szacunek, kwota się waha
+            mode        TEXT DEFAULT '',       -- dojazd: samochod | komunikacja | pociag | rower | hulajnoga | pieszo
+            params      TEXT DEFAULT '{}',     -- dojazd samochodem: km, l100, price, days
+            due_date    TEXT DEFAULT '',       -- termin płatności YYYY-MM-DD
+            remind_days INTEGER DEFAULT 7,
+            paid        INTEGER DEFAULT 0,
+            note        TEXT DEFAULT '',
+            created_at  TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS cost_entries (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            cost_id  INTEGER,
+            amount   REAL NOT NULL,
+            date     TEXT NOT NULL,
+            note     TEXT DEFAULT '',
+            FOREIGN KEY (cost_id) REFERENCES costs(id) ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS cost_settings (k TEXT PRIMARY KEY, v TEXT);
+        CREATE TABLE IF NOT EXISTS incomes (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            name      TEXT NOT NULL,
+            kind      TEXT DEFAULT 'inne',     -- praca | stypendium | rodzice | freelance | inne
+            amount    REAL,
+            period    TEXT DEFAULT 'month',    -- week | month | semester | year | once
+            variable  INTEGER DEFAULT 0,
+            pay_day   INTEGER,                 -- dzień miesiąca wypłaty (1–31), opcjonalnie
+            note      TEXT DEFAULT ''
+        );
+        """)
+
+
+init()
+
 INCOME_KINDS = {"praca", "stypendium", "rodzice", "freelance", "inne"}
 
 

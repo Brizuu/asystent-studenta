@@ -7,6 +7,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = (ROOT / "index.html").read_text(encoding="utf-8")
 SETUP = "https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe"
+WEB_BTN = ('<a class="dl" href="app/"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/>'
+           '<path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg>'
+           '<span><small>Otwórz w</small><b>przeglądarce</b></span></a>')
 
 
 def between(start: str, end: str, s: str = SRC, inclusive_end: bool = False) -> str:
@@ -33,13 +36,13 @@ landing = between('    <section class="view" id="view-start">', '    <section cl
 # --- treść strony: bez wersji przeglądarkowej i telefonu (wymagają lokalnej aplikacji), bez paska uczelni ---
 landing = landing.replace('class="view" id="view-start"', 'class="view active" id="view-start"')
 landing = re.sub(r'<button class="lp-go" onclick="go\(\'pulpit\'\)">Otwórz w przeglądarce(<svg.*?</svg>)</button>',
-                 lambda m: f'<a class="lp-go lp-win-main" href="{SETUP}" download>Pobierz na Windows{m.group(1)}</a>', landing, flags=re.S)
+                 lambda m: f'<a class="lp-go lp-win-main" href="{SETUP}" download>Pobierz na Windows{m.group(1)}</a>' + WEB_BTN, landing, flags=re.S)
 landing = re.sub(r'\s*<a class="dl lp-win" href="[^"]*">.*?</a>', '', landing, flags=re.S)
 landing = re.sub(r'\s*<button class="dl" onclick="lpPhone\(\)">.*?</button>', '', landing, flags=re.S)
 landing = re.sub(r'<div class="lp-sec" style="max-width:none;padding-left:0;padding-right:0">.*?<div class="unis lp-reveal" id="lp-unis"></div>\s*</div>\s*',
                  '', landing, flags=re.S)
 landing = landing.replace('<p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · iPhone i Android z ekranu głównego</p>',
-                          '<p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · instalacja bez uprawnień administratora</p>')
+                          '<p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · albo w przeglądarce, także na telefonie</p>')
 landing = landing.replace("Otwórz albo pobierz</h3><p>Działa od razu w przeglądarce. Możesz też pobrać aplikację na Windows albo dodać ją na telefonie.",
                           "Pobierz i zainstaluj</h3><p>Instalator zajmuje kilka sekund. Aplikacja sama się aktualizuje, gdy wyjdzie nowa wersja.")
 assert "lp-win-main" in landing and "lpPhone" not in landing and "lp-unis" not in landing, "zmienił się układ strony startowej"
@@ -54,7 +57,7 @@ js = "\n".join([
   if(!r.ok)return; const rel=await r.json(), a=(rel.assets||[]).find(x=>x.name==='AsystentSetup.exe'); if(!a)return;
   const ver=(rel.tag_name||'').replace(/^v/,''), mb=Math.round(a.size/1048576);
   $$('.lp-win-main').forEach(b=>{b.href=a.browser_download_url;b.firstChild.textContent='Pobierz na Windows · '+ver+' ';});
-  $('#lp-meta').textContent=`Za darmo · wersja ${ver} · ${mb} MB · Windows 10 i 11 · instalacja bez uprawnień administratora`;
+  $('#lp-meta').textContent=`Za darmo · wersja ${ver} · ${mb} MB · Windows 10 i 11 · albo w przeglądarce, także na telefonie`;
 }catch(_){}})();
 paintLogos();
 // pojawianie się sekcji przy przewijaniu
@@ -82,7 +85,7 @@ page = f"""<!DOCTYPE html>
 <link rel="icon" href="{favicon}">
 <!-- wygenerowane przez cloud/build_site.py z index.html — nie edytuj ręcznie -->
 {style}
-<style>a.lp-go{{text-decoration:none}} body.on-start .main{{padding:0}}</style>
+<style>a.lp-go,a.dl{{text-decoration:none}} body.on-start .main{{padding:0}}</style>
 </head>
 <body class="on-start">
 {aura}

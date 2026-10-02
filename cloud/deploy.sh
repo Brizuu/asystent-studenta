@@ -28,7 +28,14 @@ ADMIN_EMAILS=$ADMINS
 PORT=$PORT
 CONF
 
-say "Buduję i uruchamiam serwer kont…"
+# Pliki aplikacji dla wersji webowej (/asystent/app/): w paczce są już w app/, w repo — katalog wyżej
+APPFILES="server.py db.py finanse.py zadania.py sync.py aktualizacje.py nagrania.py usos.py web.py index.html logo.png icon-192.png icon-512.png VERSION"
+if [ -f ../server.py ]; then
+  mkdir -p app && for f in $APPFILES; do cp "../$f" app/; done
+fi
+[ -f app/server.py ] || { echo "Brak plików aplikacji w app/ — wgraj pełną paczkę asystent-serwer.zip"; exit 1; }
+
+say "Buduję i uruchamiam serwer kont + wersję webową…"
 $SUDO docker compose up -d --build --remove-orphans
 
 for i in $(seq 1 30); do
@@ -40,6 +47,7 @@ printf '\n\033[1;32m✓ API działa lokalnie:\033[0m http://127.0.0.1:%s\n' "$PO
 
 if curl -fsS --max-time 5 "$PUBLIC_URL/health" >/dev/null 2>&1; then
   printf '\033[1;32m✓ Publicznie:\033[0m %s — gotowe.\n' "$PUBLIC_URL"
+  printf '  Strona pobierania: %s/   ·   Wersja webowa (po zalogowaniu): %s/app/\n' "$PUBLIC_URL" "$PUBLIC_URL"
 else
   echo
   echo "Jeszcze nie widać go pod $PUBLIC_URL — dodaj do nginx (blok server dla bte-poland.pl, z SSL):"

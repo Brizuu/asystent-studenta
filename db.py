@@ -1,13 +1,52 @@
 """SQLite — trwałe przechowywanie. Plik asystent.db obok kodu, dane nie giną.
 Stdlib sqlite3, bez ORM (mało tabel, nie trzeba ciężkiej zależności).
 """
+import contextvars
 import os
 import sqlite3
 from pathlib import Path
 
-# katalog danych: obok kodu (tryb dev) albo ASYSTENT_DATA (aplikacja desktop → %APPDATA%\Asystent)
-DATA_DIR = Path(os.getenv("ASYSTENT_DATA") or Path(__file__).parent)
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+# katalog danych: obok kodu (tryb dev) albo ASYSTENT_DATA (aplikacja desktop → %APPDATA%\Asystent).
+# Wersja webowa (web.py) ustawia osobny katalog na czas każdego zapytania — dane każdego konta osobno.
+ROOT_DIR = Path(os.getenv("ASYSTENT_DATA") or Path(__file__).parent)
+ROOT_DIR.mkdir(parents=True, exist_ok=True)
+_CURRENT = contextvars.ContextVar("asystent_data_dir", default=None)
+
+
+def use_data_dir(path):
+    """Ustawia katalog danych dla bieżącego kontekstu (zapytania); zwraca token do reset_data_dir."""
+    return _CURRENT.set(Path(path))
+
+
+def reset_data_dir(token):
+    _CURRENT.reset(token)
+
+
+class _DataPath(os.PathLike):
+    """Ścieżka liczona względem bieżącego katalogu danych w chwili użycia (nie importu)."""
+    def __init__(self, *parts):
+        self._parts = parts
+
+    def path(self) -> Path:
+        return Path(_CURRENT.get() or ROOT_DIR, *self._parts)
+
+    def __truediv__(self, other):
+        return _DataPath(*self._parts, other)
+
+    def __fspath__(self):
+        return str(self.path())
+
+    def __str__(self):
+        return str(self.path())
+
+    def __repr__(self):
+        return f"DataPath({self.path()})"
+
+    def __getattr__(self, name):   # exists, read_text, write_bytes, mkdir, iterdir, glob, with_suffix…
+        return getattr(self.path(), name)
+
+
+DATA_DIR = _DataPath()
 DB_PATH = DATA_DIR / "asystent.db"
 
 SCHEMA = """

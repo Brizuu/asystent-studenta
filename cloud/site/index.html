@@ -1840,7 +1840,7 @@ body.on-start .c-time{display:none}
 @media(max-width:620px){.lp-feats,.lp-steps{grid-template-columns:1fr}.ph-grid{grid-template-columns:1fr}.lp-hero{height:auto;min-height:100vh;padding:56px 20px 90px}.lp-sec{padding-top:72px}.lp-priv{flex-direction:column;text-align:center}}
 @media(prefers-reduced-motion:reduce){.lg .tassel,.lg .sheen,.lp-icon,body.on-start .au-card,.lp-more svg{animation:none}.lp-reveal{opacity:1;transform:none}.uni-row{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.uni[aria-hidden]{display:none}}
 </style>
-<style>a.lp-go{text-decoration:none} body.on-start .main{padding:0}</style>
+<style>a.lp-go,a.dl{text-decoration:none} body.on-start .main{padding:0}</style>
 </head>
 <body class="on-start">
 <div class="aura" aria-hidden="true">
@@ -1864,9 +1864,9 @@ body.on-start .c-time{display:none}
           <h1>Cały semestr.<br><span class="grad">W jednym miejscu.</span></h1>
           <p class="lp-lead">Plan zajęć, zeszyty z notatkami i nagrania wykładów, które AI zamienia w gotowe notatki do nauki. Twoje dane zostają na Twoim komputerze.</p>
           <div class="lp-cta">
-            <a class="lp-go lp-win-main" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe" download>Pobierz na Windows<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="lp-go lp-win-main" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe" download>Pobierz na Windows<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="dl" href="app/"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg><span><small>Otwórz w</small><b>przeglądarce</b></span></a>
           </div>
-          <p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · instalacja bez uprawnień administratora</p>
+          <p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · albo w przeglądarce, także na telefonie</p>
           <button class="lp-more" onclick="$('#lp-feat').scrollIntoView({behavior:reduceMotion()?'auto':'smooth'})">Zobacz, co potrafi<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
         </div>
 
@@ -1910,7 +1910,7 @@ body.on-start .c-time{display:none}
 
         <div class="lp-end lp-reveal"><div class="lp-icon" data-logo></div><h2>Zacznij w kilka sekund.</h2>
           <div class="lp-cta" style="margin-top:6px">
-            <a class="lp-go lp-win-main" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe" download>Pobierz na Windows<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="lp-go lp-win-main" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe" download>Pobierz na Windows<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="dl" href="app/"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg><span><small>Otwórz w</small><b>przeglądarce</b></span></a>
           </div></div>
         <footer class="lp-foot">Asystent studenta · plan, notatki i nagrania w jednym miejscu</footer>
       </div>
@@ -1943,7 +1943,7 @@ function paintLogos(root=document){ root.querySelectorAll('[data-logo]').forEach
   if(!r.ok)return; const rel=await r.json(), a=(rel.assets||[]).find(x=>x.name==='AsystentSetup.exe'); if(!a)return;
   const ver=(rel.tag_name||'').replace(/^v/,''), mb=Math.round(a.size/1048576);
   $$('.lp-win-main').forEach(b=>{b.href=a.browser_download_url;b.firstChild.textContent='Pobierz na Windows · '+ver+' ';});
-  $('#lp-meta').textContent=`Za darmo · wersja ${ver} · ${mb} MB · Windows 10 i 11 · instalacja bez uprawnień administratora`;
+  $('#lp-meta').textContent=`Za darmo · wersja ${ver} · ${mb} MB · Windows 10 i 11 · albo w przeglądarce, także na telefonie`;
 }catch(_){}})();
 paintLogos();
 // pojawianie się sekcji przy przewijaniu

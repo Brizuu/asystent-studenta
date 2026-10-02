@@ -34,6 +34,10 @@ API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HT
 3. **Aplikacja** łączy się z `https://bte-poland.pl/asystent` domyślnie (od wersji 1.1.2). Do testów lokalnych:
    zmienna `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo link „zmień” pod logowaniem.
 
+**Wersja webowa:** `https://bte-poland.pl/asystent/app/` — ta sama aplikacja w przeglądarce (też na telefonie: „Dodaj do ekranu
+głównego”). Bez zalogowania pokazuje tylko stronę logowania; każde konto ma osobną bazę w wolumenie (`/data/web/u<id>`),
+a dane synchronizują się z aplikacją na Windows przez ten sam serwer. Nagrywanie wykładów jest tylko w aplikacji na Windows.
+
 **Strona pobierania:** ten sam serwer pod `https://bte-poland.pl/asystent/` pokazuje stronę z przyciskiem „Pobierz na Windows”
 (zawsze najnowszy instalator z GitHuba). Generuje ją `python cloud/build_site.py` ze strony startowej aplikacji (`site/index.html`).
 

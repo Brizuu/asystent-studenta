@@ -10,43 +10,48 @@ from db import get_conn
 router = APIRouter()
 PRIOS = {"high", "normal", "low"}
 
-with get_conn() as _c:
-    _c.executescript("""
-    CREATE TABLE IF NOT EXISTS todo_lists (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        name       TEXT NOT NULL,
-        priority   TEXT DEFAULT 'normal',
-        color      TEXT DEFAULT '#8b7cff',
-        position   INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS todo_items (
-        id           INTEGER PRIMARY KEY AUTOINCREMENT,
-        list_id      INTEGER NOT NULL REFERENCES todo_lists(id) ON DELETE CASCADE,
-        title        TEXT NOT NULL,
-        notes        TEXT DEFAULT '',
-        priority     TEXT DEFAULT 'normal',
-        done         INTEGER DEFAULT 0,
-        done_at      TEXT,
-        note_id      INTEGER,               -- powiązana notatka
-        notebook_id  INTEGER,               -- albo cały zeszyt
-        remind_date  TEXT,                  -- YYYY-MM-DD
-        remind_time  TEXT,                  -- HH:MM
-        anchor_id    INTEGER,               -- „przy wpisie” z harmonogramu
-        task_id      INTEGER,               -- wpis w harmonogramie utworzony dla przypomnienia
-        position     INTEGER DEFAULT 0,
-        created_at   TEXT DEFAULT (datetime('now'))
-    );
-    CREATE TABLE IF NOT EXISTS todo_checks (
-        id       INTEGER PRIMARY KEY AUTOINCREMENT,
-        item_id  INTEGER NOT NULL REFERENCES todo_items(id) ON DELETE CASCADE,
-        text     TEXT NOT NULL,
-        done     INTEGER DEFAULT 0,
-        position INTEGER DEFAULT 0
-    );
-    """)
-    if not _c.execute("SELECT 1 FROM todo_lists LIMIT 1").fetchone():
-        _c.execute("INSERT INTO todo_lists(name, priority, color) VALUES('Moje zadania', 'normal', '#8b7cff')")
+def init():
+    """Tabele modułu (idempotentne) — przy starcie i dla każdej nowej bazy (wersja webowa)."""
+    with get_conn() as _c:
+        _c.executescript("""
+        CREATE TABLE IF NOT EXISTS todo_lists (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            name       TEXT NOT NULL,
+            priority   TEXT DEFAULT 'normal',
+            color      TEXT DEFAULT '#8b7cff',
+            position   INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS todo_items (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            list_id      INTEGER NOT NULL REFERENCES todo_lists(id) ON DELETE CASCADE,
+            title        TEXT NOT NULL,
+            notes        TEXT DEFAULT '',
+            priority     TEXT DEFAULT 'normal',
+            done         INTEGER DEFAULT 0,
+            done_at      TEXT,
+            note_id      INTEGER,               -- powiązana notatka
+            notebook_id  INTEGER,               -- albo cały zeszyt
+            remind_date  TEXT,                  -- YYYY-MM-DD
+            remind_time  TEXT,                  -- HH:MM
+            anchor_id    INTEGER,               -- „przy wpisie” z harmonogramu
+            task_id      INTEGER,               -- wpis w harmonogramie utworzony dla przypomnienia
+            position     INTEGER DEFAULT 0,
+            created_at   TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE IF NOT EXISTS todo_checks (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id  INTEGER NOT NULL REFERENCES todo_items(id) ON DELETE CASCADE,
+            text     TEXT NOT NULL,
+            done     INTEGER DEFAULT 0,
+            position INTEGER DEFAULT 0
+        );
+        """)
+        if not _c.execute("SELECT 1 FROM todo_lists LIMIT 1").fetchone():
+            _c.execute("INSERT INTO todo_lists(name, priority, color) VALUES('Moje zadania', 'normal', '#8b7cff')")
+
+
+init()
 
 
 def _sync_calendar(c, item_id: int):
