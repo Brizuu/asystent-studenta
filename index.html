@@ -1931,7 +1931,7 @@ body.on-start .c-time{display:none}
               <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="6.5" y="2.5" width="11" height="19" rx="2.8"/><path d="M10.5 18.5h3" stroke-linecap="round"/></svg>
               <span><small>Zainstaluj na</small><b>telefonie</b></span></button>
           </div>
-          <p class="lp-meta">Za darmo · Windows 10 i 11 · iPhone i Android z ekranu głównego</p>
+          <p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · iPhone i Android z ekranu głównego</p>
           <button class="lp-more" onclick="$('#lp-feat').scrollIntoView({behavior:reduceMotion()?'auto':'smooth'})">Zobacz, co potrafi<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
         </div>
 
@@ -2310,6 +2310,15 @@ const todayISO=()=>new Date().toLocaleDateString('sv');           // YYYY-MM-DD 
 const dlong=iso=>new Date(iso+'T00:00').toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 /* ---------- logo i landing ---------- */
+/* przycisk Windows: zawsze najnowszy AsystentSetup.exe z wydań na GitHubie; wersja i rozmiar pobierane na żywo */
+let _lpRel=null;
+async function lpRelease(){
+  try{_lpRel=_lpRel||await fetch('https://api.github.com/repos/Brizuu/asystent-studenta/releases/latest',{headers:{Accept:'application/vnd.github+json'}}).then(r=>r.ok?r.json():null);}catch(_){_lpRel=null;}
+  const a=_lpRel&&(_lpRel.assets||[]).find(x=>x.name==='AsystentSetup.exe'); if(!a||APP.desktop)return;
+  const ver=(_lpRel.tag_name||'').replace(/^v/,''), mb=Math.round(a.size/1048576);
+  $$('.lp-win').forEach(w=>{w.href=a.browser_download_url;w.setAttribute('download','');w.querySelector('small').textContent=`Pobierz ${ver} · ${mb} MB`;});
+  $('#lp-meta').textContent=`Za darmo · Asystent ${ver} dla Windows 10 i 11 · iPhone i Android z ekranu głównego`;
+}
 let _lgN=0;
 function logoSVG(){
   const n=++_lgN, id=x=>`lg${x}${n}`;
@@ -2332,7 +2341,7 @@ paintLogos($('.rail'));
 let _installEvt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_installEvt=e;});
 function startLanding(){
-  const v=$('#view-start'); paintLogos(v);
+  const v=$('#view-start'); paintLogos(v); lpRelease();
   if(APP.desktop)$$('.lp-win',v).forEach(w=>{w.classList.add('done');w.removeAttribute('href');w.querySelector('small').textContent='Używasz już aplikacji';w.querySelector('b').textContent='Windows ✓';});
   // pasek uczelni: dwa rzędy, każdy zdublowany (płynna pętla)
   const box=$('#lp-unis');
