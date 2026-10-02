@@ -747,6 +747,17 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .upd-prog::before{content:"";display:block;height:8px;border-radius:99px;background:rgba(255,255,255,.08)}
 .upd-prog i{display:block;height:8px;width:0;margin-top:-8px;border-radius:99px;background:linear-gradient(90deg,#9fd0ff,#5eafff);transition:width .4s ease}
 .upd-prog span{display:block;margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
+.sy-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px} .sy-h h3{margin:0}
+.sy-dev{display:flex;align-items:center;gap:14px;padding:12px;border-radius:14px;background:var(--glass);border:1px solid var(--line)} .sy-dev+.sy-dev{margin-top:8px}
+.sy-dev.me{border-color:rgba(159,171,255,.35);background:rgba(159,171,255,.08)}
+.sy-dev .m{flex:1;min-width:0} .sy-dev b{display:flex;align-items:center;gap:8px;font-size:14.5px} .sy-dev small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px}
+.sy-dev .sy-n{color:var(--ink-soft)}
+.sy-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(94,175,255,.14);flex:none}
+.sy-ic svg{width:20px;height:20px;stroke:#9fd0ff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sy-dev .x{border:0;background:none;color:var(--ink-dim);cursor:pointer;padding:6px;border-radius:8px} .sy-dev .x:hover{color:var(--ink);background:var(--glass-2)}
+.sy-sub{margin:16px 0 8px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+.sy-empty{margin-top:12px;padding:14px;border-radius:14px;border:1px dashed var(--line);color:var(--ink-dim);font-size:13.5px;line-height:1.5}
+.sy-pend{align-self:center;font-size:12.5px;color:var(--ink-dim)}
 /* ---------- ADMINISTRATOR ---------- */
 .adm{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .adm-health{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;vertical-align:3px;background:var(--glass-2);color:var(--ink-dim)}
@@ -3517,7 +3528,7 @@ function paintNavAccount(){
 }
 async function initAccount(){
   if(LS.get('asys_token')){ try{ME=await cloud('/me');}catch(_){ME=null;} }
-  paintNavAccount(); refreshFriendsBadge();
+  paintNavAccount(); refreshFriendsBadge(); startAutoSync();
 }
 async function refreshFriendsBadge(){
   const b=$('#friends-badge'); if(!ME){b.hidden=true;return;}
@@ -3550,6 +3561,7 @@ function renderAccount(){
       <label title="Zmień zdjęcie">${avatarHTML(ME,96)}<input type="file" accept="image/*" hidden onchange="pickAvatar(this)"></label>
       <div><h2>${esc(ME.display_name)}</h2><div class="un">${esc(ME.email)}</div>${eduHTML(ME,30)}${since?`<div class="since">Konto od ${since}</div>`:''}</div>
       <button class="btn ghost sm" onclick="logout()">Wyloguj</button></div>
+    <div class="form-card glass" id="sync-card"></div>
     <div class="form-card glass"><h3>Profil</h3>
       <label class="field"><span>Imię i nazwisko</span><input id="pf-name" value="${escAttr(ME.display_name)}"></label>
       <div class="field"><span>Uczelnia</span><div id="pf-uni"></div></div>
@@ -3564,6 +3576,7 @@ function renderAccount(){
   window._cbUni=combo($('#pf-uni'),{items:UNIS.map(u=>({v:u,label:u})),value:ME.university||'',placeholder:'Zacznij pisać, np. Politechnika',custom:true,kindIcon:false,customHint:'użyj'});
   window._cbField=combo($('#pf-field'),{items:FIELDS.map(u=>({v:u,label:u})),value:ME.field||'',placeholder:'np. Informatyka',custom:true,kindIcon:false,customHint:'użyj'});
   window._cbYear=combo($('#pf-year'),{items:[{v:'',label:'— nie podano —'},...YEARS.map(y=>({v:y,label:y}))],value:ME.study_year||'',readonly:true});
+  loadSyncCard();
 }
 async function authSubmit(){
   const err=$('#au-err'); err.textContent='';
@@ -3571,11 +3584,11 @@ async function authSubmit(){
     const r=authTab==='register'
       ?await cloud('/auth/register',{method:'POST',body:{display_name:$('#au-name').value,email:$('#au-mail').value,password:$('#au-pass').value}})
       :await cloud('/auth/login',{method:'POST',body:{login:$('#au-login').value,password:$('#au-pass').value}});
-    LS.set('asys_token',r.token); ME=await cloud('/me'); paintNavAccount(); refreshFriendsBadge(); document.body.classList.remove('on-auth'); renderAccount();
+    LS.set('asys_token',r.token); ME=await cloud('/me'); paintNavAccount(); refreshFriendsBadge(); startAutoSync(); document.body.classList.remove('on-auth'); renderAccount();
     if(authTab==='register')popout({icon:'ok',title:'Witaj, '+ME.display_name.split(' ')[0]+'!',text:'Konto gotowe. Znajomych dodasz po ich adresie e-mail w zakładce Znajomi.'});
   }catch(e){err.textContent=e.message;}
 }
-async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
+async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} clearInterval(SYNC.timer); api('/sync/reset',{method:'POST'}).catch(()=>{}); LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
 async function saveProfile(){
   try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value,university:_cbUni.get()||'',field:_cbField.get()||'',study_year:window._cbYear?_cbYear.get():''}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
   catch(e){popout({icon:'warn',title:'Nie zapisano profilu',text:e.message});}
@@ -3830,6 +3843,64 @@ function startUpdateChecks(){
   setTimeout(()=>checkUpdate().then(updToast),4000);
   clearInterval(updTimer); updTimer=setInterval(()=>checkUpdate().then(updToast),6*3600*1000);
 }
+/* ---------- SYNCHRONIZACJA urządzeń (przez serwer kont) ---------- */
+let SYNC={busy:false,timer:null,last:null};
+const SY_LBL={notebooks:['zeszyt','zeszyty','zeszytów'],notes:['notatka','notatki','notatek'],tasks:['wpis w planie','wpisy w planie','wpisów w planie'],
+  todo_items:['zadanie','zadania','zadań'],costs:['koszt','koszty','kosztów'],incomes:['dochód','dochody','dochodów']};
+const syCounts=s=>Object.entries(SY_LBL).filter(([k])=>s&&s[k]).map(([k,l])=>`${s[k]} ${plural(s[k],...l)}`).join(' · ')||'brak danych';
+const agoTxt=iso=>{if(!iso)return 'nigdy';const d=new Date(iso.includes('T')?iso:iso.replace(' ','T')+'Z'),m=Math.round((Date.now()-d)/60000);
+  return m<1?'przed chwilą':m<60?`${m} min temu`:m<1440?`${Math.round(m/60)} h temu`:d.toLocaleDateString('pl-PL',{day:'numeric',month:'short'});};
+async function syncNow(manual){
+  if(!ME||SYNC.busy)return; const tok=LS.get('asys_token'); if(!tok)return;
+  SYNC.busy=true; paintSyncBtn();
+  try{
+    const r=await fetch('/api/sync/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cloud:cloudUrl(),token:tok})});
+    const d=await r.json(); if(!r.ok)throw new Error(d.detail||'Błąd '+r.status);
+    SYNC.last=d;
+    const changed=d.added+d.updated+d.deleted;
+    if(changed&&!$('#modal-bd').classList.contains('open')&&!noteActive)refresh();   // pokaż dane z innych urządzeń
+    if(manual)popout({icon:'ok',title:'Zsynchronizowano',text:changed?`Z innych urządzeń: ${d.added} nowych, ${d.updated} zmienionych, ${d.deleted} usuniętych.`:'Wszystko jest aktualne.',hint:d.pushed?`Wysłano ${d.pushed} ${plural(d.pushed,'zmianę','zmiany','zmian')} z tego urządzenia.`:''});
+  }catch(e){SYNC.last={error:e.message}; if(manual)popout({icon:'warn',title:'Nie zsynchronizowano',text:e.message});}
+  SYNC.busy=false; paintSyncBtn(); if($('#sync-card'))loadSyncCard();
+}
+function paintSyncBtn(){const b=$('#sync-btn');if(b){b.disabled=SYNC.busy;b.textContent=SYNC.busy?'Synchronizuję…':'Synchronizuj teraz';}}
+async function loadSyncCard(){
+  const box=$('#sync-card'); if(!box||!ME)return;
+  let st=null,dv=null; try{st=await api('/sync/state');}catch(_){}
+  try{dv=await cloud('/sync/devices');}catch(_){}
+  const me=st&&st.device, others=(dv&&dv.devices||[]).filter(d=>!me||d.uid!==me.uid);
+  const devRow=(d,mine)=>`<div class="sy-dev${mine?' me':''}">
+      <span class="sy-ic"><svg viewBox="0 0 24 24">${/aplikacja/.test(d.platform)?'<rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/>':'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/>'}</svg></span>
+      <div class="m"><b>${esc(d.name)}${mine?' <span class="adm-badge">To urządzenie</span>':''}</b><small>${esc(d.platform||'')} · ${mine?'ostatnia synchronizacja '+agoTxt(st.last_sync):'widziane '+agoTxt(d.last_seen)}</small>
+        <small class="sy-n">${syCounts(d.summary)}</small></div>
+      ${mine?`<button class="btn ghost xs" onclick="renameDevice()">Zmień nazwę</button>`:`<button class="x" title="Zapomnij urządzenie" onclick="forgetDevice('${escAttr(d.uid)}')">✕</button>`}</div>`;
+  box.innerHTML=`<div class="sy-h"><h3>Synchronizacja</h3><label class="switch" title="Automatycznie co 5 minut"><input type="checkbox" id="sy-auto" ${st&&st.auto?'checked':''} onchange="setSyncAuto(this.checked)"><i></i></label></div>
+    <p class="st-note" style="margin:0 0 14px">Zeszyty, notatki, plan, zadania i finanse są wspólne na wszystkich urządzeniach zalogowanych na to konto. Przy konflikcie wygrywa nowsza zmiana. Załączniki i nagrania zostają na urządzeniu, na którym powstały.</p>
+    ${me?devRow({...me,last_seen:st.last_sync},true):''}
+    ${others.length?`<div class="sy-sub">Inne urządzenia na tym koncie</div>${others.map(d=>devRow(d,false)).join('')}`
+      :`<div class="sy-empty">Na innych urządzeniach jeszcze nikt się nie zalogował. Zaloguj się tym samym kontem na laptopie albo telefonie — dane pojawią się tam po synchronizacji.</div>`}
+    ${SYNC.last&&SYNC.last.error?`<p class="st-note" style="color:#ffb0a8">${esc(SYNC.last.error)}</p>`:''}
+    <div class="st-actions"><button class="btn" id="sync-btn" onclick="syncNow(true)">Synchronizuj teraz</button>${st&&st.pending?`<span class="sy-pend">${st.pending} ${plural(st.pending,'zmiana czeka','zmiany czekają','zmian czeka')} na wysłanie</span>`:''}</div>`;
+  paintSyncBtn();
+}
+async function setSyncAuto(on){await api('/sync/settings',{method:'POST',body:JSON.stringify({auto:on})});startAutoSync();}
+async function renameDevice(){
+  const st=await api('/sync/state'); const m=$('#modal'); m.style.maxWidth='420px';
+  m.innerHTML=`<h3>Nazwa urządzenia</h3><div class="msub">Tak to urządzenie będzie widoczne na innych.</div><label class="field"><span>Nazwa</span><input id="dv-name" maxlength="60"></label>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="dv-save">Zapisz</button></div>`;
+  $('#dv-name').value=st.device.name; $('#dv-save').onclick=async()=>{await api('/sync/settings',{method:'POST',body:JSON.stringify({name:$('#dv-name').value})});closeModal();syncNow();};
+  openModal(); setTimeout(()=>$('#dv-name').select(),60);
+}
+async function forgetDevice(uid){
+  if(!await confirmPop('Zapomnieć to urządzenie?','Zniknie z listy. Jego dane na koncie zostają, a jeśli znów się zsynchronizuje — wróci.','Zapomnij'))return;
+  await cloud('/sync/devices/'+encodeURIComponent(uid),{method:'DELETE'}); loadSyncCard();
+}
+async function startAutoSync(){
+  clearInterval(SYNC.timer); if(!ME)return;
+  let st=null; try{st=await api('/sync/state');}catch(_){} if(!st||!st.auto)return;
+  syncNow(); SYNC.timer=setInterval(()=>syncNow(),5*60*1000);
+}
+addEventListener('focus',()=>{if(ME&&SYNC.last&&!SYNC.busy)syncNow();});   // powrót do okna = świeże dane z innych urządzeń
 /* ---------- ADMINISTRATOR: serwer kont + lista kont ---------- */
 let ADM=[];
 async function loadAdmin(){

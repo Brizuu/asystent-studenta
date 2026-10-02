@@ -869,6 +869,8 @@ def import_data(u: ImportData):
                 d.mkdir(parents=True, exist_ok=True)
                 (d / os.path.basename(name)).write_bytes(b)
     init_db()   # migracje, jeśli kopia jest ze starszej wersji
+    import zadania as _z, finanse as _f, sync as _s   # noqa: F401  (tabele i triggery w nowej bazie)
+    _s.setup()
     return {"ok": True, "uploads": sum(n.startswith("uploads/") for n in files)}
 
 
@@ -925,8 +927,11 @@ import usos   # noqa: E402
 import finanse   # noqa: E402
 import zadania   # noqa: E402
 import aktualizacje   # noqa: E402
+import sync   # noqa: E402
+sync.setup()   # po utworzeniu wszystkich tabel (finanse, zadania)
 app.include_router(nagrania.router)
 app.include_router(usos.router)
 app.include_router(finanse.router)
 app.include_router(zadania.router)
 app.include_router(aktualizacje.router)
+app.include_router(sync.router)
