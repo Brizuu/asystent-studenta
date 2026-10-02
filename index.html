@@ -403,11 +403,17 @@ body.on-social .head .eyebrow,body.on-social .head .date{color:#e6e1f2;text-shad
 #view-konto .head[hidden],#view-znajomi .head[hidden]{display:none}
 #acc:has(.auth-stage),#fr:has(.auth-stage){max-width:none}   /* ekran logowania wyśrodkowany na całej szerokości */
 /* Konto i Znajomi: kolumna na środku, profil jak Apple ID (avatar nad nazwą) */
-#view-konto .head,#view-znajomi .head{text-align:center;max-width:820px;margin-inline:auto}
+#view-konto .head,#view-znajomi .head,#view-ustawienia .head{text-align:center;max-width:820px;margin-inline:auto}
+#view-ustawienia .st-tabs{display:flex;width:max-content;margin:0 auto var(--s3)}
+#view-ustawienia .st-pane{margin-inline:auto}
 .acc-wrap,#fr{margin-inline:auto}
-.prof{flex-direction:column;text-align:center;align-items:center;gap:10px;padding:30px 24px 24px}
-.prof>.btn{margin:12px auto 0!important}
+.prof{flex-direction:row;text-align:left;align-items:center;gap:22px;padding:26px 28px}
+.prof>.btn{margin:0 0 0 auto!important;align-self:center}
+.prof>div{flex:1;min-width:0}.prof>label{flex:none}
+.prof .edu{margin-top:6px;font-size:14px;color:var(--ink);font-weight:500}
+@media(max-width:640px){.prof{flex-direction:column;text-align:center}.prof>.btn{margin:8px auto 0!important}}
 .prof .un{margin-top:4px} .prof .since{margin-top:4px}
+.fr-row .who small .st{color:var(--ink)}
 /* ekran logowania: wyśrodkowany, z logiem */
 .auth-stage{min-height:calc(100vh - 2 * var(--s4));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px 0;max-width:none!important}
 .auth-brand{text-align:center}
@@ -2281,6 +2287,13 @@ addEventListener('pointermove',e=>{
   if(window._pxRaf)return; window._pxRaf=requestAnimationFrame(()=>{window._pxRaf=0;
     const a=$('.aura'); a.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(3)); a.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(3));});
 });
+/* „Politechnika Poznańska · Zarządzanie · I rok” — z pól profilu, puste pomijane */
+const studyLine=u=>[u&&u.university,u&&u.field,u&&u.study_year].filter(Boolean).join(' · ');
+const UNIS=['Politechnika Poznańska','Uniwersytet im. Adama Mickiewicza w Poznaniu','Uniwersytet Ekonomiczny w Poznaniu','Uniwersytet Przyrodniczy w Poznaniu',
+  'Uniwersytet Medyczny w Poznaniu','Politechnika Warszawska','Uniwersytet Warszawski','Szkoła Główna Handlowa','Uniwersytet Jagielloński','Akademia Górniczo-Hutnicza',
+  'Politechnika Wrocławska','Uniwersytet Wrocławski','Politechnika Gdańska','Uniwersytet Gdański','Politechnika Łódzka','Uniwersytet Łódzki','Politechnika Śląska',
+  'Uniwersytet Śląski','Uniwersytet Mikołaja Kopernika','Politechnika Krakowska'];
+const YEARS=['I rok','II rok','III rok','IV rok','V rok','I rok (magisterskie)','II rok (magisterskie)','Doktorat','Absolwent'];
 const AV_COL=['#6c5fd8','#e8875a','#3f86e0','#2fa37c','#d0568f','#b0892b'];
 function avatarHTML(u,size=44){
   if(!u)return '';
@@ -2326,16 +2339,21 @@ function renderAccount(){
   const since=ME.created_at?new Date(ME.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'}).replace(/^\d+\s/,''):'';   // „od października 2026” (dopełniacz)
   $('#acc').innerHTML=`<div class="prof glass">
       <label title="Zmień zdjęcie">${avatarHTML(ME,96)}<input type="file" accept="image/*" hidden onchange="pickAvatar(this)"></label>
-      <div><h2>${esc(ME.display_name)}</h2><div class="un">${esc(ME.email)}</div>${since?`<div class="since">Konto od ${since}</div>`:''}</div>
+      <div><h2>${esc(ME.display_name)}</h2><div class="un">${esc(ME.email)}</div>${studyLine(ME)?`<div class="edu">${esc(studyLine(ME))}</div>`:''}${since?`<div class="since">Konto od ${since}</div>`:''}</div>
       <button class="btn ghost sm" onclick="logout()">Wyloguj</button></div>
     <div class="form-card glass"><h3>Profil</h3>
       <label class="field"><span>Imię i nazwisko</span><input id="pf-name" value="${escAttr(ME.display_name)}"></label>
-      <label class="field"><span>O mnie</span><textarea id="pf-bio" placeholder="np. Zarządzanie, I rok, PUT">${esc(ME.bio||'')}</textarea></label>
+      <label class="field"><span>Uczelnia</span><input id="pf-uni" list="pf-unis" placeholder="np. Politechnika Poznańska" value="${escAttr(ME.university||'')}">
+        <datalist id="pf-unis">${UNIS.map(u=>`<option value="${escAttr(u)}">`).join('')}</datalist></label>
+      <div class="frow"><label class="field"><span>Kierunek</span><input id="pf-field" placeholder="np. Zarządzanie" value="${escAttr(ME.field||'')}"></label>
+        <div class="field"><span>Rok studiów</span><div id="pf-year"></div></div></div>
+      <label class="field"><span>O mnie</span><textarea id="pf-bio" placeholder="np. zainteresowania, koło naukowe">${esc(ME.bio||'')}</textarea></label>
       <div class="st-actions"><button class="btn" onclick="saveProfile()">Zapisz profil</button>${ME.avatar?'<button class="btn ghost" onclick="removeAvatar()">Usuń zdjęcie</button>':''}</div></div>
     <div class="form-card glass"><h3>Zmiana hasła</h3>
       <div class="frow"><label class="field"><span>Obecne hasło</span><input id="pw-old" type="password" autocomplete="current-password"></label>
       <label class="field"><span>Nowe hasło</span><input id="pw-new" type="password" autocomplete="new-password"></label></div>
       <div class="st-actions"><button class="btn ghost" onclick="changePassword()">Zmień hasło</button></div></div>`;
+  window._cbYear=combo($('#pf-year'),{items:[{v:'',label:'— nie podano —'},...YEARS.map(y=>({v:y,label:y}))],value:ME.study_year||'',readonly:true});
 }
 async function authSubmit(){
   const err=$('#au-err'); err.textContent='';
@@ -2349,7 +2367,7 @@ async function authSubmit(){
 }
 async function logout(){ try{await cloud('/auth/logout',{method:'POST'});}catch(_){} LS.set('asys_token',null); ME=null; authTab='login'; paintNavAccount(); refreshFriendsBadge(); document.body.classList.add('on-auth'); renderAccount(); }
 async function saveProfile(){
-  try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
+  try{ME=await cloud('/me',{method:'PATCH',body:{display_name:$('#pf-name').value,bio:$('#pf-bio').value,university:$('#pf-uni').value,field:$('#pf-field').value,study_year:window._cbYear?_cbYear.get():''}}); paintNavAccount(); renderAccount(); popout({icon:'ok',title:'Profil zapisany'});}
   catch(e){popout({icon:'warn',title:'Nie zapisano profilu',text:e.message});}
 }
 async function pickAvatar(inp){
@@ -2385,7 +2403,7 @@ async function loadFriends(){
       <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
   try{FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
   refreshFriendsBadge();
-  const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>${esc(f.email||'')}</small></div>${acts}</div>`;
+  const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>${studyLine(f)?`<span class="st">${esc(studyLine(f))}</span> · `:''}${esc(f.email||'')}</small></div>${acts}</div>`;
   el.innerHTML=`<form class="fr-add glass" onsubmit="event.preventDefault();addFriend()"><input id="fr-user" type="email" placeholder="E-mail znajomego"><button class="btn" type="submit">Dodaj znajomego</button></form>
     ${FR.incoming.length?`<div class="fr-sec"><h4>Zaproszenia</h4><div class="fr-list">${FR.incoming.map(f=>row(f,`<div class="acts"><button class="btn sm" onclick="frAct('accept',${f.fid})">Akceptuj</button><button class="btn ghost sm" onclick="frAct('del',${f.fid})">Odrzuć</button></div>`)).join('')}</div></div>`:''}
     <div class="fr-sec"><h4>Znajomi</h4><div class="fr-list">${FR.friends.length?FR.friends.map(f=>row(f,`${f.shared_with_me?`<span class="fr-pill">${f.shared_with_me} ${plural(f.shared_with_me,'udostępnienie','udostępnienia','udostępnień')}</span>`:''}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-dim)"><path d="M9 6l6 6-6 6"/></svg>`,true)).join('')
@@ -2403,7 +2421,7 @@ async function openFriend(id){
   const f=FR.friends.find(x=>x.id===id); if(!f)return;
   const list=await cloud('/shares?from_user='+id), el=$('#fr');
   el.innerHTML=`<button class="btn ghost sm" style="align-self:flex-start" onclick="loadFriends()">← Wszyscy znajomi</button>
-    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2><div class="un" style="color:var(--ink-dim)">${esc(f.email||'')}</div></div>
+    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2>${studyLine(f)?`<div class="study" style="margin-top:4px;font-weight:500">${esc(studyLine(f))}</div>`:''}<div class="un" style="color:var(--ink-dim)">${esc(f.email||'')}</div></div>
       <button class="btn ghost sm" onclick="removeFriend(${f.fid},'${escAttr(f.display_name)}')">Usuń ze znajomych</button></div>
     <div class="fr-sec"><h4>Udostępnione Tobie</h4><div class="fr-list">${list.length?list.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
       return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
@@ -2519,7 +2537,7 @@ async function shareCurrent(kind,nbId){
   }
   $('#modal').style.maxWidth='460px';
   $('#modal').innerHTML=`<h3>Udostępnij ${kind==='note'?'notatkę':'zeszyt'}</h3><div class="msub">„${esc(title)}” — wybierz, komu wysłać kopię.</div>
-    <div class="pick-list">${FR.friends.map(f=>`<label class="fpick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">${esc(f.email||'')}</small></span></label>`).join('')}</div>
+    <div class="pick-list">${FR.friends.map(f=>`<label class="fpick"><input type="checkbox" value="${f.id}">${avatarHTML(f,32)}<span class="who"><b>${esc(f.display_name)}</b><br><small style="color:var(--ink-dim)">${esc(studyLine(f)||f.email||'')}</small></span></label>`).join('')}</div>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="sh-go">Wyślij</button></div>`;
   openModal();
   $('#sh-go').onclick=async()=>{
