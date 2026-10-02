@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Jedna komenda na czystym serwerze (pobiera kod z GitHuba i uruchamia deploy.sh):
+# Jedna komenda na serwerze (pobiera/aktualizuje kod z GitHuba w /opt/asystent i uruchamia deploy.sh):
 #   curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash -s -- konta.twojadomena.pl
 set -euo pipefail
 DIR=/opt/asystent
 SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"

@@ -10,8 +10,7 @@ pip install -r cloud/requirements.txt
 python -m uvicorn cloud.app:app --port 8100
 ```
 
-Aplikacja domyślnie łączy się z `http://127.0.0.1:8100`
-(zmiana: Administrator → Serwer kont, link „zmień” na ekranie logowania albo zmienna `ASYSTENT_CLOUD_URL`).
+Lokalny serwer: uruchom aplikację z `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo zmień adres linkiem „zmień” pod logowaniem.
 
 ## Konto testowe (do sprawdzenia znajomych i udostępniania)
 
@@ -19,42 +18,22 @@ Aplikacja domyślnie łączy się z `http://127.0.0.1:8100`
 python cloud/demo.py twoj@email.pl
 ```
 Zakłada konto „Anna Testowa”, wysyła Ci zaproszenie, po jego akceptacji w aplikacji udostępnia
-Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do ## Produkcja na VPS (Docker + automatyczny HTTPS)
+Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do ## Produkcja: https://zenfix.pl/asystent (za nginx)
 
-**Najszybciej — jedna komenda na serwerze** (Ubuntu/Debian, instaluje Dockera, sam dobiera adres z HTTPS):
-```bash
-curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
-# z własną domeną:  … | bash -s -- konta.twojadomena.pl
-```
-Bez własnej domeny adres to `https://<ip-serwera-z-myślnikami>.sslip.io` (np. `https://51-68-123-45.sslip.io`).
-Z wgranego folderu zamiast z GitHuba: `bash deploy.sh [domena] [admini]`. Ponowne uruchomienie = aktualizacja.
+API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HTTPS obsługuje istniejący nginx.
 
-Ręcznie, krok po kroku:
-
-Wystarczy najmniejszy VPS (1 vCPU, 1 GB RAM, Ubuntu 24.04) i domena (albo subdomena).
-
-1. **DNS:** rekord **A** `konta.twojadomena.pl` → IP VPS-a (propagacja zwykle kilka minut).
-2. **Docker** na VPS-ie (jednorazowo):
+1. **Na serwerze — jedna komenda** (instaluje Dockera, jeśli trzeba, buduje i uruchamia API):
    ```bash
-   curl -fsSL https://get.docker.com | sh
+   curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
    ```
-3. **Serwer kont:**
-   ```bash
-   git clone https://github.com/Brizuu/asystent-studenta.git && cd asystent-studenta/cloud
-   cp .env.example .env
-   nano .env    # DOMAIN=konta.twojadomena.pl, ADMIN_EMAILS=twoj@mail.pl
-   docker compose up -d --build
-   curl https://konta.twojadomena.pl/health     # {"ok":true}
-   ```
-   Caddy sam pobiera i odnawia certyfikat Let's Encrypt (porty 80 i 443 muszą być otwarte).
-   Baza (konta, udostępnienia, dane synchronizacji) leży w wolumenie `cloud-data`.
-4. **W aplikacji:** zaloguj się kontem z `ADMIN_EMAILS` → **Administrator → Serwer kont** →
-   `https://konta.twojadomena.pl` → Zapisz. (Przed zalogowaniem: link „zmień” pod formularzem logowania.)
-   Żeby nowe instalacje od razu łączyły się z Twoim serwerem, ustaw domyślny adres w `server.py`
-   (`ASYSTENT_CLOUD_URL`) i wydaj nową wersję.
+   albo z wgranego folderu: `bash deploy.sh` (opcjonalnie: `bash deploy.sh admin1@mail.pl,admin2@mail.pl 8100`).
+2. **nginx** — wklej zawartość `nginx-asystent.conf` do bloku `server { … }` domeny zenfix.pl (tego z SSL), potem
+   `sudo nginx -t && sudo systemctl reload nginx`. Sprawdzenie: `curl https://zenfix.pl/asystent/health` → `{"ok":true}`.
+3. **Aplikacja** łączy się z `https://zenfix.pl/asystent` domyślnie (od wersji 1.1.1). Do testów lokalnych:
+   zmienna `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo link „zmień” pod logowaniem.
 
-**Aktualizacja serwera:** `cd asystent-studenta && git pull && cd cloud && docker compose up -d --build`
-**Kopia bazy:** `docker compose cp api:/data/cloud.db ./cloud-backup-$(date +%F).db` (warto w cronie raz dziennie)
+**Aktualizacja:** ta sama komenda co przy instalacji (dane zostają w wolumenie `cloud-data`).
+**Kopia bazy:** `cd /opt/asystent/cloud && docker compose cp api:/data/cloud.db ./kopia-$(date +%F).db`
 **Logi:** `docker compose logs -f api`
 
 ## Synchronizacja urządzeń

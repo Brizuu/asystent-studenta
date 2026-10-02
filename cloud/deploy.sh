@@ -1,67 +1,53 @@
 #!/usr/bin/env bash
-# Serwer kont Asystenta — wdrożenie / aktualizacja jedną komendą (Ubuntu/Debian, root albo sudo).
+# Serwer kont Asystenta za nginx — wdrożenie / aktualizacja jedną komendą (Ubuntu/Debian).
 #
-#   bash deploy.sh                          # adres https://<ip-serwera>.sslip.io (bez własnej domeny)
-#   bash deploy.sh konta.twojadomena.pl     # własna domena (rekord A → IP serwera)
-#   bash deploy.sh konta.twojadomena.pl ja@mail.pl,kolega@mail.pl   # + administratorzy
+#   bash deploy.sh                                   # admin: fabian26012006@gmail.com, port 8100
+#   bash deploy.sh ja@mail.pl,kolega@mail.pl 8100    # inni administratorzy / inny port
 #
-# Ponowne uruchomienie = aktualizacja (dane kont zostają w wolumenie Dockera).
+# Domenę i HTTPS obsługuje nginx (patrz nginx-asystent.conf). Ponowne uruchomienie = aktualizacja,
+# konta i dane zostają w wolumenie Dockera.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-DOMAIN="${1:-}"
-ADMINS="${2:-fabian26012006@gmail.com}"
+ADMINS="${1:-fabian26012006@gmail.com}"
+PORT="${2:-8100}"
+PUBLIC_URL="${PUBLIC_URL:-https://zenfix.pl/asystent}"
 SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"
-
 say() { printf '\n\033[1;35m▸ %s\033[0m\n' "$*"; }
 
-# 1. Docker (z wtyczką compose)
 if ! command -v docker >/dev/null 2>&1; then
   say "Instaluję Dockera…"
   curl -fsSL https://get.docker.com | $SUDO sh
 fi
 $SUDO systemctl enable --now docker >/dev/null 2>&1 || true
 
-# 2. Adres: własna domena albo darmowa <ip>.sslip.io (Let's Encrypt działa dla niej od ręki)
-if [ -z "$DOMAIN" ] && [ -f .env ]; then
-  DOMAIN="$(grep -E '^DOMAIN=' .env | cut -d= -f2- || true)"
-fi
-if [ -z "$DOMAIN" ]; then
-  IP="$(curl -fsS4 --max-time 5 https://api.ipify.org || hostname -I | awk '{print $1}')"
-  DOMAIN="${IP//./-}.sslip.io"
-fi
-
-# 3. Konfiguracja
-say "Konfiguracja: https://$DOMAIN (administratorzy: $ADMINS)"
-cat > .env <<EOF
-DOMAIN=$DOMAIN
+say "Konfiguracja (administratorzy: $ADMINS, port lokalny: $PORT)"
+cat > .env <<CONF
 ALLOWED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
 ADMIN_EMAILS=$ADMINS
-EOF
+PORT=$PORT
+CONF
 
-# 4. Zapora (jeśli włączona): HTTP i HTTPS dla certyfikatu i aplikacji
-if command -v ufw >/dev/null 2>&1 && $SUDO ufw status | grep -q "Status: active"; then
-  $SUDO ufw allow 80/tcp >/dev/null; $SUDO ufw allow 443/tcp >/dev/null
-fi
+say "Buduję i uruchamiam serwer kont…"
+$SUDO docker compose up -d --build --remove-orphans
 
-# 5. Start / aktualizacja
-say "Buduję i uruchamiam kontenery…"
-$SUDO docker compose up -d --build
-
-# 6. Czekam na certyfikat i odpowiedź serwera
-say "Czekam, aż serwer odpowie przez HTTPS (certyfikat pobiera się przy pierwszym starcie)…"
-for i in $(seq 1 60); do
-  if curl -fsS --max-time 5 "https://$DOMAIN/health" >/dev/null 2>&1; then
-    printf '\n\033[1;32m✓ Gotowe!\033[0m Serwer kont działa: \033[1mhttps://%s\033[0m\n' "$DOMAIN"
-    echo "  W aplikacji: link „zmień” pod logowaniem (albo Administrator → Serwer kont) → wpisz ten adres."
-    echo "  Logi: docker compose logs -f   ·   Kopia bazy: docker compose cp api:/data/cloud.db ./kopia.db"
-    exit 0
-  fi
-  sleep 3
+for i in $(seq 1 30); do
+  if curl -fsS --max-time 3 "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then break; fi
+  sleep 2
+  [ "$i" = 30 ] && { echo "API nie wystartowało — logi: docker compose logs api"; exit 1; }
 done
+printf '\n\033[1;32m✓ API działa lokalnie:\033[0m http://127.0.0.1:%s\n' "$PORT"
+
+if curl -fsS --max-time 5 "$PUBLIC_URL/health" >/dev/null 2>&1; then
+  printf '\033[1;32m✓ Publicznie:\033[0m %s — gotowe.\n' "$PUBLIC_URL"
+else
+  echo
+  echo "Jeszcze nie widać go pod $PUBLIC_URL — dodaj do nginx (blok server dla zenfix.pl, z SSL):"
+  echo "------------------------------------------------------------------"
+  sed "s/127.0.0.1:8100/127.0.0.1:$PORT/" nginx-asystent.conf
+  echo "------------------------------------------------------------------"
+  echo "potem:  sudo nginx -t && sudo systemctl reload nginx"
+  echo "i sprawdź:  curl $PUBLIC_URL/health    (ma zwrócić {\"ok\":true})"
+fi
 echo
-echo "Serwer nie odpowiedział przez HTTPS w 3 minuty. Sprawdź:"
-echo "  • czy porty 80 i 443 są otwarte w panelu dostawcy VPS (firewall),"
-echo "  • czy domena $DOMAIN wskazuje na IP tego serwera,"
-echo "  • logi: docker compose logs caddy api"
-exit 1
+echo "Logi: docker compose logs -f   ·   Kopia bazy: docker compose cp api:/data/cloud.db ./kopia.db"
