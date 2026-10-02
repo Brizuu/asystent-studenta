@@ -22,6 +22,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 DB_PATH = Path(os.getenv("CLOUD_DB") or Path(__file__).parent / "cloud.db")
@@ -201,6 +202,17 @@ class Login(BaseModel):
 @app.get("/health")
 def health():
     return {"ok": True}
+
+
+SITE = Path(__file__).parent / "site" / "index.html"
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def site():
+    """Strona pobierania aplikacji (https://bte-poland.pl/asystent/) — generowana przez build_site.py."""
+    if not SITE.exists():
+        return HTMLResponse("<h1>Asystent — serwer kont</h1><p>Strona pobierania nie jest zbudowana.</p>")
+    return HTMLResponse(SITE.read_text(encoding="utf-8"), headers={"Cache-Control": "public, max-age=300"})
 
 
 @app.post("/auth/register")

@@ -34,6 +34,9 @@ API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HT
 3. **Aplikacja** łączy się z `https://bte-poland.pl/asystent` domyślnie (od wersji 1.1.2). Do testów lokalnych:
    zmienna `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo link „zmień” pod logowaniem.
 
+**Strona pobierania:** ten sam serwer pod `https://bte-poland.pl/asystent/` pokazuje stronę z przyciskiem „Pobierz na Windows”
+(zawsze najnowszy instalator z GitHuba). Generuje ją `python cloud/build_site.py` ze strony startowej aplikacji (`site/index.html`).
+
 **Aktualizacja:** ta sama komenda co przy instalacji (dane zostają w wolumenie `cloud-data`).
 **Kopia bazy:** `cd /opt/asystent/cloud && docker compose cp api:/data/cloud.db ./kopia-$(date +%F).db`
 **Logi:** `docker compose logs -f api`

@@ -3,6 +3,7 @@ WORKDIR /srv
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py __init__.py ./cloud/
+COPY site ./cloud/site
 ENV CLOUD_DB=/data/cloud.db
 VOLUME /data
 EXPOSE 8100
