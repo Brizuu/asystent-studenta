@@ -55,6 +55,8 @@ class Task(BaseModel):
     remind_at: str | None = None
     kind: str = ""
     note_id: int | None = None
+    room: str = ""
+    building: str = ""
 
 
 class TaskPatch(BaseModel):
@@ -68,6 +70,8 @@ class TaskPatch(BaseModel):
     done: bool | None = None
     kind: str | None = None
     note_id: int | None = None
+    room: str | None = None
+    building: str | None = None
 
 
 class Source(BaseModel):
@@ -107,8 +111,8 @@ def list_tasks(day: str | None = None, month: str | None = None):
 def add_task(t: Task):
     with get_conn() as c:
         cur = c.execute(
-            "INSERT INTO tasks(title,date,start_time,end_time,priority,notes,remind_at,kind,note_id) VALUES(?,?,?,?,?,?,?,?,?)",
-            (t.title, t.date, t.start_time, t.end_time, t.priority, t.notes, t.remind_at, t.kind, t.note_id))
+            "INSERT INTO tasks(title,date,start_time,end_time,priority,notes,remind_at,kind,note_id,room,building) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            (t.title, t.date, t.start_time, t.end_time, t.priority, t.notes, t.remind_at, t.kind, t.note_id, t.room, t.building))
         return {"id": cur.lastrowid}
 
 
@@ -618,4 +622,6 @@ def config():
 
 
 import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta)
+import usos   # noqa: E402
 app.include_router(nagrania.router)
+app.include_router(usos.router)

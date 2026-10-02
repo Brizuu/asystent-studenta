@@ -38,6 +38,13 @@ zostają — **Dokończ zamianę** wznawia od miejsca przerwania. Zamknięcie ok
 
 Ze źródeł: `pip install -r requirements.txt pywebview sounddevice soundfile` i `python desktop.py`.
 
+## Plan zajęć z USOS
+
+Plan dnia → **Importuj plan z USOS** → plik `.ics` (USOSweb → Mój plan → eksport do iCalendar).
+Z pliku brane jest to, co USOS podaje: przedmiot, typ (W → Wykład, CW → Ćwiczenia, LAB → Laboratorium…),
+termin, sala, budynek, adres i link do zajęć. Ponowny import aktualizuje plan bez dublowania
+(Twoje oznaczenia „zrobione”, notatki i powiązania zostają).
+
 ## Konfiguracja
 
 - **Notatki AI (Gemini):** wklej swój klucz do pliku `.gemini_key` (wzór: `.gemini_key.example`;
