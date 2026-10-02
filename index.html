@@ -360,6 +360,34 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   font-weight:700;font-size:calc(var(--s,44px)*.38);color:#fff;background:var(--c,#6c5fd8);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .av img{width:100%;height:100%;object-fit:cover}
 .acc-wrap,#fr{max-width:820px;display:flex;flex-direction:column;gap:18px}
+/* jaśniejsze, pastelowe tło dla Konta i Znajomych */
+.aura{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
+  background:radial-gradient(55% 45% at 18% 12%,rgba(195,181,255,.5),transparent 70%),radial-gradient(48% 42% at 88% 18%,rgba(255,185,140,.42),transparent 70%),
+    radial-gradient(55% 50% at 72% 92%,rgba(143,200,255,.36),transparent 70%),radial-gradient(42% 40% at 8% 88%,rgba(128,220,194,.32),transparent 70%),
+    linear-gradient(160deg,#2c2946,#21223a 55%,#2a2236)}
+body.on-social .aura{opacity:1}
+body.on-social .glass{background:rgba(30,29,48,.5);border-color:rgba(255,255,255,.12)}
+#view-konto .head[hidden],#view-znajomi .head[hidden]{display:none}
+#acc:has(.auth-stage),#fr:has(.auth-stage){max-width:none}   /* ekran logowania wyśrodkowany na całej szerokości */
+/* ekran logowania: wyśrodkowany, z logiem */
+.auth-stage{min-height:calc(100vh - 2 * var(--s4));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px 0;max-width:none!important}
+.auth-brand{text-align:center}
+.auth-logo{width:84px;height:84px;margin:0 auto 16px;border-radius:24px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 20px 50px -18px rgba(159,171,255,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.auth-logo img{width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.auth-brand h1{font-size:clamp(34px,4vw,44px);letter-spacing:-.03em;line-height:1.08;padding-bottom:.06em;
+  background:linear-gradient(100deg,#fff 30%,#ffe1cf 65%,#e2dcff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.auth-brand p{margin-top:8px;color:var(--ink-soft);font-size:16px}
+.auth-stage .auth-card{width:min(420px,100%);max-width:none;padding:26px 26px 22px;border-radius:26px;
+  background:rgba(32,31,50,.55)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 40px 80px -40px rgba(0,0,0,.7)}
+.auth-stage .auth-card .seg{display:flex;width:100%} .auth-stage .auth-card .seg button{flex:1}
+.auth-stage .auth-card input{background:rgba(255,255,255,.07)}
+.pw-wrap{position:relative} .pw-wrap input{width:100%;padding-right:44px}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;border-radius:9px;background:none;color:var(--ink-dim);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pw-eye:hover{color:var(--ink);background:rgba(255,255,255,.06)} .pw-eye svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+.auth-stage .auth-foot{text-align:center;max-width:420px;line-height:1.5}
+.auth-stage .btn[type=submit]{padding:13px 20px;font-size:15px}
 .auth-card{max-width:440px;padding:26px;border-radius:24px}
 .auth-card .seg{margin-bottom:18px}
 .auth-card .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px} .auth-card .field>span{font-size:12.5px;color:var(--ink-dim)}
@@ -1272,6 +1300,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 </head>
 <body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
+<div class="aura" aria-hidden="true"></div>
 <div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div></div>
 
 <div class="app">
@@ -1437,7 +1466,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 
     <!-- ZNAJOMI -->
     <section class="view" id="view-znajomi">
-      <div class="head"><div class="eyebrow">Udostępnianie</div><h1>Znajomi</h1></div>
+      <div class="head"><div class="eyebrow">Udostępnianie</div><h1>Znajomi</h1><div class="date">Dodawaj znajomych i wymieniajcie się notatkami oraz zeszytami.</div></div>
       <div id="fr"></div>
     </section>
 
@@ -1617,6 +1646,7 @@ function go(v){
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
+  document.body.classList.toggle('on-social', v==='konto'||v==='znajomi');
   pushNav();
 }
 
@@ -2214,21 +2244,25 @@ async function refreshFriendsBadge(){
 }
 /* --- widok Konto --- */
 function renderAccount(){
-  $('#acc-h').textContent=ME?'Konto':'Zaloguj się';
+  $('#acc-h').textContent='Konto'; $('#view-konto .head').hidden=!ME;
   if(!ME){
     const reg=authTab==='register';
-    $('#acc').innerHTML=`<div class="auth-card glass">
+    $('#acc').innerHTML=`<div class="auth-stage">
+      <div class="auth-brand"><div class="auth-logo"><img src="/logo.png" alt=""></div><h1>${reg?'Dołącz do Asystenta':'Witaj w Asystencie'}</h1>
+        <p>${reg?'Załóż konto, żeby dodawać znajomych i wymieniać się notatkami.':'Zaloguj się, aby udostępniać notatki znajomym.'}</p></div>
+      <div class="auth-card glass">
       <div class="seg"><button class="${reg?'':'on'}" onclick="authTab='login';renderAccount()">Logowanie</button><button class="${reg?'on':''}" onclick="authTab='register';renderAccount()">Załóż konto</button></div>
       <form onsubmit="event.preventDefault();authSubmit()">
         ${reg?`<label class="field"><span>Imię lub pseudonim</span><input id="au-name" autocomplete="name" placeholder="np. Fabian"></label>
         <label class="field"><span>Nazwa użytkownika (po niej znajdą Cię znajomi)</span><input id="au-user" autocomplete="username" placeholder="np. fabian_k" required></label>
-        <label class="field"><span>E-mail</span><input id="au-mail" type="email" autocomplete="email" required></label>`
+        <label class="field"><span>E-mail</span><input id="au-mail" type="email" autocomplete="email" placeholder="ty@przyklad.pl" required></label>`
         :`<label class="field"><span>E-mail lub nazwa użytkownika</span><input id="au-login" autocomplete="username" required></label>`}
-        <label class="field"><span>Hasło${reg?' (min. 8 znaków)':''}</span><input id="au-pass" type="password" autocomplete="${reg?'new-password':'current-password'}" required></label>
+        <label class="field"><span>Hasło${reg?' (min. 8 znaków)':''}</span><div class="pw-wrap"><input id="au-pass" type="password" autocomplete="${reg?'new-password':'current-password'}" required>
+          <button type="button" class="pw-eye" title="Pokaż hasło" onclick="const i=$('#au-pass');i.type=i.type==='password'?'text':'password'"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
         <div class="auth-err" id="au-err"></div>
         <button class="btn" style="width:100%" type="submit">${reg?'Załóż konto':'Zaloguj się'}</button>
-      </form>
-      <div class="auth-foot">Konto służy do znajomych i udostępniania. Twoje notatki i plan zostają na tym komputerze.<br>Serwer: ${esc(cloudUrl())}</div></div>`;
+      </form></div>
+      <div class="auth-foot">Twoje notatki i plan zostają na tym komputerze — na serwer trafia tylko to, co komuś udostępnisz.<br>Serwer: ${esc(cloudUrl())}</div></div>`;
     setTimeout(()=>$(reg?'#au-name':'#au-login')?.focus(),50); return;
   }
   const since=ME.created_at?new Date(ME.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{month:'long',year:'numeric'}):'';
@@ -2286,7 +2320,11 @@ const ICON_SH={note:['var(--accent-2)','<path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h
   notebook:['var(--peach)',ICONS.nauka]};
 async function loadFriends(){
   const el=$('#fr');
-  if(!ME){el.innerHTML=`<div class="auth-card glass"><h3>Zaloguj się</h3><p style="color:var(--ink-soft);margin:8px 0 16px">Znajomi i udostępnianie notatek wymagają konta.</p><button class="btn" onclick="go('konto')">Zaloguj się lub załóż konto</button></div>`;return;}
+  $('#view-znajomi .head').hidden=!ME;
+  if(!ME){el.innerHTML=`<div class="auth-stage"><div class="auth-brand"><div class="auth-logo"><img src="/logo.png" alt=""></div><h1>Znajomi</h1>
+      <p>Dodawaj znajomych, wysyłaj im notatki i całe zeszyty,<br>importuj to, co udostępnią Tobie.</p></div>
+      <div class="auth-card glass" style="text-align:center"><p style="color:var(--ink-soft);margin-bottom:16px">Do tego potrzebne jest konto — zajmie chwilę.</p>
+      <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
   try{FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
   refreshFriendsBadge();
   const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>@${esc(f.username)}</small></div>${acts}</div>`;
