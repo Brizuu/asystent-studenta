@@ -8,6 +8,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <meta name="theme-color" content="#0b0b14">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Asystent">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -34,6 +35,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
+/* ciemne natywne elementy: podpowiedzi autouzupełniania (e-mail), kalendarz w polach daty, paski przewijania */
+:root{color-scheme:dark}
 /* ---------- tokeny ---------- */
 :root{
   --bg:#111115;
@@ -174,6 +177,29 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   background:radial-gradient(circle,#fff8e6 0 14%,#ffd79a 26%,rgba(255,190,120,.35) 44%,transparent 70%)}
 .sky[data-tod=night] .orb{width:96px;height:96px;margin:-48px 0 0 -48px;
   background:radial-gradient(circle,#f2f0ff 0 20%,rgba(200,205,255,.28) 34%,transparent 66%)}
+.earth{position:absolute;left:50%;top:57%;width:260vmax;height:260vmax;margin-left:-130vmax;border-radius:50%;overflow:hidden;opacity:.85;
+  background:radial-gradient(70% 9% at var(--ox,50%) 0%,var(--e1) 0%,var(--e2) 40%,transparent 100%),linear-gradient(180deg,var(--e3) 0%,#05060d 7%);
+  box-shadow:0 -1px 0 color-mix(in srgb,var(--atm) 70%,#fff 30%),0 -10px 30px -2px var(--atm),0 -60px 120px -20px var(--atm);
+  transition:opacity 2.4s ease,box-shadow 2.4s ease;--e1:#2d5b8f;--e2:#16304f;--e3:#11243c;--atm:rgba(110,170,255,.55)}
+.earth i{position:absolute;inset:0;border-radius:50%;transition:opacity 2.4s ease}
+.e-clouds{opacity:.18;background-size:900px 260px;animation:e-turn 260s linear infinite;
+  background-image:radial-gradient(160px 14px at 120px 40px,#fff,transparent),radial-gradient(220px 18px at 520px 90px,#fff,transparent),
+    radial-gradient(120px 10px at 760px 30px,#fff,transparent),radial-gradient(180px 12px at 330px 150px,#fff,transparent)}
+.e-lights{opacity:0;background-size:420px 90px;animation:e-turn 260s linear infinite;
+  background-image:radial-gradient(1.4px 1.4px at 30px 22px,#ffd38a,transparent),radial-gradient(1.2px 1.2px at 64px 30px,#ffe0a8,transparent),
+    radial-gradient(1.6px 1.6px at 140px 18px,#ffc978,transparent),radial-gradient(1px 1px at 158px 44px,#ffd38a,transparent),
+    radial-gradient(1.4px 1.4px at 240px 26px,#ffe0a8,transparent),radial-gradient(1.2px 1.2px at 300px 60px,#ffc978,transparent),
+    radial-gradient(1.6px 1.6px at 360px 34px,#ffd38a,transparent),radial-gradient(1px 1px at 400px 80px,#ffe0a8,transparent)}
+/* terminator: oświetlona strona pod słońcem, reszta w cieniu */
+.e-shade{background:radial-gradient(60% 6% at var(--ox,50%) 0%,transparent 0%,rgba(3,4,12,.25) 60%,rgba(3,4,12,.6) 100%)}
+@keyframes e-turn{to{background-position:-900px 0}}
+.sky[data-tod=morning] .earth{--e1:#9a6b6b;--e2:#3a2f45;--e3:#2a2236;--atm:rgba(255,170,120,.55)}
+.sky[data-tod=day] .earth{--e1:#3f7fc0;--e2:#1c3b63;--e3:#152c49;--atm:rgba(140,195,255,.6)}
+.sky[data-tod=evening] .earth{--e1:#8a4b66;--e2:#33203c;--e3:#25182c;--atm:rgba(255,140,120,.5)}
+.sky[data-tod=night] .earth{--e1:#1b2550;--e2:#0d1230;--e3:#0a0d22;--atm:rgba(110,130,255,.35)}
+.sky[data-tod=night] .e-lights{opacity:.85} .sky[data-tod=evening] .e-lights{opacity:.35}
+.sky[data-tod=night] .e-clouds{opacity:.05} .sky[data-tod=night] .e-shade{opacity:.5}
+@media(prefers-reduced-motion:reduce){.e-clouds,.e-lights{animation:none}}
 .welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
 .wl-main{min-width:0;flex:1 1 520px}
 .wl-date{font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.005em;text-shadow:0 1px 14px rgba(0,0,0,.35)}
@@ -193,6 +219,7 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .ck-ico{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
+.wl-next[hidden]{display:none}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
 .wl-next:hover{background:rgba(255,255,255,.1);color:var(--ink)} .wl-next:active{transform:var(--press)}
@@ -204,7 +231,9 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   transition:transform .1s ease-out;vertical-align:1px}
 .wl-chip:active{transform:var(--press)}
 .wl-chip .kico{width:15px;height:15px}
-.portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.portals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+@media(max-width:1180px){.portals{grid-template-columns:repeat(2,minmax(0,1fr))}.portal.p-fin{grid-column:1/-1;min-height:240px}}
+.portal:hover .fin-card{transform:rotate(-5deg) translateY(-6px)} .portal:hover .fin-coins{transform:translateY(-8px)}
 .portal{position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
   background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 12%,rgba(30,30,40,.5)),rgba(24,24,32,.46) 60%,color-mix(in srgb,var(--pc2) 6%,rgba(22,22,30,.5)));
   backdrop-filter:blur(28px) saturate(185%);-webkit-backdrop-filter:blur(28px) saturate(185%);
@@ -517,7 +546,8 @@ body.on-social .head .eyebrow,body.on-social .head .date{color:#e6e1f2;text-shad
 .pop-x{margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-soft);white-space:pre-line;word-break:break-word}
 .pop-x:empty,.pop-hint:empty{display:none}
 .pop-hint{margin-top:12px;font-size:12.5px;color:var(--ink-dim);line-height:1.4}
-.pop .btn{width:100%;margin-top:18px}
+.pop .btn{width:100%}
+.pop-acts{display:flex;gap:10px;margin-top:18px}.pop-acts .btn{flex:1}.pop-acts .btn[hidden]{display:none}
 @media(prefers-reduced-transparency:reduce){.pop{background:#22222c;backdrop-filter:none}}
 .recpill{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:160;display:flex;align-items:center;gap:9px;padding:9px 16px;
   border-radius:999px;border:1px solid rgba(255,122,144,.4);background:#1a1016;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.7)}
@@ -579,12 +609,45 @@ label.f>*{color:var(--ink)}
 .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
 
-/* ---------- FINANSE: koszty studiów ---------- */
-.fin{display:flex;flex-direction:column;gap:18px;max-width:1080px}
+/* ---------- FINANSE: budżet (głównie studencki) ---------- */
+.fin{display:flex;flex-direction:column;gap:18px;max-width:1040px;margin-inline:auto}
+#view-finanse .head{text-align:center;max-width:1040px;margin-inline:auto}
+/* tło Finansów: głęboki granat z miękką zielenią i fioletem (spokojniej niż domyślne) */
+.fin-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
+  background:radial-gradient(50% 40% at 15% 8%,rgba(63,191,127,.22),transparent 70%),radial-gradient(45% 40% at 90% 15%,rgba(139,124,255,.24),transparent 70%),
+    radial-gradient(60% 50% at 70% 100%,rgba(57,135,229,.18),transparent 70%),linear-gradient(170deg,#141a2b,#10131f 55%,#151324)}
+body.on-fin .fin-bg{opacity:1}
+.fin-hero{padding:26px 28px;border-radius:28px;display:flex;flex-direction:column;gap:22px}
+.fin-kpis{display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:0}
+.kpi{padding:0 22px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
+.kpi:first-child{padding-left:0;border-left:0}
+.kpi .eyebrow{margin:0}
+.kv{font-family:var(--font-display);font-size:28px;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi small{color:var(--ink-dim);font-size:12.5px;line-height:1.4}
+.kpi.main{align-items:flex-end;text-align:right}
+.fin-big.neg{color:#ff9d95}
+.lnk{border:0;background:none;padding:0;color:var(--accent-2);font:inherit;cursor:pointer}
+.goal{border:0;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;background:var(--glass-2);color:var(--ink-soft);transition:transform .2s}
+.goal:active{transform:scale(.97)} .goal.ok{background:rgba(116,220,158,.15);color:#9cebbc} .goal.warn{background:rgba(255,185,140,.15);color:#ffc49e}
+.fin-stack{position:relative;overflow:visible}
+.fin-stack i:first-child{border-radius:7px 0 0 7px} .fin-stack i:last-of-type{border-radius:0 7px 7px 0} .fin-stack i:only-of-type{border-radius:7px}
+.fin-stack i.left{background:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 6px,rgba(255,255,255,.08) 6px 12px)}
+.goal-mark{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px rgba(15,16,26,.9)}
+.fin-legend .lg-left::before{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 3px,rgba(255,255,255,.15) 3px 6px)}
+.fin-legend .lg-goal::before{width:2px;border-radius:1px;background:#fff}
+.fin-legend .lg-over::before{background:#ff9088}
+.fin-foot{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--line)}
+.fin-foot .fin-days{margin:0}
+.fin-spent{flex:1;min-width:200px;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--ink-soft)} .fin-spent b{color:var(--ink)}
+.fin-foot .btns{display:flex;gap:8px;flex-wrap:wrap}
+.cost .r b.pos{color:#8fe6b2}
+.inc-grid{grid-template-columns:repeat(5,1fr)} .inc-grid button{font-size:11.5px;padding:10px 4px}
+.goal-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+@media(max-width:820px){.fin-kpis{grid-template-columns:1fr 1fr}.kpi.main{grid-column:1/-1;order:-1;align-items:flex-start;text-align:left;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .inc-grid{grid-template-columns:repeat(3,1fr)}}
 .fin-ic{width:var(--sz,40px);height:var(--sz,40px);border-radius:calc(var(--sz,40px)*.3);flex:none;display:grid;place-items:center;
   background:color-mix(in srgb,var(--c) 18%,transparent);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 35%,transparent)}
 .fin-ic svg{width:55%;height:55%;stroke:var(--c);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.fin-hero{padding:26px 28px;border-radius:26px;display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
 .fin-hero .eyebrow{margin-bottom:8px}
 .fin-big{font-family:var(--font-display);font-size:clamp(40px,5vw,58px);font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
 .fin-big small{font-size:.38em;font-weight:600;color:var(--ink-dim);letter-spacing:-.01em;margin-left:6px}
@@ -619,7 +682,7 @@ label.f>*{color:var(--ink)}
 .due-top{display:flex;align-items:center;gap:12px} .due-top b{display:block;font-size:15px} .due-top small{color:var(--ink-dim);font-size:12.5px}
 .due-amt{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .due-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.when{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--glass-2);color:var(--ink-soft)}
+.when{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--glass-2);color:var(--ink-soft)}
 .when svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
 .when.soon{background:rgba(255,185,140,.16);color:#ffc49e} .when.late{background:rgba(255,144,136,.18);color:#ffa59e}
 /* lista kosztów */
@@ -1631,6 +1694,7 @@ body.on-start .c-time{display:none}
 </head>
 <body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
+<div class="fin-bg" aria-hidden="true"></div>
 <div class="aura" aria-hidden="true">
   <div class="au-ribbon"></div><div class="au-ribbon r2"></div><div class="au-grid"></div>
   <div class="au-cards">
@@ -1643,7 +1707,7 @@ body.on-start .c-time{display:none}
     <div class="au-card c-time" style="--d:14"><div class="au-time">11:30</div><div class="au-sh-s">Wykład · s. 233</div></div>
   </div>
 </div>
-<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div></div>
+<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="earth"><i class="e-clouds"></i><i class="e-lights"></i><i class="e-shade"></i></div></div>
 
 <div class="app">
   <aside class="rail">
@@ -1791,6 +1855,17 @@ body.on-start .c-time{display:none}
             <button class="btn ghost sm" id="portal-last" hidden></button>
           </div>
         </div>
+        <div class="portal p-fin" style="--pc:#74dc9e;--pc2:var(--sky)" role="button" tabindex="0" onclick="go('finanse')" onkeydown="if(event.key==='Enter')go('finanse')">
+          <div class="portal-art" id="art-fin" aria-hidden="true"></div>
+          <div class="portal-txt">
+            <h2>Finanse</h2>
+            <p id="portal-fin-sub">Dochody i wydatki</p>
+          </div>
+          <div class="portal-foot">
+            <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+            <button class="btn ghost sm" id="portal-fin-btn" onclick="event.stopPropagation();window._finThen='entry';go('finanse')">+ Wydatek</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1822,7 +1897,7 @@ body.on-start .c-time{display:none}
     <!-- FINANSE -->
     <section class="view" id="view-finanse">
       <div class="head">
-        <div class="eyebrow">Koszty studiów</div>
+        <div class="eyebrow">Budżet</div>
         <h1>Finanse</h1>
         <div class="date" id="fin-month"></div>
       </div>
@@ -2023,7 +2098,7 @@ body.on-start .c-time{display:none}
 </div>
 <div class="pop-bd" id="pop-bd" hidden><div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-t">
   <div class="pop-ic" id="pop-ic"></div><div class="pop-t" id="pop-t"></div><div class="pop-x" id="pop-x"></div><div class="pop-hint" id="pop-hint"></div>
-  <button class="btn" id="pop-ok">OK</button></div></div>
+  <div class="pop-acts"><button class="btn ghost" id="pop-cancel" hidden>Anuluj</button><button class="btn" id="pop-ok">OK</button></div></div></div>
 <button class="recpill" id="recpill" hidden onclick="recStop()" title="Zatrzymaj nagrywanie"></button>
 
 <script>
@@ -2099,6 +2174,7 @@ function go(v){
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
+  document.body.classList.toggle('on-fin', v==='finanse');
   document.body.classList.toggle('on-start', v==='start'); document.body.classList.remove('lp-down'); if(v==='start'){startLanding();scrollTo(0,0);}
   document.body.classList.toggle('on-social', v==='konto'||v==='znajomi');
   document.body.classList.toggle('on-auth', (v==='konto'||v==='znajomi')&&!ME);
@@ -2168,7 +2244,7 @@ async function loadPulpit(){
   paintTime();
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
-  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today);
+  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today); renderFinPortal();
   const nm=nowMin(), left=tasks.filter(t=>isClass(t)?(t.start_time&&evSpan(t)[1]>nm):!t.done).length;   // zajęcia: liczą się do końca trwania
   $('#portal-plan-sub').textContent=tasks.length?(left?`Dziś ${left} ${plural(left,'wpis','wpisy','wpisów')} przed Tobą`:'Dziś wszystko zrobione'):'Dziś wolne — zaplanuj coś';
   $('#portal-nb-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Załóż pierwszy zeszyt';
@@ -2232,6 +2308,20 @@ function renderCalArt(d,tasks){
     <text x="82" y="44" text-anchor="middle" font-size="15" font-weight="600" fill="#ff5f57" style="font-family:var(--font-text)" letter-spacing=".5">${wd.slice(0,12)}</text>
     <text x="82" y="106" text-anchor="middle" font-size="62" font-weight="300" fill="#1d1d1f" style="font-family:var(--font-display)" letter-spacing="-2">${d.getDate()}</text>
     ${dots.map((c,i)=>`<circle cx="${82+(i-(dots.length-1)/2)*13}" cy="122" r="4" fill="${c}"/>`).join('')}</g></svg>`;
+}
+/* karta Finansów: portfel z monetami + ile zostaje i najbliższa płatność */
+async function renderFinPortal(){
+  if(!$('#art-fin').firstChild)$('#art-fin').innerHTML=`<svg viewBox="0 0 200 150"><defs><linearGradient id="fcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fd69a"/><stop offset="1" stop-color="#2a9f6b"/></linearGradient></defs>
+    <g class="lift fin-coins"><ellipse cx="160" cy="118" rx="26" ry="9" fill="#d9a520"/><rect x="134" y="100" width="52" height="18" fill="#e9b730"/><ellipse cx="160" cy="100" rx="26" ry="9" fill="#ffd55a"/>
+      <rect x="134" y="84" width="52" height="16" fill="#e9b730"/><ellipse cx="160" cy="84" rx="26" ry="9" fill="#ffe08a"/><text x="160" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#b8860b">zł</text></g>
+    <g class="lift fin-card"><g transform="rotate(-8 80 80)"><rect x="18" y="30" width="132" height="84" rx="16" fill="url(#fcg)"/>
+      <rect x="18" y="52" width="132" height="14" fill="rgba(0,0,0,.18)"/><rect x="32" y="80" width="22" height="16" rx="4" fill="#ffe08a"/>
+      <rect x="64" y="84" width="58" height="6" rx="3" fill="rgba(255,255,255,.55)"/><rect x="64" y="96" width="36" height="6" rx="3" fill="rgba(255,255,255,.35)"/></g></g></svg>`;
+  let D; try{D=await api('/costs');}catch(_){return;}
+  const s=D.summary, sub=$('#portal-fin-sub'), btn=$('#portal-fin-btn');
+  sub.textContent=s.income?`Zostaje ${s.left<0?'−':''}${zl0(Math.abs(s.left))} miesięcznie`:s.monthly?`Wydatki ~${zl0(s.monthly)} miesięcznie`:'Dodaj dochody i wydatki';
+  const nx=D.upcoming[0];
+  if(nx&&nx.days_left<=Math.max(14,nx.remind_days||0)){btn.textContent=`${nx.name} · ${whenTxt(nx.days_left)}`;btn.onclick=e=>{e.stopPropagation();go('finanse');};}
 }
 /* ilustracja: stos okładek w kolorach Twoich zeszytów */
 function renderNbArt(nbs){
@@ -2476,8 +2566,8 @@ function viewTask(id){
       <div><h3>${esc(t.title)}</h3><div class="tv-kind" style="color:${k[2]}">${esc(k[0]||'Bez typu')}</div></div></div>
     <dl class="tv-rows">${rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
     ${t.notes?`<div class="tv-desc">${esc(t.notes)}</div>`:''}
-    <div class="actions"><button class="btn danger" style="margin-right:auto" onclick="delTaskBack(${t.id})">Usuń</button>
-      <button class="btn ghost" onclick="back()">${returnDay?'← Dzień':'Zamknij'}</button><button class="btn" onclick="openTask(${t.id})">Edytuj</button></div>`;
+    <div class="actions"><button class="btn ghost" style="margin-right:auto" onclick="back()">${returnDay?'Powrót':'Zamknij'}</button>
+      <button class="btn danger" onclick="delTaskBack(${t.id})">Usuń</button><button class="btn" onclick="openTask(${t.id})">Edytuj</button></div>`;
   openModal();
 }
 function openLinkedNote(nb,id){go('nauka');selectNotebook(nb);setTimeout(()=>openNote(id),250);}
@@ -2510,7 +2600,7 @@ async function importIcs(inp){
 }
 async function toggleTask(id,done){await api('/tasks/'+id,{method:'PATCH',body:JSON.stringify({done:!!done})});refresh();}
 async function delTask(id){await api('/tasks/'+id,{method:'DELETE'});refresh();}
-async function delTaskBack(id){await delTask(id);back();}
+async function delTaskBack(id){const t=planTasks[id];if(!await confirmPop('Usunąć '+(t&&t.title?'„'+t.title+'”':'ten wpis')+'?','Tego nie da się cofnąć.'))return;await delTask(id);back();}
 function refresh(){const v=$('.view.active').id.replace('view-','');go(v);}
 
 /* ---------- FINANSE: koszty studiów ---------- */
@@ -2534,11 +2624,11 @@ const FIN_IC={
   wallet:'<path d="M4 7.5A2.5 2.5 0 016.5 5H18v3"/><rect x="4" y="7.5" width="16.5" height="12" rx="2.5"/><path d="M16 13.5h.01" stroke-width="2.6"/>',
 };
 const FIN_CAT=[
-  {k:'dojazd',l:'Dojazd',ic:'tram',c:'#3987e5',def:'Dojazd na uczelnię'},
+  {k:'dojazd',l:'Dojazd i transport',ic:'tram',c:'#3987e5',def:'Dojazd na uczelnię'},
   {k:'jedzenie',l:'Jedzenie',ic:'food',c:'#d95926',def:'Jedzenie'},
   {k:'mieszkanie',l:'Mieszkanie',ic:'home',c:'#199e70',def:'Akademik / mieszkanie'},
   {k:'oplaty',l:'Opłaty uczelni',ic:'cap',c:'#c98500',def:'Czesne'},
-  {k:'materialy',l:'Materiały',ic:'book',c:'#d55181',def:'Książki i ksero'},
+  {k:'materialy',l:'Nauka i materiały',ic:'book',c:'#d55181',def:'Książki i ksero'},
   {k:'abonamenty',l:'Abonamenty',ic:'phone',c:'#008300',def:'Telefon i internet'},
   {k:'zdrowie',l:'Zdrowie i sport',ic:'heart',c:'#9085e9',def:'Siłownia'},
   {k:'rozrywka',l:'Rozrywka',ic:'ticket',c:'#e66767',def:'Wyjścia'},
@@ -2570,40 +2660,52 @@ function costLine(x){
 }
 
 async function loadFinanse(){
-  $('#fin-month').textContent='Symulacja miesięczna · '+new Date().toLocaleDateString('pl-PL',{month:'long',year:'numeric'});
+  $('#fin-month').textContent='Dochody, wydatki i to, co zostaje · '+new Date().toLocaleDateString('pl-PL',{month:'long',year:'numeric'});
   try{FIN=await api('/costs');}catch(_){return;}
   renderFin(); refreshPayBadge();
+  if(window._finThen==='entry'){window._finThen=null;openEntry();}
 }
 function renderFin(){
   const D=FIN, s=D.summary, el=$('#fin');
-  if(!D.costs.length){
-    el.innerHTML=`<div class="fin-empty glass">${finIcon('wallet','#3987e5',56)}<h3 style="margin-top:14px">Ile kosztują Cię studia?</h3>
-      <p>Dodaj stałe wydatki — aplikacja policzy, ile wydasz miesięcznie, i przypomni o terminach płatności.</p>
+  if(!D.costs.length&&!D.incomes.length){
+    el.innerHTML=`<div class="fin-empty glass">${finIcon('wallet','#3987e5',56)}<h3 style="margin-top:14px">Twój budżet w jednym miejscu</h3>
+      <p>Dodaj dochody i stałe wydatki — aplikacja policzy, ile zostaje co miesiąc, i przypomni o terminach płatności.</p>
       <div class="fin-quick">${[['dojazd','Dojazd'],['jedzenie','Jedzenie'],['oplaty','Czesne'],['mieszkanie','Mieszkanie'],['abonamenty','Telefon']].map(([k,l])=>{const c=finCat(k);
-        return `<button onclick="openCost(null,'${k}')">${finIcon(c.ic,c.c)}${l}</button>`;}).join('')}</div></div>`;
+        return `<button onclick="openCost(null,'${k}')">${finIcon(c.ic,c.c)}${l}</button>`;}).join('')}<button onclick="openIncome()">${finIcon('brief','#3fbf7f')}Dochód</button></div></div>`;
     return;
   }
-  const tot=s.monthly||0, pct=tot?Math.min(100,s.spent_month/tot*100):0;
+  const inc=s.income||0, tot=s.monthly||0, pct=tot?Math.min(100,s.spent_month/tot*100):0, goal=D.settings.savings_goal||0, left=s.left;
   const cats=FIN_CAT.filter(c=>(s.by_cat[c.k]||0)>0);
   const due=D.upcoming.filter(x=>x.days_left<=Math.max(30,x.remind_days||0));
+  const pay=D.incomes.filter(x=>x.days_to_pay!=null).sort((a,b)=>a.days_to_pay-b.days_to_pay)[0];
+  const scale=Math.max(inc,tot)||1, over=tot>inc&&inc>0;
+  const gtxt=!inc?'Dodaj dochód, żeby zobaczyć, ile zostaje.'
+    :left<0?`Wydajesz o ${zl0(-left)} więcej, niż zarabiasz.`
+    :goal?(left>=goal?`Cel ${zl0(goal)} osiągnięty · zapas ${zl0(left-goal)}`:`Do celu ${zl0(goal)} brakuje ${zl0(goal-left)}`)
+    :'Ustaw, ile ma zostawać co miesiąc.';
+  const gcls=!inc?'':left<0||(goal&&left<goal)?'warn':'ok';
   el.innerHTML=`
     <div class="fin-hero glass">
-      <div>
-        <div class="eyebrow">Miesięcznie wydasz ok.</div>
-        <div class="fin-big">${zl0(tot).replace(/\s?zł/,'')}<small>zł</small></div>
-        <div class="fin-sub">${s.variable?`w tym ~${zl0(s.variable)} to szacunki (np. paliwo) · `:''}${D.costs.length} ${plural(D.costs.length,'koszt','koszty','kosztów')}${s.once?` · jednorazowo jeszcze ${zl0(s.once)}`:''}<br>Opłaty semestralne i roczne rozłożone na miesiące.</div>
+      <div class="fin-kpis">
+        <div class="kpi"><div class="eyebrow">Dochód</div><div class="kv">${zl0(inc)}</div>
+          <small>${D.incomes.length?`${D.incomes.length} ${plural(D.incomes.length,'źródło','źródła','źródeł')}${pay?` · wypłata ${pay.days_to_pay?'za '+pay.days_to_pay+' '+plural(pay.days_to_pay,'dzień','dni','dni'):'dziś'}`:''}`:'<button class="lnk" onclick="openIncome()">+ dodaj źródło</button>'}</small></div>
+        <div class="kpi"><div class="eyebrow">Wydatki</div><div class="kv">${s.variable?'~':''}${zl0(tot)}</div>
+          <small>${D.costs.length} ${plural(D.costs.length,'koszt','koszty','kosztów')}${s.variable?` · ~${zl0(s.variable)} szacunków`:''}</small></div>
+        <div class="kpi main"><div class="eyebrow">Zostaje co miesiąc</div><div class="fin-big ${left<0?'neg':''}">${inc?(left<0?'−':'')+zl0(Math.abs(left)).replace(/\s?zł/,''):'—'}<small>${inc?'zł':''}</small></div>
+          <button class="goal ${gcls}" onclick="openGoal()">${gcls==='ok'?'✓ ':''}${gtxt}</button></div>
+      </div>
+      ${tot||inc?`<div class="fin-chart">
+        <div class="fin-stack" role="img" aria-label="Wydatki według kategorii na tle dochodu">${cats.map(c=>`<i style="--c:${c.c};flex:${s.by_cat[c.k]}" data-l="${escAttr(c.l)}" data-v="${s.by_cat[c.k]}"></i>`).join('')}${inc>tot?`<i class="left" style="flex:${inc-tot}" data-l="Zostaje" data-v="${inc-tot}"></i>`:''}
+          ${goal&&inc&&goal<inc?`<b class="goal-mark" style="left:${(inc-goal)/scale*100}%" title="Cel: zostaje ${zl0(goal)}"></b>`:''}</div>
+        <div class="fin-legend">${cats.map(c=>`<span style="--c:${c.c}">${c.l} <b>${zl0(s.by_cat[c.k])}</b>${inc?` · ${Math.round(s.by_cat[c.k]/inc*100)}% dochodu`:''}</span>`).join('')}
+          ${inc>tot?`<span class="lg-left">Zostaje <b>${zl0(inc-tot)}</b></span>`:''}${goal&&inc?'<span class="lg-goal">Cel oszczędzania</span>':''}${over?`<span class="lg-over">Brakuje <b>${zl0(tot-inc)}</b></span>`:''}</div></div>`:''}
+      <div class="fin-foot">
         <div class="fin-days">Zajęcia <b>${D.settings.study_days} ${plural(D.settings.study_days,'dzień','dni','dni')}</b> w tygodniu
           <button onclick="finDays(-1)" aria-label="Mniej dni">−</button><button onclick="finDays(1)" aria-label="Więcej dni">+</button></div>
+        <div class="fin-spent"><span>Wydane w tym miesiącu <b>${zl(s.spent_month)}</b>${tot?` z ~${zl0(tot)}`:''}</span>
+          <div class="fin-prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" style="--pc:${pct>=100?'#ff9088':pct>=80?'#ffb98c':'#74dc9e'}"><i style="width:${pct}%"></i></div></div>
+        <div class="btns"><button class="btn sm" onclick="openEntry()">+ Wydatek</button><button class="btn ghost sm" onclick="openCost()">+ Koszt</button><button class="btn ghost sm" onclick="openIncome()">+ Dochód</button></div>
       </div>
-      <div class="fin-month">
-        <div class="eyebrow">Wydane w tym miesiącu</div>
-        <div class="v">${zl(s.spent_month)} <span>z ~${zl0(tot)}</span></div>
-        <div class="fin-prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" style="--pc:${pct>=100?'#ff9088':pct>=80?'#ffb98c':'#74dc9e'}"><i style="width:${pct}%"></i></div>
-        <div class="btns"><button class="btn sm" onclick="openEntry()">+ Wydatek</button><button class="btn ghost sm" onclick="openCost()">+ Koszt stały</button></div>
-      </div>
-      ${cats.length?`<div class="fin-chart">
-        <div class="fin-stack" role="img" aria-label="Podział kosztów miesięcznych według kategorii">${cats.map(c=>`<i style="--c:${c.c};flex:${s.by_cat[c.k]}" data-l="${escAttr(c.l)}" data-v="${s.by_cat[c.k]}"></i>`).join('')}</div>
-        <div class="fin-legend">${cats.map(c=>`<span style="--c:${c.c}">${c.l} <b>${zl0(s.by_cat[c.k])}</b> · ${Math.round(s.by_cat[c.k]/tot*100)}%</span>`).join('')}</div></div>`:''}
     </div>
     ${due.length?`<div class="fin-h"><h3>Najbliższe płatności</h3></div>
     <div class="fin-due">${due.map(x=>`<div class="due glass">
@@ -2611,6 +2713,7 @@ function renderFin(){
       <div class="due-row"><span class="due-amt">${x.per_period?zl(x.per_period):'—'}</span>
         <span class="when ${whenCls(x.days_left,x.remind_days)}"><svg viewBox="0 0 24 24">${FIN_IC.clock}</svg>${whenTxt(x.days_left)}</span></div>
       <button class="btn ghost sm" onclick="payCost(${x.id})">✓ Opłacone</button></div>`).join('')}</div>`:''}
+    ${incomeRows(D)}
     <div class="fin-h"><h3>Koszty stałe</h3><button class="btn ghost sm" onclick="openCost()">+ Dodaj koszt</button></div>
     ${FIN_CAT.filter(c=>D.costs.some(x=>x.category===c.k)).map(c=>{const xs=D.costs.filter(x=>x.category===c.k);
       return `<div class="fin-group glass"><div class="fg-h">${finIcon(c.ic,c.c,32)}<b>${c.l}</b><span>${zl0(s.by_cat[c.k]||0)} / mies.</span></div>
@@ -2634,7 +2737,76 @@ function renderFin(){
 async function finDays(d){const n=Math.max(1,Math.min(7,FIN.settings.study_days+d));if(n===FIN.settings.study_days)return;
   await api('/costs/settings',{method:'POST',body:JSON.stringify({study_days:n})});loadFinanse();}
 async function payCost(id){await api('/costs/'+id+'/pay',{method:'POST'});loadFinanse();}
-async function delEntry(id){await api('/cost-entries/'+id,{method:'DELETE'});loadFinanse();}
+async function delEntry(id){if(!await confirmPop('Usunąć ten wydatek?'))return;await api('/cost-entries/'+id,{method:'DELETE'});loadFinanse();}
+
+/* dochody i cel oszczędzania */
+const INC_KIND=[{k:'praca',l:'Praca',ic:'brief'},{k:'stypendium',l:'Stypendium',ic:'award'},{k:'rodzice',l:'Od rodziców',ic:'family'},{k:'freelance',l:'Zlecenia',ic:'laptop'},{k:'inne',l:'Inne',ic:'coins'}];
+Object.assign(FIN_IC,{
+  brief:'<rect x="3.5" y="7" width="17" height="12.5" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7M3.5 12.5h17"/>',
+  award:'<circle cx="12" cy="9" r="5"/><path d="M8.8 13l-1.3 7.5L12 18l4.5 2.5-1.3-7.5"/>',
+  family:'<path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19z"/><path d="M12 17.3s-3-1.8-3-3.9a1.6 1.6 0 013-.8 1.6 1.6 0 013 .8c0 2.1-3 3.9-3 3.9z"/>',
+  laptop:'<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 18.5h18"/>',
+  coins:'<ellipse cx="10" cy="7" rx="6" ry="2.5"/><path d="M4 7v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V7"/><path d="M8 15.8c.6 1 3 1.7 6 1.7 3.3 0 6-1.1 6-2.5v-4c0-1-1.4-1.9-3.5-2.3"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+});
+const INC_C='#3fbf7f';
+const incKind=k=>INC_KIND.find(x=>x.k===k)||INC_KIND[INC_KIND.length-1];
+function incomeRows(D){
+  if(!D.incomes.length)return '';
+  return `<div class="fin-h"><h3>Dochody</h3><button class="btn ghost sm" onclick="openIncome()">+ Dodaj dochód</button></div>
+    <div class="fin-group glass">${D.incomes.map(x=>{const k=incKind(x.kind);
+      const sub=[k.l,x.period!=='month'&&x.amount?`${zl(x.amount)} / ${PER_SHORT[x.period]}`:'',x.pay_day?`wypłata ${x.pay_day}. dnia · ${x.days_to_pay?'za '+x.days_to_pay+' '+plural(x.days_to_pay,'dzień','dni','dni'):'dziś'}`:'',x.note].filter(Boolean).join(' · ');
+      return `<div class="cost" onclick="openIncome(${x.id})">${finIcon(k.ic,INC_C,40)}
+        <div class="m"><b>${esc(x.name)}${x.variable?'<span class="est">zmienny</span>':''}</b><small>${esc(sub)}</small></div>
+        <div class="r">${x.monthly?`<b class="pos">+${x.variable?'~':''}${zl(x.monthly)}</b><small>miesięcznie</small>`:x.period==='once'&&x.amount?`<b class="pos">+${zl(x.amount)}</b><small>jednorazowo</small>`:'<span class="none">bez kwoty</span>'}</div></div>`;}).join('')}</div>`;
+}
+let IF=null;
+function openIncome(id=null){
+  const x=id?FIN.incomes.find(i=>i.id===id):null;
+  IF=x?{...x}:{name:'',kind:'praca',amount:null,period:'month',variable:false,pay_day:null,note:''};
+  const m=$('#modal'); m.style.maxWidth='520px';
+  m.innerHTML=`<h3>${x?'Edytuj dochód':'Nowy dochód'}</h3><div class="msub">Pensja, stypendium, pieniądze od rodziców — wszystko, z czego żyjesz w miesiącu.</div>
+    <div class="fin-form">
+      <div class="cat-grid inc-grid" id="if-kinds">${INC_KIND.map(k=>`<button type="button" data-k="${k.k}" style="--c:${INC_C}">${finIcon(k.ic,INC_C)}${k.l}</button>`).join('')}</div>
+      <label class="field"><span>Nazwa</span><input id="if-name" maxlength="80" placeholder="np. Praca w kawiarni"></label>
+      <div class="frow"><label class="field"><span>Kwota (zł)</span><input id="if-amt" type="number" min="0" step="0.01" placeholder="np. 1800"></label>
+        <div class="field"><span>Jak często</span><div id="if-per"></div></div></div>
+      <div class="frow"><label class="field"><span>Dzień wypłaty · opcjonalnie</span><input id="if-day" type="number" min="1" max="31" placeholder="np. 10"></label>
+        <label class="field"><span>Notatka</span><input id="if-note" maxlength="300" placeholder="opcjonalnie"></label></div>
+      <div class="fin-sw"><div>Kwota się waha<small>Np. praca na godziny albo zlecenia — liczona jako szacunek.</small></div>
+        <label class="switch"><input type="checkbox" id="if-var"><i></i></label></div>
+    </div>
+    <div class="actions">${x?`<button class="btn danger" style="margin-right:auto" onclick="delIncome(${x.id})">Usuń</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveIncome()">${x?'Zapisz':'Dodaj'}</button></div>`;
+  const paint=()=>$$('#if-kinds button').forEach(b=>b.classList.toggle('on',b.dataset.k===IF.kind));
+  $('#if-kinds').onclick=e=>{const b=e.target.closest('button');if(!b)return;IF.kind=b.dataset.k;paint();
+    if(!x&&!$('#if-name').dataset.t)$('#if-name').value={praca:'Praca',stypendium:'Stypendium',rodzice:'Od rodziców',freelance:'Zlecenia',inne:''}[IF.kind];};
+  $('#if-name').oninput=e=>e.target.dataset.t=1;
+  $('#if-name').value=IF.name||(x?'':'Praca'); if(IF.amount!=null)$('#if-amt').value=IF.amount; if(IF.pay_day)$('#if-day').value=IF.pay_day;
+  $('#if-note').value=IF.note||''; $('#if-var').checked=!!IF.variable; paint();
+  window._cbIPer=combo($('#if-per'),{items:FIN_PER.filter(p=>p.v!=='day'),value:IF.period,readonly:true});
+  openModal(); setTimeout(()=>$('#if-name').focus(),60);
+}
+async function saveIncome(){
+  const name=$('#if-name').value.trim(); if(!name){$('#if-name').focus();return;}
+  const body={name,kind:IF.kind,amount:cfNum('#if-amt'),period:_cbIPer.get(),variable:$('#if-var').checked,pay_day:parseInt($('#if-day').value,10)||null,note:$('#if-note').value.trim()};
+  const r=await api(IF.id?'/incomes/'+IF.id:'/incomes',{method:IF.id?'PATCH':'POST',body:JSON.stringify(body)});
+  if(r&&r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
+  closeModal(); loadFinanse();
+}
+async function delIncome(id){if(!await confirmPop('Usunąć ten dochód?','Zniknie z budżetu i symulacji.'))return;await api('/incomes/'+id,{method:'DELETE'});closeModal();loadFinanse();}
+function openGoal(){
+  const m=$('#modal'); m.style.maxWidth='420px'; const s=FIN.summary;
+  m.innerHTML=`<div class="goal-head">${finIcon('target','#3fbf7f',48)}<div><h3>Ile ma zostawać?</h3><div class="msub" style="margin:2px 0 0">Kwota, którą chcesz odłożyć co miesiąc.</div></div></div>
+    <div class="fin-form"><label class="field"><span>Cel oszczędzania (zł / mies.)</span><input id="gf-amt" type="number" min="0" step="10" placeholder="np. 300"></label>
+      ${s.income?`<div class="fin-prev"><span>Teraz zostaje</span><b>${zl(s.left)}</b></div>`:''}</div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveGoal()">Zapisz</button></div>`;
+  if(FIN.settings.savings_goal)$('#gf-amt').value=FIN.settings.savings_goal;
+  openModal(); setTimeout(()=>$('#gf-amt').focus(),60);
+}
+async function saveGoal(){await api('/costs/settings',{method:'POST',body:JSON.stringify({savings_goal:cfNum('#gf-amt')||0})});closeModal();loadFinanse();}
+/* potwierdzenie w stylu aplikacji (zamiast systemowego confirm) */
+const confirmPop=(title,text='',ok='Usuń')=>popout({icon:'warn',title,text,ok,cancel:'Anuluj',danger:true});
 
 /* okno: koszt stały */
 let CF=null;
@@ -2656,7 +2828,7 @@ function openCost(id=null,cat=null){
       <label class="field"><span>Notatka</span><input id="cf-note" maxlength="300" placeholder="np. konto do przelewu, numer albumu w tytule"></label>
       <div class="fin-prev"><span id="cf-prev-l">Miesięcznie</span><b id="cf-prev">—</b></div>
     </div>
-    <div class="actions">${x?`<button class="btn ghost" style="margin-right:auto;color:var(--neg)" onclick="delCost(${x.id})">Usuń</button>`:''}
+    <div class="actions">${x?`<button class="btn danger" style="margin-right:auto" onclick="delCost(${x.id})">Usuń</button>`:''}
       <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveCost()">${x?'Zapisz':'Dodaj'}</button></div>`;
   $('#cf-name').value=CF.name; $('#cf-due').value=CF.due_date||''; $('#cf-rem').value=CF.remind_days??7; $('#cf-note').value=CF.note||'';
   $('#cf-name').oninput=e=>{CF.name=e.target.value;CF._nameTouched=true;};
@@ -2741,7 +2913,7 @@ async function saveCost(){
   if(r&&r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
   closeModal(); loadFinanse();
 }
-async function delCost(id){if(!confirm('Usunąć ten koszt razem z jego wydatkami?'))return;await api('/costs/'+id,{method:'DELETE'});closeModal();loadFinanse();}
+async function delCost(id){if(!await confirmPop('Usunąć ten koszt?','Razem z dopisanymi do niego wydatkami.'))return;await api('/costs/'+id,{method:'DELETE'});closeModal();loadFinanse();}
 
 /* okno: wydatek (np. tankowanie) */
 function openEntry(costId=null){
@@ -2906,7 +3078,7 @@ async function recTranscribe(id){
   recSig=''; recPoll();
 }
 async function recDelete(id){
-  if(!confirm('Usunąć to nagranie (plik audio)? Tekst wstawiony do notatki zostaje.'))return;
+  if(!await confirmPop('Usunąć to nagranie?','Plik audio zniknie. Tekst wstawiony do notatki zostaje.'))return;
   await api('/rec/'+id,{method:'DELETE'}); recSig=''; renderRecBar();
 }
 
@@ -2914,20 +3086,22 @@ async function recDelete(id){
 const POP_IC={ok:['var(--pos)','<path d="M5 12.5l4.5 4.5L19 7.5"/>'],info:['var(--accent)','<path d="M12 11v6M12 7.5v.5"/>'],
   warn:['var(--hi)','<path d="M12 7v6.5M12 17v.5"/>']};
 let popQ=Promise.resolve();
-function popout({title='',text='',hint='',icon='info',ok='OK'}={}){
+function popout({title='',text='',hint='',icon='info',ok='OK',cancel='',danger=false}={}){
   return popQ=popQ.then(()=>new Promise(res=>{
     const bd=$('#pop-bd'), [c,ico]=POP_IC[icon]||POP_IC.info;
     $('#pop-ic').style.setProperty('--pi',c); $('#pop-ic').innerHTML=`<svg viewBox="0 0 24 24">${ico}</svg>`;
     $('#pop-t').textContent=title; $('#pop-x').textContent=text; $('#pop-hint').textContent=hint; $('#pop-ok').textContent=ok;
+    $('#pop-cancel').hidden=!cancel; $('#pop-cancel').textContent=cancel||'Anuluj'; $('#pop-ok').classList.toggle('danger',!!danger);
     bd.hidden=false;
     $('#pop').animate(reduceMotion()?[{opacity:0},{opacity:1}]:[{opacity:0,transform:'scale(.9)'},{opacity:1,transform:'none'}],
       {duration:reduceMotion()?150:SPRING.duration,easing:reduceMotion()?'ease':SPRING.easing});
-    const close=()=>{document.removeEventListener('keydown',key,true);
-      $('#pop').animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.96)'}],{duration:140,easing:'ease-in'}).onfinish=()=>{bd.hidden=true;res();};};
-    const key=e=>{if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}};
+    let shut=false;
+    const close=ans=>{if(shut)return;shut=true;document.removeEventListener('keydown',key,true);
+      $('#pop').animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.96)'}],{duration:140,easing:'ease-in'}).onfinish=()=>{bd.hidden=true;res(ans);};};
+    const key=e=>{if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();e.stopPropagation();close(e.key==='Enter'||!cancel);}};
     document.addEventListener('keydown',key,true);
-    $('#pop-ok').onclick=close; bd.onclick=e=>{if(e.target===bd)close();};
-    setTimeout(()=>$('#pop-ok').focus(),30);
+    $('#pop-ok').onclick=()=>close(true); $('#pop-cancel').onclick=()=>close(false); bd.onclick=e=>{if(e.target===bd)close(!cancel);};
+    setTimeout(()=>(cancel?$('#pop-cancel'):$('#pop-ok')).focus(),30);
   }));
 }
 // wszystkie dotychczasowe alert() → ten sam komunikat (pierwsza linia = tytuł, reszta = opis)
@@ -3118,7 +3292,7 @@ async function openFriend(id){
         <button class="btn ghost sm" title="Usuń z listy" onclick="delShare(${sh.id},${id})">✕</button></div></div>`;}).join('')
       :`<div class="empty-soft">${esc(f.display_name)} nic Ci jeszcze nie udostępnił(a).</div>`}</div></div>`;
 }
-async function removeFriend(fid,name){ if(!confirm('Usunąć '+name+' ze znajomych?'))return; await cloud('/friends/'+fid,{method:'DELETE'}); loadFriends(); }
+async function removeFriend(fid,name){ if(!await confirmPop('Usunąć '+name+' ze znajomych?','Udostępnione materiały znikną z listy.'))return; await cloud('/friends/'+fid,{method:'DELETE'}); loadFriends(); }
 async function delShare(sid,fid){ await cloud('/shares/'+sid,{method:'DELETE'}); openFriend(fid); }
 /* --- bezpieczeństwo: HTML z cudzej notatki tylko z dozwolonych znaczników, bez skryptów i złych linków --- */
 const SAFE_TAGS=new Set('P BR B STRONG I EM U S STRIKE DEL H1 H2 H3 H4 H5 H6 UL OL LI A SPAN DIV CODE PRE BLOCKQUOTE MARK SUB SUP HR TABLE THEAD TBODY TR TD TH IMG FONT'.split(' '));
@@ -3293,7 +3467,7 @@ async function stTest(fresh){
   if(r.ok)popout({icon:'ok',title:fresh?'Połączono z Gemini':'Połączenie działa',text:r.reply?'':(r.error||''),hint:'Notatki AI i zamiana nagrań na tekst są gotowe.'});
   else popout({icon:'warn',title:'Połączenie nie działa',text:r.error||'Spróbuj ponownie.'});
 }
-async function stDelKey(){ if(!confirm('Usunąć zapisany klucz Gemini?'))return; await stSave({key:''}); }
+async function stDelKey(){ if(!await confirmPop('Usunąć zapisany klucz Gemini?','Notatki AI i zamiana nagrań przestaną działać do czasu dodania nowego.'))return; await stSave({key:''}); }
 
 /* tryb „przez zwykły czat”: polecenie do schowka → czat w przeglądarce → wklejona odpowiedź (Markdown) → blok */
 const CHAT_URL={gemini:'https://gemini.google.com/app',chatgpt:'https://chatgpt.com/'};
@@ -3340,7 +3514,7 @@ async function exportData(){
 }
 async function importData(inp){
   const f=inp.files[0]; inp.value=''; if(!f)return;
-  if(!confirm('Wczytać „'+f.name+'”? Obecne dane zostaną zastąpione (stara baza zostaje jako asystent.db.bak).'))return;
+  if(!await confirmPop('Wczytać „'+f.name+'”?','Obecne dane zostaną zastąpione (stara baza zostaje jako asystent.db.bak).','Wczytaj'))return;
   const data=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
   const r=await api('/import',{method:'POST',body:JSON.stringify({filename:f.name,data})});
   if(r.ok){await popout({icon:'ok',title:'Dane wczytane',text:'Aplikacja odświeży się, żeby pokazać wczytane dane.'});location.reload();}
@@ -3415,7 +3589,7 @@ function restoreCols(){
 }
 
 async function delNotebook(id){
-  if(!confirm('Usunąć zeszyt i wszystkie jego notatki?'))return;
+  if(!await confirmPop('Usunąć zeszyt?','Razem ze wszystkimi notatkami w środku. Tego nie da się cofnąć.'))return;
   await api('/notebooks/'+id,{method:'DELETE'});
   if(nbActive===id){nbActive=null;$('.study').classList.remove('show-notes');clearNotes();closeEditor();}
   loadNauka();
@@ -3751,7 +3925,7 @@ function fmtDate(s){
   return d.toLocaleDateString('pl-PL',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
 }
 async function delNote(id){
-  if(!confirm('Usunąć notatkę?'))return;
+  if(!await confirmPop('Usunąć notatkę?','Tego nie da się cofnąć.'))return;
   await api('/notes/'+id,{method:'DELETE'});
   if(noteActive===id){closeEditor();showTab('notes');}
   loadNotes(); loadNauka();
@@ -4718,7 +4892,7 @@ async function openPdfViewer(url,blockId){
   const onkey=e=>{if(e.key==='Escape'){if(document.querySelector('.pn-pop'))document.querySelector('.pn-pop').remove();else close();}};
   document.addEventListener('keydown',onkey);
   const pageObjs=[];
-  v.querySelector('.pdfv-clear').onclick=()=>{ if(!confirm('Usunąć wszystkie rysunki i teksty z tego PDF?'))return;
+  v.querySelector('.pdfv-clear').onclick=async()=>{ if(!await confirmPop('Wyczyścić PDF?','Usunie wszystkie rysunki i teksty z tego PDF.','Wyczyść'))return;
     annots.strokes.length=0; annots.notes.length=0;
     pageObjs.forEach(po=>{po.annot.getContext('2d').clearRect(0,0,po.annot.width,po.annot.height);po.notes.innerHTML='';}); };
   if(blk)v.querySelector('.pdfv-save').onclick=()=>{blk.pdfAnnots=JSON.parse(JSON.stringify(annots));scheduleSave();pdfToast(v,'Zapisano adnotacje ✓');};
