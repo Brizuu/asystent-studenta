@@ -13,6 +13,14 @@ python -m uvicorn cloud.app:app --port 8100
 Aplikacja domyślnie łączy się z `http://127.0.0.1:8100`
 (zmiana: Ustawienia → Dane → Serwer kont, albo zmienna `ASYSTENT_CLOUD_URL`).
 
+## Konto testowe (do sprawdzenia znajomych i udostępniania)
+
+```bash
+python cloud/demo.py twoj@email.pl
+```
+Zakłada konto „Anna Testowa”, wysyła Ci zaproszenie, po jego akceptacji w aplikacji udostępnia
+Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do testu w drugą stronę).
+
 ## Produkcja na VPS (Docker + automatyczny HTTPS)
 
 1. Ustaw w DNS rekord **A** domeny (np. `konta.twojadomena.pl`) na IP VPS-a.
