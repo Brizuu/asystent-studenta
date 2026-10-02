@@ -579,6 +579,110 @@ label.f>*{color:var(--ink)}
 .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
 
+/* ---------- FINANSE: koszty studiów ---------- */
+.fin{display:flex;flex-direction:column;gap:18px;max-width:1080px}
+.fin-ic{width:var(--sz,40px);height:var(--sz,40px);border-radius:calc(var(--sz,40px)*.3);flex:none;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--c) 18%,transparent);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 35%,transparent)}
+.fin-ic svg{width:55%;height:55%;stroke:var(--c);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fin-hero{padding:26px 28px;border-radius:26px;display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
+.fin-hero .eyebrow{margin-bottom:8px}
+.fin-big{font-family:var(--font-display);font-size:clamp(40px,5vw,58px);font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
+.fin-big small{font-size:.38em;font-weight:600;color:var(--ink-dim);letter-spacing:-.01em;margin-left:6px}
+.fin-sub{margin-top:10px;color:var(--ink-soft);font-size:14px;line-height:1.5}
+.fin-days{display:inline-flex;align-items:center;gap:10px;margin-top:16px;padding:6px 6px 6px 14px;border-radius:99px;background:var(--glass-2);font-size:13.5px;color:var(--ink-soft)}
+.fin-days b{color:var(--ink);font-variant-numeric:tabular-nums}
+.fin-days button{width:28px;height:28px;border-radius:50%;border:0;background:var(--glass);color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+.fin-days button:active{transform:scale(.92)}
+.fin-month{display:flex;flex-direction:column;justify-content:center;gap:10px;padding-left:28px;border-left:1px solid var(--line)}
+.fin-month .v{font-size:28px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.fin-month .v span{font-size:14px;font-weight:500;color:var(--ink-dim);letter-spacing:0}
+.fin-prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.fin-prog i{display:block;height:100%;border-radius:inherit;background:var(--pc,#74dc9e);transition:width .9s var(--spring,ease)}
+.fin-month .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+/* wykres: jeden pasek części całości, 2 px przerwy, zaokrąglone końce */
+.fin-chart{grid-column:1/-1}
+.fin-stack{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden;background:rgba(255,255,255,.06)}
+.fin-stack i{display:block;height:100%;background:var(--c);min-width:3px;cursor:pointer;transition:filter .15s}
+.fin-stack i:hover{filter:brightness(1.18)}
+.fin-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px}
+.fin-legend span{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft)}
+.fin-legend span::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.fin-legend b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.fin-tip{position:fixed;z-index:400;pointer-events:none;padding:8px 11px;border-radius:10px;font-size:12.5px;background:rgba(24,24,34,.96);
+  border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45);color:var(--ink);white-space:nowrap}
+.fin-tip small{display:block;color:var(--ink-dim);margin-top:2px}
+.fin-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
+.fin-h h3{font-size:19px;letter-spacing:-.015em}
+/* najbliższe płatności */
+.fin-due{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.due{padding:16px;border-radius:20px;display:flex;flex-direction:column;gap:12px}
+.due-top{display:flex;align-items:center;gap:12px} .due-top b{display:block;font-size:15px} .due-top small{color:var(--ink-dim);font-size:12.5px}
+.due-amt{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.due-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.when{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--glass-2);color:var(--ink-soft)}
+.when svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.when.soon{background:rgba(255,185,140,.16);color:#ffc49e} .when.late{background:rgba(255,144,136,.18);color:#ffa59e}
+/* lista kosztów */
+.fin-group{border-radius:22px;padding:8px}
+.fg-h{display:flex;align-items:center;gap:12px;padding:10px 12px 8px}
+.fg-h b{font-size:15px} .fg-h>span:last-child{margin-left:auto;font-size:13.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.cost{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;cursor:pointer;transition:background .15s}
+.cost:hover{background:var(--glass-2)}
+.cost .m{flex:1;min-width:0} .cost .m b{display:block;font-size:14.5px;font-weight:600}
+.cost .m small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cost .r{text-align:right;font-variant-numeric:tabular-nums} .cost .r b{display:block;font-size:15px}
+.cost .r small{display:block;color:var(--ink-dim);font-size:12px;margin-top:2px}
+.cost .r .none{color:var(--ink-dim);font-weight:500;font-size:13px}
+.cost .add{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink-soft);font-size:17px;cursor:pointer;flex:none}
+.cost .add:hover{background:var(--glass-2);color:var(--ink)}
+.est{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:10.5px;font-weight:600;background:var(--glass-2);color:var(--ink-dim);vertical-align:2px}
+.fin-empty{padding:34px 24px;border-radius:24px;text-align:center}
+.fin-empty h3{font-size:20px} .fin-empty p{color:var(--ink-soft);margin-top:6px}
+.fin-quick{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+.fin-quick button{display:inline-flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:99px;border:1px solid var(--line);background:var(--glass);
+  color:var(--ink);font:inherit;font-size:14px;cursor:pointer;transition:background .15s,transform .2s}
+.fin-quick button:hover{background:var(--glass-2)} .fin-quick button:active{transform:scale(.97)} .fin-quick .fin-ic{--sz:30px}
+.ent{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px}
+.ent .m{flex:1;min-width:0} .ent b{font-size:14px} .ent small{display:block;color:var(--ink-dim);font-size:12px}
+.ent .a{font-variant-numeric:tabular-nums;font-weight:600}
+.ent .x{border:0;background:none;color:var(--ink-dim);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:8px} .ent .x:hover{color:var(--ink);background:var(--glass-2)}
+/* okno kosztu */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 16px}
+.cat-grid button,.mode-grid button{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border-radius:14px;border:1px solid var(--line);
+  background:var(--glass);color:var(--ink-soft);font:inherit;font-size:12.5px;cursor:pointer;transition:background .15s,border-color .15s,transform .2s}
+.cat-grid button:active,.mode-grid button:active{transform:scale(.96)}
+.cat-grid button.on,.mode-grid button.on{border-color:color-mix(in srgb,var(--c) 60%,transparent);background:color-mix(in srgb,var(--c) 12%,var(--glass));color:var(--ink)}
+.cat-grid .fin-ic,.mode-grid .fin-ic{--sz:34px}
+.mode-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.mode-grid button{padding:10px 2px;font-size:11.5px}
+.fin-form .frow{display:flex;gap:10px} .fin-form .frow>*{flex:1;min-width:0}
+.fin-form input[type=number],.fin-form input[type=date]{font-variant-numeric:tabular-nums}
+.fin-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;font-size:14px;color:var(--ink-soft)}
+.fin-sw small{display:block;color:var(--ink-dim);font-size:12px}
+.fin-prev{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:6px 0 4px;padding:14px 16px;border-radius:14px;background:var(--glass-2)}
+.fin-prev span{color:var(--ink-dim);font-size:13px} .fin-prev b{font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.fin-sec{margin-top:6px;padding-top:12px;border-top:1px solid var(--line)}
+.fin-sec>.lbl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px}
+/* dzwonek: liczba przypomnień + panel */
+.bell{position:relative}
+.bell-n{position:absolute;left:26px;top:5px;min-width:17px;height:17px;padding:0 5px;border-radius:99px;background:#ff9088;color:#1b0f12;font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-style:normal;box-shadow:0 0 0 2px rgba(13,14,21,.9)}
+.bell-n[hidden]{display:none}
+.bell-pop{position:fixed;z-index:300;width:330px;max-width:calc(100vw - 24px);padding:14px;border-radius:20px;background:rgba(28,28,42,.95)!important}
+.bell-pop[hidden]{display:none}
+.bell-pop h4{font-size:15px;padding:2px 4px 10px}
+.bp-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer} .bp-item:hover{background:var(--glass-2)}
+.bp-item .m{flex:1;min-width:0} .bp-item b{display:block;font-size:14px} .bp-item small{color:var(--ink-dim);font-size:12.5px}
+.bp-empty{padding:10px 4px 6px;color:var(--ink-dim);font-size:13.5px}
+.bp-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.toast-pay{position:fixed;right:18px;top:76px;z-index:250;width:320px;max-width:calc(100vw - 24px);padding:14px;border-radius:18px;display:flex;gap:12px;align-items:center;background:rgba(30,30,44,.94)!important}
+.toast-pay .m{flex:1;min-width:0} .toast-pay b{display:block;font-size:14px} .toast-pay small{color:var(--ink-soft);font-size:12.5px}
+.toast-pay .x{border:0;background:none;color:var(--ink-dim);cursor:pointer;font-size:15px}
+@media(max-width:820px){.fin-hero{grid-template-columns:1fr}.fin-month{padding-left:0;border-left:0;border-top:1px solid var(--line);padding-top:18px}
+  .mode-grid{grid-template-columns:repeat(3,1fr)}.bell-n{left:auto;right:2px;top:0}
+  .cost{gap:10px;padding:10px 8px}.cost .r{flex:none}.cost .r small{display:none}.cost .m small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .cost .est{display:table;margin:3px 0 0}.cost .fin-ic{--sz:36px}.cost .add{width:30px;height:30px}.toast-pay{top:auto;bottom:96px;right:12px}}
+
 /* ---------- NAUKA (zakładki nad polem) ---------- */
 .study{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 126px);min-height:480px}
 #nauka-head.compact+.study,#nauka-head.compact~.study{height:calc(100vh - 118px)}
@@ -1316,7 +1420,10 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   /* telefon: nic nie może być szersze niż ekran (inaczej przeglądarka oddala cały widok) */
   .main{overflow-x:clip;max-width:100vw}
   .rail{padding-bottom:calc(8px + env(safe-area-inset-bottom));max-width:100vw}
-  .navlist button{padding:6px 8px}
+  .navlist button{padding:6px 4px;min-width:0;flex:1}
+  .navlist{flex:1;justify-content:space-between}
+  .rail{gap:0;padding-left:6px;padding-right:6px}
+  .rail .bell{padding:8px;flex:none}
   /* zakładki Nauki: kompaktowe, a gdy się nie mieszczą — przewijane palcem */
   .tabbar{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;gap:4px}
   .tabbar::-webkit-scrollbar{display:none}
@@ -1550,7 +1657,7 @@ body.on-start .c-time{display:none}
         <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
         <span class="lbl">Plan dnia</span>
       </button>
-      <button data-v="finanse" hidden>
+      <button data-v="finanse">
         <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16.5 14.5h1.5"/></svg>
         <span class="lbl">Finanse</span>
       </button>
@@ -1569,7 +1676,7 @@ body.on-start .c-time{display:none}
     </nav>
     <button class="bell" id="nav-account" onclick="go('konto')" title="Konto"><span class="nav-av" id="nav-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg></span><span id="nav-account-lbl">Konto</span></button>
     <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
-    <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span></button>
+    <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span><i class="bell-n" id="bell-n" hidden></i></button>
     <div class="foot">Dane lokalnie w Twojej bazie.</div>
   </aside>
 
@@ -1715,30 +1822,11 @@ body.on-start .c-time{display:none}
     <!-- FINANSE -->
     <section class="view" id="view-finanse">
       <div class="head">
-        <div class="eyebrow">Budżet</div>
+        <div class="eyebrow">Koszty studiów</div>
         <h1>Finanse</h1>
         <div class="date" id="fin-month"></div>
       </div>
-      <div class="cards">
-        <div class="stat glass"><div class="eyebrow">Przychody / mies.</div><div class="big num pos" id="f-inc">—</div></div>
-        <div class="stat glass"><div class="eyebrow">Wydatki / mies.</div><div class="big num neg" id="f-exp">—</div></div>
-        <div class="stat glass accent"><div class="eyebrow">Bilans / mies.</div><div class="big num" id="f-net">—</div></div>
-      </div>
-      <div class="panel glass">
-        <div class="ph"><h3>Nowa operacja</h3></div>
-        <form id="tx-form" class="row" style="align-items:flex-end">
-          <div class="seg" id="tx-type"><button type="button" data-t="expense" class="on">Wydatek</button><button type="button" data-t="income">Przychód</button></div>
-          <label class="f"><span>Kwota (zł)</span><input name="amount" type="number" step="0.01" min="0" placeholder="0,00" required></label>
-          <label class="f" style="flex:1;min-width:150px"><span>Kategoria</span><input name="category" placeholder="np. jedzenie, czynsz"></label>
-          <label class="f" id="src-wrap" style="display:none"><span>Źródło</span><select name="source_id"><option value="">—</option></select></label>
-          <label class="f"><span>Data</span><input name="date" type="date" required></label>
-          <button class="btn" type="submit">Zapisz</button>
-        </form>
-      </div>
-      <div class="panel glass">
-        <div class="ph"><h3>Historia — bieżący miesiąc</h3></div>
-        <div class="list" id="tx-list"></div>
-      </div>
+      <div class="fin" id="fin"></div>
     </section>
 
     <!-- ŹRÓDŁA -->
@@ -2425,41 +2513,309 @@ async function delTask(id){await api('/tasks/'+id,{method:'DELETE'});refresh();}
 async function delTaskBack(id){await delTask(id);back();}
 function refresh(){const v=$('.view.active').id.replace('view-','');go(v);}
 
-/* ---------- FINANSE ---------- */
-let txType='expense';
-$('#tx-type').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  txType=b.dataset.t; $$('#tx-type button').forEach(x=>x.classList.toggle('on',x===b));
-  $('#src-wrap').style.display=txType==='income'?'flex':'none';});
-async function loadFinanse(){
-  const m=todayISO().slice(0,7);
-  $('#fin-month').textContent=new Date().toLocaleDateString('pl-PL',{month:'long',year:'numeric'});
-  const s=await api('/summary');
-  $('#f-inc').textContent=zl(s.month_income); $('#f-exp').textContent=zl(s.month_expense);
-  $('#f-net').textContent=zl(s.month_net); $('#f-net').className='big num '+(s.month_net>=0?'pos':'neg');
-  await fillSources();
-  const tx=await api('/transactions?month='+m);
-  const el=$('#tx-list');
-  if(!tx.length){el.innerHTML='<div class="empty">Brak operacji w tym miesiącu.</div>';return;}
-  el.innerHTML=tx.map(t=>`<div class="item">
-    <div class="body"><div class="t">${esc(t.category||(t.type==='income'?'Przychód':'Wydatek'))}</div>
-      <div class="meta"><span>${t.date}</span>${t.note?'<span>'+esc(t.note)+'</span>':''}</div></div>
-    <div class="amt ${t.type==='income'?'pos':'neg'}">${t.type==='income'?'+':'−'}${zl(t.amount).replace('-','')}</div>
-    <button class="x" onclick="delTx(${t.id})">✕</button></div>`).join('');
+/* ---------- FINANSE: koszty studiów ---------- */
+/* kolory kategorii: stała kolejność palety (sprawdzona pod daltonizm na ciemnym tle), kolor idzie za kategorią */
+const FIN_IC={
+  car:'<path d="M5 16V12l1.7-4.4A2 2 0 018.6 6.3h6.8a2 2 0 011.9 1.3L19 12v4"/><path d="M3.5 12h17v4.6a1 1 0 01-1 1h-15a1 1 0 01-1-1z"/><path d="M7 14.8h1.5M15.5 14.8H17M6 17.6V19.5M18 17.6V19.5"/>',
+  tram:'<rect x="5.5" y="3.5" width="13" height="14" rx="3"/><path d="M5.5 10.5h13M9.5 6.8h5M8.5 20.5l1.5-3M15.5 20.5l-1.5-3M8.7 14h.01M15.3 14h.01"/>',
+  train:'<rect x="6" y="3" width="12" height="14" rx="4"/><path d="M6 10.5h12M12 3v7.5M8.5 21l2-4M15.5 21l-2-4M9 13.8h.01M15 13.8h.01"/>',
+  bike:'<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l3.5-7h5.5L18 16M9.5 9L12 16h-6M13.5 6H16"/>',
+  scooter:'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 18h8M14.5 4.5h2.2L18 16"/>',
+  walk:'<circle cx="13" cy="4.6" r="1.8"/><path d="M10.5 21l1.8-5.5 2.7 2.3V21M12.3 15.5l1-5 2.7 2.7h2.5M13.3 10.5l-3.3 1.5-1.4 3"/>',
+  food:'<path d="M7.5 3v7.5M5 3v4.5a2.5 2.5 0 005 0V3M7.5 10.5V21"/><path d="M17 21V3c-2.2 1.2-3.3 3.8-3.3 7.2V13H17"/>',
+  home:'<path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19z"/><path d="M9.5 20.5V14.5h5v6"/>',
+  cap:'<path d="M12 5L2.5 9.5 12 14l9.5-4.5z"/><path d="M6.5 11.6v4c0 1.4 2.5 2.8 5.5 2.8s5.5-1.4 5.5-2.8v-4M21.5 9.5v5"/>',
+  book:'<path d="M5 18.5V5a1.5 1.5 0 011.5-1.5H19v14H6.5A1.5 1.5 0 005 19a1.5 1.5 0 001.5 1.5H19"/><path d="M9 7.5h6"/>',
+  phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.6"/><path d="M11 18.5h2"/>',
+  heart:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0112 7.2a4.2 4.2 0 017.5 2.6C19.5 15.4 12 20 12 20z"/>',
+  ticket:'<path d="M4 7.5A1.5 1.5 0 015.5 6h13A1.5 1.5 0 0120 7.5V10a2 2 0 100 4v2.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 16.5V14a2 2 0 100-4z"/><path d="M14.5 6.5v2M14.5 11v2M14.5 15.5v2"/>',
+  dots:'<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12h.01M12 12h.01M15.7 12h.01" stroke-width="2.6"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  wallet:'<path d="M4 7.5A2.5 2.5 0 016.5 5H18v3"/><rect x="4" y="7.5" width="16.5" height="12" rx="2.5"/><path d="M16 13.5h.01" stroke-width="2.6"/>',
+};
+const FIN_CAT=[
+  {k:'dojazd',l:'Dojazd',ic:'tram',c:'#3987e5',def:'Dojazd na uczelnię'},
+  {k:'jedzenie',l:'Jedzenie',ic:'food',c:'#d95926',def:'Jedzenie'},
+  {k:'mieszkanie',l:'Mieszkanie',ic:'home',c:'#199e70',def:'Akademik / mieszkanie'},
+  {k:'oplaty',l:'Opłaty uczelni',ic:'cap',c:'#c98500',def:'Czesne'},
+  {k:'materialy',l:'Materiały',ic:'book',c:'#d55181',def:'Książki i ksero'},
+  {k:'abonamenty',l:'Abonamenty',ic:'phone',c:'#008300',def:'Telefon i internet'},
+  {k:'zdrowie',l:'Zdrowie i sport',ic:'heart',c:'#9085e9',def:'Siłownia'},
+  {k:'rozrywka',l:'Rozrywka',ic:'ticket',c:'#e66767',def:'Wyjścia'},
+  {k:'inne',l:'Inne',ic:'dots',c:'#8d8f99',def:''},
+];
+const FIN_MODE=[
+  {k:'samochod',l:'Samochód',ic:'car'},{k:'komunikacja',l:'Tramwaj / bus',ic:'tram'},{k:'pociag',l:'Pociąg',ic:'train'},
+  {k:'rower',l:'Rower',ic:'bike'},{k:'hulajnoga',l:'Hulajnoga',ic:'scooter'},{k:'pieszo',l:'Pieszo',ic:'walk'}];
+const FIN_PER=[{v:'day',label:'za dzień zajęć'},{v:'week',label:'tygodniowo'},{v:'month',label:'miesięcznie'},{v:'semester',label:'za semestr'},{v:'year',label:'rocznie'},{v:'once',label:'jednorazowo'}];
+const PER_SHORT={day:'dzień zajęć',week:'tydz.',month:'mies.',semester:'semestr',year:'rok',once:'jednorazowo'};
+const finCat=k=>FIN_CAT.find(c=>c.k===k)||FIN_CAT[FIN_CAT.length-1];
+const finIcon=(ic,c,sz)=>`<span class="fin-ic" style="--c:${c}${sz?';--sz:'+sz+'px':''}"><svg viewBox="0 0 24 24">${FIN_IC[ic]||FIN_IC.dots}</svg></span>`;
+const costIcon=(x,sz)=>{const cat=finCat(x.category);const m=x.category==='dojazd'&&FIN_MODE.find(m=>m.k===x.mode);return finIcon(m?m.ic:cat.ic,cat.c,sz);};
+const zl0=n=>new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN',maximumFractionDigits:n>=100?0:2}).format(n||0);
+const whenTxt=d=>d<0?`po terminie ${-d} ${plural(-d,'dzień','dni','dni')}`:d===0?'dziś':d===1?'jutro':`za ${d} dni`;
+const whenCls=(d,r)=>d<0?'late':d<=(r??7)?'soon':'';
+const dShort=iso=>new Date(iso+'T00:00').toLocaleDateString('pl-PL',{day:'numeric',month:'short'});
+let FIN=null;
+
+function costLine(x){
+  const p=x.params||{}, bits=[];
+  if(x.category==='dojazd'){const m=FIN_MODE.find(m=>m.k===x.mode); if(m)bits.push(m.l);
+    if(x.mode==='samochod'&&p.km)bits.push(`${String(p.km).replace('.',',')} km w jedną stronę`,`${String(p.l100||'').replace('.',',')} l/100 km`);
+    if(x.period==='day')bits.push(`${String(x.days).replace('.',',')} ${plural(x.days,'dzień','dni','dni')} w tyg.`);}
+  if(x.per_period&&x.period!=='month')bits.push(`${zl(x.per_period)} / ${PER_SHORT[x.period]}`);
+  if(x.due_date&&!x.paid)bits.push('termin '+dShort(x.due_date));
+  if(x.note)bits.push(x.note);
+  return bits.join(' · ')||(x.amount==null&&!(x.mode==='samochod')?'Kwota nie podana — dopisuj wydatki na bieżąco':'');
 }
-$('#tx-form').addEventListener('submit',async e=>{
-  e.preventDefault(); const f=e.target;
-  await api('/transactions',{method:'POST',body:JSON.stringify({
-    type:txType, amount:parseFloat(f.amount.value), category:f.category.value.trim(),
-    source_id:f.source_id.value?parseInt(f.source_id.value):null, date:f.date.value, note:'' })});
-  f.reset(); f.date.value=todayISO(); loadFinanse();
-});
-async function delTx(id){await api('/transactions/'+id,{method:'DELETE'});loadFinanse();}
+
+async function loadFinanse(){
+  $('#fin-month').textContent='Symulacja miesięczna · '+new Date().toLocaleDateString('pl-PL',{month:'long',year:'numeric'});
+  try{FIN=await api('/costs');}catch(_){return;}
+  renderFin(); refreshPayBadge();
+}
+function renderFin(){
+  const D=FIN, s=D.summary, el=$('#fin');
+  if(!D.costs.length){
+    el.innerHTML=`<div class="fin-empty glass">${finIcon('wallet','#3987e5',56)}<h3 style="margin-top:14px">Ile kosztują Cię studia?</h3>
+      <p>Dodaj stałe wydatki — aplikacja policzy, ile wydasz miesięcznie, i przypomni o terminach płatności.</p>
+      <div class="fin-quick">${[['dojazd','Dojazd'],['jedzenie','Jedzenie'],['oplaty','Czesne'],['mieszkanie','Mieszkanie'],['abonamenty','Telefon']].map(([k,l])=>{const c=finCat(k);
+        return `<button onclick="openCost(null,'${k}')">${finIcon(c.ic,c.c)}${l}</button>`;}).join('')}</div></div>`;
+    return;
+  }
+  const tot=s.monthly||0, pct=tot?Math.min(100,s.spent_month/tot*100):0;
+  const cats=FIN_CAT.filter(c=>(s.by_cat[c.k]||0)>0);
+  const due=D.upcoming.filter(x=>x.days_left<=Math.max(30,x.remind_days||0));
+  el.innerHTML=`
+    <div class="fin-hero glass">
+      <div>
+        <div class="eyebrow">Miesięcznie wydasz ok.</div>
+        <div class="fin-big">${zl0(tot).replace(/\s?zł/,'')}<small>zł</small></div>
+        <div class="fin-sub">${s.variable?`w tym ~${zl0(s.variable)} to szacunki (np. paliwo) · `:''}${D.costs.length} ${plural(D.costs.length,'koszt','koszty','kosztów')}${s.once?` · jednorazowo jeszcze ${zl0(s.once)}`:''}<br>Opłaty semestralne i roczne rozłożone na miesiące.</div>
+        <div class="fin-days">Zajęcia <b>${D.settings.study_days} ${plural(D.settings.study_days,'dzień','dni','dni')}</b> w tygodniu
+          <button onclick="finDays(-1)" aria-label="Mniej dni">−</button><button onclick="finDays(1)" aria-label="Więcej dni">+</button></div>
+      </div>
+      <div class="fin-month">
+        <div class="eyebrow">Wydane w tym miesiącu</div>
+        <div class="v">${zl(s.spent_month)} <span>z ~${zl0(tot)}</span></div>
+        <div class="fin-prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" style="--pc:${pct>=100?'#ff9088':pct>=80?'#ffb98c':'#74dc9e'}"><i style="width:${pct}%"></i></div>
+        <div class="btns"><button class="btn sm" onclick="openEntry()">+ Wydatek</button><button class="btn ghost sm" onclick="openCost()">+ Koszt stały</button></div>
+      </div>
+      ${cats.length?`<div class="fin-chart">
+        <div class="fin-stack" role="img" aria-label="Podział kosztów miesięcznych według kategorii">${cats.map(c=>`<i style="--c:${c.c};flex:${s.by_cat[c.k]}" data-l="${escAttr(c.l)}" data-v="${s.by_cat[c.k]}"></i>`).join('')}</div>
+        <div class="fin-legend">${cats.map(c=>`<span style="--c:${c.c}">${c.l} <b>${zl0(s.by_cat[c.k])}</b> · ${Math.round(s.by_cat[c.k]/tot*100)}%</span>`).join('')}</div></div>`:''}
+    </div>
+    ${due.length?`<div class="fin-h"><h3>Najbliższe płatności</h3></div>
+    <div class="fin-due">${due.map(x=>`<div class="due glass">
+      <div class="due-top">${costIcon(x,38)}<div><b>${esc(x.name)}</b><small>${dShort(x.due_date)} · ${PER_SHORT[x.period]}</small></div></div>
+      <div class="due-row"><span class="due-amt">${x.per_period?zl(x.per_period):'—'}</span>
+        <span class="when ${whenCls(x.days_left,x.remind_days)}"><svg viewBox="0 0 24 24">${FIN_IC.clock}</svg>${whenTxt(x.days_left)}</span></div>
+      <button class="btn ghost sm" onclick="payCost(${x.id})">✓ Opłacone</button></div>`).join('')}</div>`:''}
+    <div class="fin-h"><h3>Koszty stałe</h3><button class="btn ghost sm" onclick="openCost()">+ Dodaj koszt</button></div>
+    ${FIN_CAT.filter(c=>D.costs.some(x=>x.category===c.k)).map(c=>{const xs=D.costs.filter(x=>x.category===c.k);
+      return `<div class="fin-group glass"><div class="fg-h">${finIcon(c.ic,c.c,32)}<b>${c.l}</b><span>${zl0(s.by_cat[c.k]||0)} / mies.</span></div>
+        ${xs.map(x=>`<div class="cost" onclick="openCost(${x.id})">${costIcon(x,40)}
+          <div class="m"><b>${esc(x.name)}${x.variable?'<span class="est">szacunek</span>':''}</b><small>${esc(costLine(x))}</small></div>
+          <div class="r">${x.monthly?`<b>${x.variable?'~':''}${zl(x.monthly)}</b><small>miesięcznie${x.spent_month?' · wydano '+zl(x.spent_month):''}</small>`
+            :x.period==='once'&&x.per_period?`<b>${zl(x.per_period)}</b><small>${x.paid?'opłacone':'jednorazowo'}</small>`
+            :`<span class="none">${x.spent_month?'wydano '+zl(x.spent_month):'bez kwoty'}</span>`}</div>
+          <button class="add" title="Dopisz wydatek (np. tankowanie)" onclick="event.stopPropagation();openEntry(${x.id})">+</button></div>`).join('')}</div>`;}).join('')}
+    ${D.entries.length?`<div class="fin-h"><h3>Wydatki w tym miesiącu</h3></div>
+      <div class="fin-group glass">${D.entries.map(e=>{
+        return `<div class="ent">${costIcon({category:e.category||'inne',mode:e.mode},32)}<div class="m"><b>${esc(e.cost_name||'Wydatek')}</b><small>${dShort(e.date)}${e.note?' · '+esc(e.note):''}</small></div>
+          <span class="a">${zl(e.amount)}</span><button class="x" title="Usuń" onclick="delEntry(${e.id})">✕</button></div>`;}).join('')}</div>`:''}`;
+  // dymek nad segmentem wykresu
+  const tip=$('#fin-tip')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'fin-tip',className:'fin-tip',hidden:true}));
+  el.querySelectorAll('.fin-stack i').forEach(i=>{
+    i.onmousemove=e=>{tip.hidden=false;tip.innerHTML=`<b>${esc(i.dataset.l)}</b> ${zl(+i.dataset.v)}<small>${Math.round(i.dataset.v/tot*100)}% miesięcznych kosztów</small>`;
+      tip.style.left=Math.min(innerWidth-tip.offsetWidth-8,e.clientX+12)+'px';tip.style.top=(e.clientY-tip.offsetHeight-12)+'px';};
+    i.onmouseleave=()=>tip.hidden=true;});
+}
+async function finDays(d){const n=Math.max(1,Math.min(7,FIN.settings.study_days+d));if(n===FIN.settings.study_days)return;
+  await api('/costs/settings',{method:'POST',body:JSON.stringify({study_days:n})});loadFinanse();}
+async function payCost(id){await api('/costs/'+id+'/pay',{method:'POST'});loadFinanse();}
+async function delEntry(id){await api('/cost-entries/'+id,{method:'DELETE'});loadFinanse();}
+
+/* okno: koszt stały */
+let CF=null;
+function openCost(id=null,cat=null){
+  const x=id?FIN.costs.find(c=>c.id===id):null;
+  CF=x?{...x,params:{...x.params}}:{name:'',category:cat||'dojazd',amount:null,period:'month',variable:false,mode:'',params:{},due_date:'',remind_days:7,note:''};
+  if(!x&&CF.category==='dojazd'){CF.mode='komunikacja';CF.params.ticket='month';}
+  if(!x&&CF.category==='oplaty'){CF.period='semester';}
+  CF._nameTouched=!!x; CF._perTouched=!!x;
+  const m=$('#modal'); m.style.maxWidth='560px';
+  m.innerHTML=`<h3>${x?'Edytuj koszt':'Nowy koszt'}</h3><div class="msub">Kwota nie jest wymagana — jeśli się waha, oznacz ją jako szacunek albo dopisuj wydatki na bieżąco.</div>
+    <div class="fin-form">
+      <div class="cat-grid" id="cf-cats">${FIN_CAT.map(c=>`<button type="button" data-k="${c.k}" style="--c:${c.c}">${finIcon(c.ic,c.c)}${c.l}</button>`).join('')}</div>
+      <label class="field"><span>Nazwa</span><input id="cf-name" maxlength="80"></label>
+      <div id="cf-body"></div>
+      <div class="fin-sec"><div class="lbl">Termin płatności · opcjonalnie</div>
+        <div class="frow"><label class="field"><span>Zapłać do</span><input id="cf-due" type="date"></label>
+          <label class="field"><span>Przypomnij (dni wcześniej)</span><input id="cf-rem" type="number" min="0" max="60"></label></div></div>
+      <label class="field"><span>Notatka</span><input id="cf-note" maxlength="300" placeholder="np. konto do przelewu, numer albumu w tytule"></label>
+      <div class="fin-prev"><span id="cf-prev-l">Miesięcznie</span><b id="cf-prev">—</b></div>
+    </div>
+    <div class="actions">${x?`<button class="btn ghost" style="margin-right:auto;color:var(--neg)" onclick="delCost(${x.id})">Usuń</button>`:''}
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveCost()">${x?'Zapisz':'Dodaj'}</button></div>`;
+  $('#cf-name').value=CF.name; $('#cf-due').value=CF.due_date||''; $('#cf-rem').value=CF.remind_days??7; $('#cf-note').value=CF.note||'';
+  $('#cf-name').oninput=e=>{CF.name=e.target.value;CF._nameTouched=true;};
+  $('#cf-cats').onclick=e=>{const b=e.target.closest('button');if(!b)return;CF.category=b.dataset.k;
+    if(CF.category==='dojazd'&&!CF.mode){CF.mode='komunikacja';CF.params.ticket=CF.params.ticket||'month';}
+    if(!CF._perTouched)CF.period={oplaty:'semester',materialy:'semester',jedzenie:'week',dojazd:CF.period}[CF.category]||'month';
+    if(!CF._nameTouched){CF.name=finCat(CF.category).def;$('#cf-name').value=CF.name;} cfBody();};
+  if(!x&&!CF.name){CF.name=finCat(CF.category).def;$('#cf-name').value=CF.name;}
+  cfBody(); openModal(); setTimeout(()=>$('#cf-name').focus(),60);
+}
+function cfNum(id){const v=$(id)?.value;return v===''||v==null?null:parseFloat(String(v).replace(',','.'));}
+function cfBody(){
+  $$('#cf-cats button').forEach(b=>b.classList.toggle('on',b.dataset.k===CF.category));
+  const c=CF, p=c.params, b=$('#cf-body'), dj=c.category==='dojazd';
+  let h='';
+  if(dj)h+=`<div class="mode-grid" id="cf-modes">${FIN_MODE.map(m=>`<button type="button" data-k="${m.k}" style="--c:#3987e5">${finIcon(m.ic,'#3987e5')}${m.l}</button>`).join('')}</div>`;
+  if(dj&&c.mode==='samochod'){
+    h+=`<div class="frow"><label class="field"><span>Km w jedną stronę</span><input id="cf-km" type="number" min="0" step="0.1" placeholder="np. 18"></label>
+        <label class="field"><span>Spalanie (l/100 km)</span><input id="cf-l100" type="number" min="0" step="0.1" placeholder="6,5"></label></div>
+      <div class="frow"><label class="field"><span>Cena paliwa (zł/l)</span><input id="cf-price" type="number" min="0" step="0.01" placeholder="6,20"></label>
+        <label class="field"><span>Dni dojazdu w tygodniu</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label></div>
+      <div class="fin-sw"><div>Paliwo tankujesz różnie?<small>Wynik to szacunek, a każde tankowanie dopiszesz przyciskiem „+” przy koszcie.</small></div></div>`;
+  }else if(dj&&(c.mode==='komunikacja'||c.mode==='pociag')){
+    h+=`<div class="field"><span>Rodzaj biletu</span><div class="seg" id="cf-ticket" style="display:flex">${[['month','Miesięczny'],['semester','Semestralny'],['single','Jednorazowe']].map(([k,l])=>`<button type="button" data-k="${k}" style="flex:1">${l}</button>`).join('')}</div></div>
+      <div class="frow"><label class="field"><span id="cf-amt-l">Cena biletu (zł)</span><input id="cf-amt" type="number" min="0" step="0.01" placeholder="np. 55"></label>
+        ${p.ticket==='single'?`<label class="field"><span>Dni dojazdu w tygodniu</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label>`:''}</div>`;
+  }else{
+    h+=`<div class="frow"><label class="field"><span>Kwota (zł) · opcjonalnie</span><input id="cf-amt" type="number" min="0" step="0.01" placeholder="np. 400"></label>
+        <div class="field"><span>Jak często</span><div id="cf-per"></div></div></div>
+      ${dj||c.period==='day'?`<label class="field"><span>Dni w tygodniu</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label>`:''}
+      <div class="fin-sw"><div>Kwota się waha (szacunek)<small>Np. jedzenie czy wyjścia — liczona jako przybliżenie.</small></div>
+        <label class="switch"><input type="checkbox" id="cf-var"><i></i></label></div>`;
+  }
+  b.innerHTML=h;
+  $$('#cf-modes button').forEach(x=>x.classList.toggle('on',x.dataset.k===c.mode));
+  $('#cf-modes')&&($('#cf-modes').onclick=e=>{const t=e.target.closest('button');if(!t)return;cfRead();c.mode=t.dataset.k;
+    if((c.mode==='komunikacja'||c.mode==='pociag')&&!p.ticket)p.ticket='month';
+    if(c.mode==='samochod'){c.variable=true;c.period='day';}
+    if(!c._nameTouched){c.name={samochod:'Dojazd autem',komunikacja:'Bilet komunikacji',pociag:'Bilet kolejowy',rower:'Rower',hulajnoga:'Hulajnoga',pieszo:'Dojście pieszo'}[c.mode];$('#cf-name').value=c.name;}
+    cfBody();});
+  const set=(id,v)=>{const e=$(id);if(e&&v!=null&&v!=='')e.value=v;};
+  set('#cf-km',p.km);set('#cf-l100',p.l100??(c.mode==='samochod'&&!c.id?6.5:null));set('#cf-price',p.price??(c.mode==='samochod'&&!c.id?6.2:null));set('#cf-days',p.days);
+  set('#cf-amt',p.ticket==='single'&&c.amount!=null?+(c.amount/2).toFixed(2):c.amount);
+  if($('#cf-var'))$('#cf-var').checked=!!c.variable;
+  $$('#cf-ticket button').forEach(x=>x.classList.toggle('on',x.dataset.k===p.ticket));
+  $('#cf-ticket')&&($('#cf-ticket').onclick=e=>{const t=e.target.closest('button');if(!t)return;cfRead();p.ticket=t.dataset.k;cfBody();});
+  if($('#cf-amt-l'))$('#cf-amt-l').textContent=p.ticket==='single'?'Cena jednego biletu (zł)':'Cena biletu (zł)';
+  if($('#cf-per'))window._cbPer=combo($('#cf-per'),{items:FIN_PER,value:c.period==='day'&&!dj?'day':c.period,readonly:true,onChange:v=>{cfRead();c.period=v;c._perTouched=true;cfBody();}});
+  $$('#cf-body input').forEach(i=>i.addEventListener('input',()=>{cfRead();cfPrev();}));
+  cfPrev();
+}
+function cfRead(){   // formularz → CF
+  const c=CF, p=c.params;
+  if($('#cf-km')){p.km=cfNum('#cf-km');p.l100=cfNum('#cf-l100');p.price=cfNum('#cf-price');}
+  if($('#cf-days'))p.days=cfNum('#cf-days'); else delete p.days;
+  if(c.category==='dojazd'&&c.mode==='samochod'){c.period='day';c.amount=null;c.variable=true;}
+  else if(c.category==='dojazd'&&(c.mode==='komunikacja'||c.mode==='pociag')){
+    const a=cfNum('#cf-amt');
+    if(p.ticket==='single'){c.period='day';c.amount=a==null?null:+(a*2).toFixed(2);}   // tam i z powrotem
+    else{c.period=p.ticket==='semester'?'semester':'month';c.amount=a;}
+    c.variable=false;
+  }else{c.amount=cfNum('#cf-amt'); if($('#cf-var'))c.variable=$('#cf-var').checked; if(window._cbPer&&$('#cf-per'))c.period=_cbPer.get();}
+  if(c.category!=='dojazd'){c.mode='';}
+}
+function cfPrev(){
+  const c=CF, p=c.params, days=(p.days>0&&p.days<=7)?p.days:FIN.settings.study_days, W=52/12;
+  let per=c.amount, lbl='Miesięcznie';
+  if(c.category==='dojazd'&&c.mode==='samochod'){per=(p.km&&p.l100&&p.price)?p.km*2*p.l100/100*p.price:null;}
+  let m=null;
+  if(per){m=c.period==='day'?per*days*W:per*({week:W,month:1,semester:1/6,year:1/12,once:0}[c.period]??1);}
+  if(c.period==='once'){lbl='Jednorazowo';m=per;}
+  $('#cf-prev-l').textContent=lbl+(c.category==='dojazd'&&c.mode==='samochod'&&per?` · ${zl(per)} za dzień zajęć`:'');
+  $('#cf-prev').textContent=m?((c.variable?'~':'')+zl(m)):'—';
+}
+async function saveCost(){
+  cfRead(); const c=CF;
+  c.name=$('#cf-name').value.trim(); if(!c.name){$('#cf-name').focus();return;}
+  const body={name:c.name,category:c.category,amount:c.amount,period:c.period,variable:!!c.variable,mode:c.mode||'',params:c.params,
+    due_date:$('#cf-due').value||'',remind_days:parseInt($('#cf-rem').value||'7',10),note:$('#cf-note').value.trim()};
+  if(c.id&&body.due_date!==(c.due_date||''))body.paid=false;
+  const r=await api(c.id?'/costs/'+c.id:'/costs',{method:c.id?'PATCH':'POST',body:JSON.stringify(body)});
+  if(r&&r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
+  closeModal(); loadFinanse();
+}
+async function delCost(id){if(!confirm('Usunąć ten koszt razem z jego wydatkami?'))return;await api('/costs/'+id,{method:'DELETE'});closeModal();loadFinanse();}
+
+/* okno: wydatek (np. tankowanie) */
+function openEntry(costId=null){
+  const m=$('#modal'); m.style.maxWidth='440px';
+  const x=costId?FIN.costs.find(c=>c.id===costId):null;
+  m.innerHTML=`<h3>Nowy wydatek</h3><div class="msub">${x?`Dopisujesz do: ${esc(x.name)}`:'Np. tankowanie, zakupy, ksero.'}</div>
+    <div class="fin-form">
+      <div class="frow"><label class="field"><span>Kwota (zł)</span><input id="ef-amt" type="number" min="0" step="0.01" placeholder="0,00"></label>
+        <label class="field"><span>Data</span><input id="ef-date" type="date"></label></div>
+      <div class="field"><span>Koszt</span><div id="ef-cost"></div></div>
+      <label class="field"><span>Notatka</span><input id="ef-note" maxlength="200" placeholder="${x&&x.mode==='samochod'?'np. 35 l na Orlenie':'opcjonalnie'}"></label>
+    </div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveEntry()">Zapisz</button></div>`;
+  $('#ef-date').value=todayISO();
+  window._cbEC=combo($('#ef-cost'),{items:[{v:'',label:'Bez przypisania'},...FIN.costs.map(c=>({v:c.id,label:c.name}))],value:costId||'',readonly:true});
+  openModal(); setTimeout(()=>$('#ef-amt').focus(),60);
+}
+async function saveEntry(){
+  const a=cfNum('#ef-amt'); if(!(a>0)){$('#ef-amt').focus();return;}
+  const r=await api('/cost-entries',{method:'POST',body:JSON.stringify({cost_id:_cbEC.get()||null,amount:a,date:$('#ef-date').value,note:$('#ef-note').value.trim()})});
+  if(r&&r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
+  closeModal(); loadFinanse();
+}
+
+/* ---------- przypomnienia o płatnościach: dzwonek, powiadomienia systemowe, dymek w aplikacji ---------- */
+let PAYREM=[];
+async function refreshPayBadge(){
+  try{PAYREM=await api('/costs/reminders')||[];}catch(_){PAYREM=[];}
+  const n=$('#bell-n'); if(n){n.hidden=!PAYREM.length;n.textContent=PAYREM.length;}
+  return PAYREM;
+}
+async function checkPayReminders(){
+  const rem=await refreshPayBadge(), day=todayISO();
+  rem.forEach(x=>{
+    const key='payrem_'+x.id+'_'+x.due_date+'_'+day;
+    try{if(localStorage.getItem(key))return;localStorage.setItem(key,'1');}catch(_){}
+    const body=`${whenTxt(x.days_left)[0].toUpperCase()+whenTxt(x.days_left).slice(1)} (${dShort(x.due_date)})${x.amount?' · '+zl(x.amount):''}`;
+    if(window.Notification&&Notification.permission==='granted'){try{new Notification('Płatność: '+x.name,{body,icon:'/icon-192.png',tag:key});}catch(_){}}
+    payToast(x,body);
+  });
+}
+function payToast(x,body){
+  if($('.toast-pay'))return;   // jeden dymek naraz, reszta w dzwonku
+  const t=document.createElement('div'); t.className='toast-pay glass';
+  t.innerHTML=`${costIcon(x,38)}<div class="m"><b>${esc(x.name)}</b><small>${esc(body)}</small></div>
+    <button class="btn ghost xs">Zobacz</button><button class="x" aria-label="Zamknij">✕</button>`;
+  document.body.appendChild(t);
+  if(!reduceMotion())t.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:SPRING.duration,easing:SPRING.easing});
+  const close=()=>{t.animate([{opacity:1},{opacity:0}],{duration:160}).onfinish=()=>t.remove();};
+  t.querySelector('.btn').onclick=()=>{close();go('finanse');}; t.querySelector('.x').onclick=close; setTimeout(close,12000);
+}
+function bellPanel(){
+  let p=$('#bell-pop');
+  if(!p){p=document.createElement('div');p.id='bell-pop';p.className='bell-pop glass';p.hidden=true;document.body.appendChild(p);
+    document.addEventListener('pointerdown',e=>{if(!p.hidden&&!p.contains(e.target)&&!bell.contains(e.target))p.hidden=true;});}
+  if(!p.hidden){p.hidden=true;return;}
+  const sup='Notification' in window, on=sup&&Notification.permission==='granted';
+  p.innerHTML=`<h4>Przypomnienia</h4>${PAYREM.length?PAYREM.map(x=>`<div class="bp-item" data-go="1">${costIcon(x,34)}<div class="m"><b>${esc(x.name)}</b>
+      <small>${whenTxt(x.days_left)} · ${dShort(x.due_date)}${x.amount?' · '+zl(x.amount):''}</small></div>
+      <span class="when ${whenCls(x.days_left)}"><svg viewBox="0 0 24 24">${FIN_IC.clock}</svg></span></div>`).join('')
+    :'<div class="bp-empty">Brak zbliżających się płatności. Terminy ustawisz w Finansach przy koszcie.</div>'}
+    <div class="bp-foot"><button class="btn ghost xs" data-go="1">Finanse</button>${sup&&!on?'<button class="btn xs" id="bp-perm">Włącz powiadomienia</button>':on?'<span class="bp-empty" style="padding:4px 0">Powiadomienia systemowe włączone</span>':''}</div>`;
+  p.querySelectorAll('[data-go]').forEach(e=>e.onclick=()=>{p.hidden=true;go('finanse');});
+  p.querySelector('#bp-perm')&&(p.querySelector('#bp-perm').onclick=async()=>{await Notification.requestPermission();syncBell();p.hidden=true;bellPanel();});
+  p.hidden=false;
+  const r=bell.getBoundingClientRect(), mob=innerWidth<=820;
+  Object.assign(p.style,mob?{left:'12px',right:'12px',bottom:(innerHeight-r.top+10)+'px',top:'auto',width:'auto'}
+    :{left:'250px',   /* obok rozwiniętego paska (rozwija się, gdy kursor jest na dzwonku) */
+     top:Math.max(12,Math.min(innerHeight-p.offsetHeight-12,r.bottom-p.offsetHeight))+'px',bottom:'auto',right:'auto'});
+  if(!reduceMotion())p.animate([{opacity:0,transform:'scale(.95)'},{opacity:1,transform:'none'}],{duration:SPRING.duration,easing:SPRING.easing});
+}
+setTimeout(checkPayReminders,1500); setInterval(checkPayReminders,30*60*1000);
 
 /* ---------- ŹRÓDŁA ---------- */
-async function fillSources(){
-  const src=await api('/sources'); const sel=$('#tx-form select[name=source_id]');
-  sel.innerHTML='<option value="">—</option>'+src.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
-}
 async function loadSources(){
   const [src,s]=await Promise.all([api('/sources'),api('/summary')]);
   const byName=Object.fromEntries(s.income_by_source.map(r=>[r.name,r.total]));
@@ -2992,10 +3348,7 @@ async function importData(inp){
 }
 const bell=$('#bell'); let notified=new Set();
 function syncBell(){bell.classList.toggle('on',Notification?.permission==='granted');}
-bell.addEventListener('click',async()=>{
-  if(!('Notification'in window))return alert('Przeglądarka nie wspiera powiadomień.');
-  await Notification.requestPermission(); syncBell();
-});
+bell.addEventListener('click',()=>{refreshPayBadge().then(bellPanel);});
 async function checkReminders(){
   if(Notification?.permission!=='granted')return;
   const now=new Date(), t=await api('/tasks?day='+todayISO());
@@ -5201,7 +5554,7 @@ document.addEventListener('click',e=>{const g=e.target.closest('.gramm');if(g){e
 updateCorrectionBtn();
 
 /* ---------- start ---------- */
-$('#plan-date').value=todayISO(); $('#tx-form input[name=date]').value=todayISO();
+$('#plan-date').value=todayISO();
 restoreCols(); syncBell(); loadPulpit(); history.replaceState(navState(),'');
 </script>
 </body>
