@@ -149,13 +149,43 @@ body.in-nauka .main{padding-bottom:14px}
 /* ---------- pulpit: powitanie + dwa wejścia (Harmonogram, Zeszyty) ---------- */
 #view-pulpit{padding-top:34px;max-width:1120px;margin-inline:auto}
 #view-pulpit.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 2 * var(--s4))}
-.welcome{position:relative;padding:28px 0 36px}
-.welcome::before{content:"";position:absolute;z-index:-1;left:0;top:-40px;width:min(620px,100%);height:340px;border-radius:50%;filter:blur(70px);opacity:.38;   /* w granicach treści — bez poziomego przewijania */
-  background:radial-gradient(closest-side,var(--peach),transparent),radial-gradient(closest-side at 70% 60%,var(--lilac),transparent)}
-.wl-date{font-size:15px;font-weight:500;color:var(--ink-soft);letter-spacing:.005em}
-.wl-title{font-size:clamp(44px,6.4vw,76px);font-weight:700;line-height:1.02;letter-spacing:-.03em;margin-top:6px;
-  background:linear-gradient(100deg,#fff 30%,#ffe1cf 60%,#e2dcff);-webkit-background-clip:text;background-clip:text;color:transparent}
-.wl-lead{margin-top:16px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:var(--ink-soft);max-width:640px;letter-spacing:-.003em}
+/* niebo zależne od pory dnia: statyczne (bez pętli), zmiana pory = łagodne przenikanie */
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+  mask-image:linear-gradient(#000 45%,transparent 92%);-webkit-mask-image:linear-gradient(#000 45%,transparent 92%)}
+.sky .layer{position:absolute;inset:0;opacity:0;transition:opacity 2.4s ease}
+#view-pulpit[data-tod=morning] .l-morning,#view-pulpit[data-tod=day] .l-day,#view-pulpit[data-tod=evening] .l-evening,#view-pulpit[data-tod=night] .l-night{opacity:1}
+.l-morning{background:linear-gradient(180deg,#1c1d36 0%,#3f3557 30%,#8a5a66 52%,#e39a76 66%,#3a2b33 88%)}
+.l-day{background:linear-gradient(180deg,#14243f 0%,#224a78 30%,#4a86bf 52%,#9fcdf0 64%,#1e2a3a 88%)}
+.l-evening{background:linear-gradient(180deg,#17142e 0%,#3a2150 30%,#7c3463 50%,#ec7d6a 64%,#2c1a2a 88%)}
+.l-night{background:linear-gradient(180deg,#05061a 0%,#0c1030 38%,#1a2050 60%,#121426 88%)}
+.l-night::before{content:"";position:absolute;inset:0 0 40% 0;opacity:.8;background-size:240px 200px;
+  background-image:radial-gradient(1.2px 1.2px at 22px 34px,#fff,transparent),radial-gradient(1px 1px at 90px 120px,#dfe6ff,transparent),
+  radial-gradient(1.4px 1.4px at 160px 60px,#fff,transparent),radial-gradient(1px 1px at 200px 160px,#cfd8ff,transparent),
+  radial-gradient(.8px .8px at 60px 170px,#fff,transparent),radial-gradient(1px 1px at 130px 20px,#fff,transparent)}
+.sky .orb{position:absolute;left:var(--ox,70%);top:var(--oy,12%);width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;
+  transition:left 1.2s ease,top 1.2s ease,opacity 2.4s ease;
+  background:radial-gradient(circle,#fff8e6 0 14%,#ffd79a 26%,rgba(255,190,120,.35) 44%,transparent 70%)}
+#view-pulpit[data-tod=night] .sky .orb{width:96px;height:96px;margin:-48px 0 0 -48px;
+  background:radial-gradient(circle,#f2f0ff 0 20%,rgba(200,205,255,.28) 34%,transparent 66%)}
+.welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
+.wl-main{min-width:0;flex:1 1 520px}
+.wl-date{font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.005em;text-shadow:0 1px 14px rgba(0,0,0,.35)}
+.wl-date span{font-weight:400;color:var(--ink-soft)}
+/* line-height + dolny padding: tekst z background-clip nie ucina zejść liter (g, y, ą) */
+.wl-title{font-size:clamp(44px,6.4vw,76px);font-weight:700;line-height:1.12;padding-bottom:.08em;letter-spacing:-.03em;margin-top:4px;
+  background:linear-gradient(100deg,var(--g1,#fff) 25%,var(--g2,#ffe1cf) 60%,var(--g3,#e2dcff));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 18px rgba(0,0,0,.25))}
+#view-pulpit[data-tod=morning]{--g1:#fff;--g2:#ffe2c4;--g3:#ffbe96}
+#view-pulpit[data-tod=day]{--g1:#fff;--g2:#e3f2ff;--g3:#a9d4ff}
+#view-pulpit[data-tod=evening]{--g1:#fff;--g2:#ffd2c8;--g3:#d9b8ff}
+#view-pulpit[data-tod=night]{--g1:#f4f2ff;--g2:#d6d9ff;--g3:#a9b2ff}
+.wl-clock{text-align:right;flex:none}
+@media(max-width:600px){.sky .orb{width:72px;height:72px;margin:-36px 0 0 -36px}#view-pulpit[data-tod=night] .sky .orb{width:60px;height:60px;margin:-30px 0 0 -30px}}
+.ck-time{font-size:clamp(48px,5.4vw,72px);font-weight:200;line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.3)}
+.ck-tod{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.ck-ico{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
 .wl-lead b{color:var(--ink);font-weight:600}
 .wl-chip{display:inline-flex;align-items:center;gap:7px;padding:3px 12px 3px 9px;border-radius:999px;cursor:pointer;color:var(--ink);font-weight:600;
   background:color-mix(in srgb,var(--kc,var(--accent)) 20%,transparent);border:1px solid color-mix(in srgb,var(--kc,var(--accent)) 40%,transparent);
@@ -184,7 +214,7 @@ body.in-nauka .main{padding-bottom:14px}
 .portal:hover .portal-go svg{transform:translateX(3px)}
 .portal-foot .btn{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:760px){.portals{grid-template-columns:1fr}.portal{min-height:250px}.portal-art{height:120px}}
-@media(max-width:600px){#view-pulpit{padding-top:44px}#view-pulpit.active{justify-content:flex-start;min-height:0}.welcome{padding:16px 0 26px}}
+@media(max-width:600px){#view-pulpit{padding-top:44px}#view-pulpit.active{justify-content:flex-start;min-height:0}.welcome{padding:16px 0 26px;flex-direction:column-reverse;align-items:flex-start}.wl-clock{text-align:left}.ck-time{font-size:44px}.wl-main{flex:none}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s2)}
 .tile{padding:var(--s3);border-radius:var(--r);cursor:pointer;position:relative;overflow:hidden;
   display:flex;flex-direction:column;gap:16px;transition:transform .18s,border-color .18s,box-shadow .18s}
@@ -1123,6 +1153,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .cal .d:active{transform:scale(.985)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}:root{--press:none}}
 @media(prefers-reduced-transparency:reduce){
+  .ck-tod{backdrop-filter:none}
   .glass,.modal,.rail,.combo-list,.spoti-panel{background:#151622!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .modal-bd{backdrop-filter:none}
 }
@@ -1170,10 +1201,20 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   <main class="main">
     <!-- PULPIT -->
     <section class="view active" id="view-pulpit">
+      <div class="sky" aria-hidden="true">
+        <div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div>
+        <div class="orb"></div>
+      </div>
       <div class="welcome">
-        <div class="wl-date" id="pulpit-date"></div>
-        <h1 class="wl-title" id="greet">Dzień dobry</h1>
-        <p class="wl-lead" id="wl-lead"></p>
+        <div class="wl-main">
+          <div class="wl-date" id="pulpit-date"></div>
+          <h1 class="wl-title" id="greet">Dzień dobry</h1>
+          <p class="wl-lead" id="wl-lead"></p>
+        </div>
+        <div class="wl-clock">
+          <div class="ck-time" id="ck-time"></div>
+          <div class="ck-tod"><svg class="ck-ico" viewBox="0 0 24 24" id="ck-ico"></svg><span id="ck-tod"></span></div>
+        </div>
       </div>
       <div class="portals">
         <div class="portal" style="--pc:var(--sky);--pc2:var(--lilac)" role="button" tabindex="0" onclick="go('plan')" onkeydown="if(event.key==='Enter')go('plan')">
@@ -1469,9 +1510,8 @@ const ICONS={
   nauka:'<path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/>',
 };
 async function loadPulpit(){
-  const h=new Date().getHours(), today=todayISO(), d=new Date();
-  $('#greet').textContent=h<6?'Dobranoc':h<12?'Dzień dobry':h<18?'Miłego dnia':'Dobry wieczór';
-  $('#pulpit-date').textContent=d.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
+  const today=todayISO(), d=new Date();
+  paintTime();
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
   renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs);
@@ -1485,6 +1525,25 @@ async function loadPulpit(){
 }
 setInterval(()=>{ if($('#view-pulpit').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))loadPulpit(); },60000);   // słońce i „następne” idą z czasem
 const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes();};
+/* pora dnia → niebo, słońce/księżyc na łuku, powitanie, zegar */
+const TOD={morning:['Poranek','Dzień dobry','<circle cx="12" cy="14" r="4"/><path d="M3 18h18M12 4v3M5.6 8.6l1.8 1.8M18.4 8.6l-1.8 1.8"/>'],
+  day:['Dzień','Miłego dnia','<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'],
+  evening:['Wieczór','Dobry wieczór','<path d="M3 18h18M7 18a5 5 0 0110 0M12 8v3M6 11.5l1.5 1.5M18 11.5L16.5 13"/>'],
+  night:['Noc','Dobranoc','<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>']};
+function paintTime(){
+  const d=new Date(), m=d.getHours()*60+d.getMinutes(), v=$('#view-pulpit');
+  const tod=m>=300&&m<660?'morning':m<1020&&m>=660?'day':m>=1020&&m<1260?'evening':'night';
+  v.dataset.tod=tod;
+  const [lbl,greet,ico]=TOD[tod];
+  $('#greet').textContent=greet; $('#ck-tod').textContent=lbl; $('#ck-ico').innerHTML=ico;
+  $('#ck-time').textContent=d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+  const wd=d.toLocaleDateString('pl-PL',{weekday:'long'}), dm=d.toLocaleDateString('pl-PL',{day:'numeric',month:'long'});
+  $('#pulpit-date').innerHTML=`${wd[0].toUpperCase()+wd.slice(1)} <span>· ${dm}</span>`;
+  // słońce 5:00–21:00, księżyc 21:00–5:00; łuk od lewej do prawej, najwyżej w połowie
+  const f=tod==='night'?((m-1260+1440)%1440)/480:(m-300)/960;
+  v.style.setProperty('--ox',(10+f*80).toFixed(1)+'%'); v.style.setProperty('--oy',(16-Math.sin(Math.PI*Math.min(1,Math.max(0,f)))*11).toFixed(1)+'%');   // nad treścią, nie za tekstem
+}
+setInterval(()=>{ if($('#view-pulpit').classList.contains('active'))paintTime(); },15000);   // zegar i pora bez pobierania danych
 const evSpan=t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;return [a,b>a?b:a+60];};
 const inTxt=m=>m<60?`za ${m} min`:`za ${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
 /* jedno zdanie zamiast tablicy danych: co teraz / co dalej */
