@@ -43,5 +43,7 @@ Name: "{userprograms}\Asystent"; Filename: "{app}\Asystent.exe"
 Name: "{userdesktop}\Asystent"; Filename: "{app}\Asystent.exe"; Tasks: desktopicon
 
 [Run]
-; bez skipifsilent: po cichej aktualizacji z aplikacji nowa wersja uruchamia się sama
-Filename: "{app}\Asystent.exe"; Description: "Uruchom Asystenta"; Flags: nowait postinstall
+; bez skipifsilent: po cichej aktualizacji z aplikacji nowa wersja uruchamia się sama.
+; Przez cmd z PYINSTALLER_RESET_ENVIRONMENT=1: instalator mógł zostać uruchomiony przez starą wersję i odziedziczyć
+; jej zmienne PyInstallera (_MEIPASS2, _PYI_*) — bez resetu nowa wersja szuka DLL w usuniętym folderze _MEI…
+Filename: "{cmd}"; Parameters: "/c set PYINSTALLER_RESET_ENVIRONMENT=1&& start """" ""{app}\Asystent.exe"""; Description: "Uruchom Asystenta"; Flags: nowait postinstall runhidden

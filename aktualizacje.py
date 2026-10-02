@@ -65,6 +65,20 @@ def check(force: bool = False):
             "can_install": avail and os.name == "nt" and bool(os.getenv("ASYSTENT_DESKTOP"))}
 
 
+def _clean_env() -> dict:
+    """Środowisko bez śladów PyInstallera: instalator uruchamia na końcu nową wersję, która inaczej
+    dziedziczy _MEIPASS2/_PYI_* starej i szuka DLL w jej (już usuniętym) folderze tymczasowym
+    → „Failed to load Python DLL … _MEIxxxx\\python312.dll”."""
+    env = {k: v for k, v in os.environ.items() if not (k.startswith("_PYI_") or k.startswith("_MEI") or k == "_MEIPASS2")}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"   # PyInstaller ≥ 6: proces potomny startuje jako samodzielna aplikacja
+    for k in ("TCL_LIBRARY", "TK_LIBRARY", "SSL_CERT_FILE"):
+        if os.environ.get(k, "").find("_MEI") >= 0:
+            env.pop(k, None)
+    path = env.get("PATH", "")
+    env["PATH"] = os.pathsep.join(p for p in path.split(os.pathsep) if "_MEI" not in p)
+    return env
+
+
 def _download(url: str, size: int | None):
     try:
         dest = Path(tempfile.gettempdir()) / ASSET
@@ -80,7 +94,7 @@ def _download(url: str, size: int | None):
         # /SILENT: okno z paskiem postępu bez pytań; instalator zamyka starą wersję i uruchamia nową
         flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         subprocess.Popen([str(dest), "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS"],
-                         creationflags=flags, close_fds=True)
+                         creationflags=flags, close_fds=True, env=_clean_env())
         time.sleep(1.5)
         if on_quit:
             on_quit()
