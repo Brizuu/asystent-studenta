@@ -648,7 +648,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rg
 select option{background:#14151d}
 label.f{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--ink-dim)}
 label.f>*{color:var(--ink)}
-.btn{cursor:pointer;border:0;border-radius:var(--r-sm);padding:11px 20px;font:inherit;font-weight:600;
+.btn{text-decoration:none;cursor:pointer;border:0;border-radius:var(--r-sm);padding:11px 20px;font:inherit;font-weight:600;
+a.btn{display:inline-block}
   color:#17182b;background:linear-gradient(135deg,var(--accent),var(--lilac));transition:filter .15s,transform .1s}
 .btn:hover{filter:brightness(1.07)} .btn:active{transform:scale(.98)}
 .btn.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
@@ -741,6 +742,11 @@ label.f>*{color:var(--ink)}
 .portal:hover .td-card{transform:rotate(-3deg) translateY(-6px)} .portal:hover .td-flag{transform:translateY(-8px) rotate(8deg)}
 body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 @media(max-width:900px){.td{grid-template-columns:1fr}.td-side{position:static;flex-direction:row;flex-wrap:wrap}.td-side .td-smart,.td-side .td-list{width:auto;flex:1 1 140px;min-width:0}.td-lh{width:100%}.td-main{padding:18px 16px}}
+.upd-notes{margin:4px 0 12px;padding:12px 14px;border-radius:12px;background:var(--glass-2);font-size:13px;line-height:1.5;color:var(--ink-soft);max-height:160px;overflow:auto}
+.upd-prog{margin:4px 0 12px} .upd-prog[hidden]{display:none}
+.upd-prog::before{content:"";display:block;height:8px;border-radius:99px;background:rgba(255,255,255,.08)}
+.upd-prog i{display:block;height:8px;width:0;margin-top:-8px;border-radius:99px;background:linear-gradient(90deg,#9fd0ff,#5eafff);transition:width .4s ease}
+.upd-prog span{display:block;margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
 /* ---------- ADMINISTRATOR ---------- */
 .adm{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .adm-health{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;vertical-align:3px;background:var(--glass-2);color:var(--ink-dim)}
@@ -1918,7 +1924,7 @@ body.on-start .c-time{display:none}
           <p class="lp-lead">Plan zajęć, zeszyty z notatkami i nagrania wykładów, które AI zamienia w gotowe notatki do nauki. Twoje dane zostają na Twoim komputerze.</p>
           <div class="lp-cta">
             <button class="lp-go" onclick="go('pulpit')">Otwórz w przeglądarce<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-            <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.exe">
+            <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe">
               <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 5.2l7.4-1v7.2H3zM11.3 4.1L21 2.7v8.7h-9.7zM3 12.5h7.4v7.3L3 18.8zM11.3 12.5H21v8.8l-9.7-1.4z"/></svg>
               <span><small>Pobierz na</small><b>Windows</b></span></a>
             <button class="dl" onclick="lpPhone()">
@@ -1975,7 +1981,7 @@ body.on-start .c-time{display:none}
         <div class="lp-end lp-reveal"><div class="lp-icon" data-logo></div><h2>Zacznij w kilka sekund.</h2>
           <div class="lp-cta" style="margin-top:6px">
             <button class="lp-go" onclick="go('pulpit')">Otwórz w przeglądarce<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-            <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.exe">
+            <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe">
               <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 5.2l7.4-1v7.2H3zM11.3 4.1L21 2.7v8.7h-9.7zM3 12.5h7.4v7.3L3 18.8zM11.3 12.5H21v8.8l-9.7-1.4z"/></svg>
               <span><small>Pobierz na</small><b>Windows</b></span></a>
           </div></div>
@@ -2167,6 +2173,7 @@ body.on-start .c-time{display:none}
         </div>
       </div>
       <div class="st-pane" id="st-dane" hidden>
+        <div class="st-card glass" id="st-upd"></div>
         <div class="st-card glass">
           <div class="st-h"><h3>Kopia danych</h3><p>Baza, załączniki i nagrania w jednym pliku ZIP — do przeniesienia na inny komputer albo na zapas.</p></div>
           <div class="st-actions"><button class="btn" onclick="exportData()">Eksportuj dane</button>
@@ -3301,7 +3308,7 @@ function bellPanel(){
     document.addEventListener('pointerdown',e=>{if(!p.hidden&&!p.contains(e.target)&&!bell.contains(e.target))p.hidden=true;});}
   if(!p.hidden){p.hidden=true;return;}
   const sup='Notification' in window, on=sup&&Notification.permission==='granted';
-  p.innerHTML=`<h4>Przypomnienia</h4>${PAYREM.length?PAYREM.map(x=>`<div class="bp-item" data-go="1">${costIcon(x,34)}<div class="m"><b>${esc(x.name)}</b>
+  p.innerHTML=`<h4>Przypomnienia</h4>${UPD&&UPD.available?`<div class="bp-item" onclick="document.querySelector('#bell-pop').hidden=true;go('ustawienia');stTab('dane')"><span class="fin-ic" style="--c:#5eafff;--sz:34px"><svg viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4 15.5V18a2.5 2.5 0 002.5 2.5h11A2.5 2.5 0 0020 18v-2.5"/></svg></span><div class="m"><b>Aktualizacja ${esc(UPD.latest)}</b><small>Kliknij, aby zaktualizować</small></div></div>`:''}${PAYREM.length?PAYREM.map(x=>`<div class="bp-item" data-go="1">${costIcon(x,34)}<div class="m"><b>${esc(x.name)}</b>
       <small>${whenTxt(x.days_left)} · ${dShort(x.due_date)}${x.amount?' · '+zl(x.amount):''}</small></div>
       <span class="when ${whenCls(x.days_left)}"><svg viewBox="0 0 24 24">${FIN_IC.clock}</svg></span></div>`).join('')
     :'<div class="bp-empty">Brak zbliżających się płatności. Terminy ustawisz w Finansach przy koszcie.</div>'}
@@ -3348,7 +3355,7 @@ let APP={}, recState={}, recList=[], recTimer=null, recSig='';
 const recInserting=new Set();
 const REC_ST={pending:'czeka na zamianę na tekst',queued:'w kolejce…',transcribing:'zamiana na tekst',done:'gotowe',limit:'limit Gemini',error:'błąd'};
 const fmtDur=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
-api('/config').then(c=>{APP=c||{}; if(APP.desktop)recPoll(); initAccount();});
+api('/config').then(c=>{APP=c||{}; if(APP.desktop)recPoll(); initAccount(); startUpdateChecks();});
 async function recPoll(){
   clearTimeout(recTimer);
   try{
@@ -3758,6 +3765,62 @@ async function renderTodoPortal(){
   const open=D.items.filter(i=>!i.done), today=open.filter(i=>i.remind_date&&i.remind_date<=D.today);
   $('#portal-todo-sub').textContent=open.length?`${open.length} do zrobienia${today.length?` · ${today.length} na dziś`:''}`:'Wszystko zrobione ✓';
 }
+/* ---------- AKTUALIZACJE (aplikacja na Windows): GitHub Releases → AsystentSetup.exe ---------- */
+let UPD=null, updTimer=null;
+const SETUP_URL='https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe';
+async function checkUpdate(force){
+  try{UPD=await api('/update/check'+(force?'?force=1':''));}catch(_){UPD=null;}
+  paintUpdate(); return UPD;
+}
+function paintUpdate(){
+  const box=$('#st-upd'); if(!box)return;
+  const v=APP.version||'—';
+  if(!APP.desktop){
+    box.innerHTML=`<div class="st-h"><h3>Aplikacja na Windows</h3><p>Ta sama aplikacja w osobnym oknie, z nagrywaniem wykładów i automatycznymi aktualizacjami.</p></div>
+      <div class="st-actions"><a class="btn" href="${SETUP_URL}">Pobierz instalator</a></div>`;return;}
+  const a=UPD&&UPD.available, err=UPD&&UPD.error;
+  box.innerHTML=`<div class="st-h"><h3>Aplikacja <span class="adm-health ${a?'bad':err?'':'ok'}">${a?'Dostępna aktualizacja':err?'Nie sprawdzono':'Aktualna'}</span></h3>
+      <p>Wersja <b>${esc(v)}</b>${a?` → nowa <b>${esc(UPD.latest)}</b>${UPD.published?' z '+new Date(UPD.published).toLocaleDateString('pl-PL',{day:'numeric',month:'long'}):''}`:''}.
+      Aplikacja sprawdza aktualizacje przy starcie i co 6 godzin. Dane zostają — aktualizacja podmienia tylko program.</p></div>
+    ${a&&UPD.notes?`<div class="upd-notes">${esc(UPD.notes).replace(/\n/g,'<br>')}</div>`:''}
+    <div class="upd-prog" id="upd-prog" hidden><i></i><span></span></div>
+    <div class="st-actions">${a?(UPD.can_install?`<button class="btn" onclick="installUpdate()">Zaktualizuj teraz</button>`:`<a class="btn" href="${esc(UPD.url||SETUP_URL)}">Pobierz instalator</a>`):''}
+      <button class="btn ghost" onclick="checkUpdate(true).then(u=>u&&!u.available&&!u.error&&popout({icon:'ok',title:'Masz najnowszą wersję',text:'Asystent '+u.current}))">Sprawdź teraz</button></div>
+    ${err?`<p class="st-note">${esc(err)}</p>`:''}`;
+}
+async function installUpdate(){
+  if(!await confirmPop('Zainstalować wersję '+UPD.latest+'?','Aplikacja pobierze instalator, zamknie się na chwilę i uruchomi ponownie w nowej wersji. Twoje dane zostają.','Zaktualizuj'))return;
+  if(typeof recState!=='undefined'&&recState.id){popout({icon:'warn',title:'Trwa nagrywanie',text:'Zatrzymaj nagrywanie przed aktualizacją.'});return;}
+  const r=await api('/update/install',{method:'POST'});
+  if(r&&r.detail){popout({icon:'warn',title:'Nie można zaktualizować',text:r.detail});return;}
+  go('ustawienia'); stTab('dane'); updProgress();
+}
+async function updProgress(){
+  const s=await api('/update/status').catch(()=>null), p=$('#upd-prog'); if(!s||!p)return;
+  p.hidden=false; const pct=s.total?Math.round(s.done/s.total*100):0;
+  p.querySelector('i').style.width=(s.state==='installing'?100:pct)+'%';
+  p.querySelector('span').textContent=s.state==='downloading'?`Pobieranie… ${pct}% (${(s.done/1048576).toFixed(1)} / ${(s.total/1048576).toFixed(1)} MB)`
+    :s.state==='installing'?'Uruchamiam instalator — aplikacja zaraz się zamknie i otworzy w nowej wersji.':s.state==='error'?'Błąd: '+s.error:'';
+  if(s.state==='downloading'||s.state==='installing')setTimeout(updProgress,500);
+}
+function updToast(){
+  if(!UPD||!UPD.available||$('.toast-upd'))return;
+  try{if(localStorage.getItem('upd_seen')===UPD.latest)return;localStorage.setItem('upd_seen',UPD.latest);}catch(_){}
+  const t=document.createElement('div'); t.className='toast-pay toast-upd glass';
+  const other=$('.toast-pay'); if(other)t.style.top=(other.getBoundingClientRect().bottom+10)+'px';   // pod przypomnieniem o płatności
+  t.innerHTML=`<span class="fin-ic" style="--c:#5eafff;--sz:38px"><svg viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4 15.5V18a2.5 2.5 0 002.5 2.5h11A2.5 2.5 0 0020 18v-2.5"/></svg></span>
+    <div class="m"><b>Nowa wersja ${esc(UPD.latest)}</b><small>Masz ${esc(UPD.current)}. Aktualizacja zajmie chwilę.</small></div>
+    <button class="btn xs">Zaktualizuj</button><button class="x" aria-label="Zamknij">✕</button>`;
+  document.body.appendChild(t);
+  if(!reduceMotion())t.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:SPRING.duration,easing:SPRING.easing});
+  const close=()=>{t.animate([{opacity:1},{opacity:0}],{duration:160}).onfinish=()=>t.remove();};
+  t.querySelector('.btn').onclick=()=>{close();UPD.can_install?installUpdate():(go('ustawienia'),stTab('dane'));}; t.querySelector('.x').onclick=close;
+}
+function startUpdateChecks(){
+  if(!APP.desktop)return;
+  setTimeout(()=>checkUpdate().then(updToast),4000);
+  clearInterval(updTimer); updTimer=setInterval(()=>checkUpdate().then(updToast),6*3600*1000);
+}
 /* ---------- ADMINISTRATOR: serwer kont + lista kont ---------- */
 let ADM=[];
 async function loadAdmin(){
@@ -3962,7 +4025,7 @@ async function shareCurrent(kind,nbId){
 /* ===== USTAWIENIA: połączenie z AI ===== */
 let AIS={};
 function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
-async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage();}
+async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage(); paintUpdate(); if(APP.desktop&&!UPD)checkUpdate();}
 const fmtTok=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+' mln':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+' tys.':String(n);
 const usageTone=p=>p>=100?['#ff9088','#ff6b6b']:p>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
 let _usageTimer=null, _usagePrev={};
