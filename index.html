@@ -219,9 +219,9 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%);-webkit-mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%)}
 @media(prefers-reduced-motion:reduce){.e-land,.e-lights,.clouds i{animation:none}}
 /* ---------- pulpit: paralaksa, pogoda, ziarno, półksiężyc ---------- */
-.sky .clouds,.sky .earth,.sky .orb,.sky .l-night::before{transition-property:translate,opacity,left,top;transition-duration:1.1s,2.4s,1.2s,1.2s;transition-timing-function:cubic-bezier(.2,.8,.3,1)}
+.sky .clouds,.sky .orb,.sky .l-night::before{transition-property:translate,opacity,left,top;transition-duration:1.1s,2.4s,1.2s,1.2s;transition-timing-function:cubic-bezier(.2,.8,.3,1)}
 .sky .clouds{translate:calc(var(--px,0) * -9px) calc(var(--py,0) * -4px)}
-.sky .earth{translate:calc(var(--px,0) * -16px) calc(var(--py,0) * -7px)}
+/* Ziemia bez paralaksy: przesuwanie ogromnej warstwy z poświatą powodowało miganie atmosfery */
 .sky .orb{translate:calc(var(--px,0) * -5px) calc(var(--py,0) * -3px)}
 .sky .l-night::before{translate:calc(var(--px,0) * -3px) calc(var(--py,0) * -2px)}
 /* półksiężyc: cień wewnętrzny wycina sierp, delikatna poświata */
@@ -254,7 +254,7 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wx-chip:hover{background:rgba(255,255,255,.16)} .wx-chip:active{transform:var(--press)}
 .wx-chip svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .wx-chip span{font-weight:400;color:rgba(255,255,255,.75)}
-@media(prefers-reduced-motion:reduce){.wx-rain,.wx-snow,.sky[data-wx=storm] .wx-flash{animation:none}.sky .clouds,.sky .earth,.sky .orb{translate:none}}
+@media(prefers-reduced-motion:reduce){.wx-rain,.wx-snow,.sky[data-wx=storm] .wx-flash{animation:none}.sky .clouds,.sky .orb{translate:none}}
 .welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
 .wl-main{min-width:0;flex:1 1 520px}
 .wl-date{font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.005em;text-shadow:0 1px 14px rgba(0,0,0,.35)}
@@ -268,7 +268,7 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 #view-pulpit[data-tod=evening]{--g1:#fff;--g2:#ffd2c8;--g3:#d9b8ff}
 #view-pulpit[data-tod=night]{--g1:#f4f2ff;--g2:#d6d9ff;--g3:#a9b2ff}
 .wl-clock{text-align:right;flex:none}
-.tod-test{display:block;margin:8px 0 0 auto;padding:4px 10px;border-radius:99px;border:1px dashed rgba(255,255,255,.28);background:transparent;
+.tod-test{display:block;margin:6px 0 0 auto;padding:4px 10px;border-radius:99px;border:1px dashed rgba(255,255,255,.28);background:transparent;
   color:rgba(255,255,255,.7);font:inherit;font-size:11.5px;cursor:pointer;transition:background .15s,color .15s}
 .tod-test:hover{background:rgba(255,255,255,.08);color:#fff} .tod-test.on{border-style:solid;background:rgba(255,255,255,.12);color:#fff}
 @media(max-width:600px){.tod-test{margin-left:0}}
@@ -1914,6 +1914,7 @@ body.on-start .c-time{display:none}
           <div class="ck-time" id="ck-time"></div>
           <div class="ck-tod"><svg class="ck-ico" viewBox="0 0 24 24" id="ck-ico"></svg><span id="ck-tod"></span></div>
           <button class="wx-chip" id="wx-chip" onclick="openWeather()" title="Pogoda"></button>
+          <button class="tod-test" id="wx-test" onclick="cycleWx()" title="Test: podgląd rodzajów pogody">Pogoda: prawdziwa</button>
           <button class="tod-test" id="tod-test" onclick="cycleTod()" title="Test: podgląd innych pór dnia">Pora dnia: auto</button>
         </div>
       </div>
@@ -2392,7 +2393,14 @@ const WX_IC={
   snow:'<path d="M7 14h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 14z"/><path d="M8 18h.01M12 20h.01M16 18h.01M10 21.5h.01M14 21.5h.01" stroke-width="2.6"/>',
   storm:'<path d="M7 14h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 14z"/><path d="M12.5 15l-2.5 4h3l-2 3.5"/>',
 };
-let WX=null;
+let WX=null, wxOverride=null;
+const WX_TEST=[null,'clear','partly','cloudy','fog','drizzle','rain','snow','storm'];
+const WX_LBL={clear:'Bezchmurnie',partly:'Częściowe zachmurzenie',cloudy:'Pochmurno',fog:'Mgła',drizzle:'Mżawka',rain:'Deszcz',snow:'Śnieg',storm:'Burza'};
+function cycleWx(){   // test: wymuszony rodzaj pogody (auto → … → burza → prawdziwa)
+  wxOverride=WX_TEST[(WX_TEST.indexOf(wxOverride)+1)%WX_TEST.length];
+  const b=$('#wx-test'); b.textContent='Pogoda: '+(wxOverride?WX_LBL[wxOverride].toLowerCase():'prawdziwa'); b.classList.toggle('on',!!wxOverride);
+  paintWeather();
+}
 async function loadWeather(force){
   if(WX&&!force&&Date.now()-WX._t<10*60*1000){paintWeather();return;}
   try{WX=await api('/weather');WX._t=Date.now();}catch(_){WX=null;}
@@ -2400,6 +2408,7 @@ async function loadWeather(force){
 }
 function paintWeather(){
   const chip=$('#wx-chip'), sky=$('#sky'); if(!chip)return;
+  if(wxOverride){sky.dataset.wx=wxOverride;chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC[wxOverride]}</svg>${WX&&WX.temp!=null?WX.temp+'°':'—'} <span>${WX_LBL[wxOverride]} · test</span>`;return;}
   if(!WX||!WX.city){chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC.partly}</svg>Ustaw pogodę`;delete sky.dataset.wx;return;}
   if(WX.error){chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC.cloudy}</svg>${esc(WX.city)} <span>· brak danych</span>`;delete sky.dataset.wx;chip.title=WX.error;return;}
   sky.dataset.wx=WX.kind; chip.title=`${WX.label} · ${WX.city}${WX.wind!=null?' · wiatr '+Math.round(WX.wind)+' km/h':''}`;
