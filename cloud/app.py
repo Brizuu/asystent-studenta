@@ -29,6 +29,8 @@ DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 SESSION_DAYS = 60
 MAX_AVATAR = 300_000          # data URL avatara (ok. 200 KB obrazka)
 MAX_SHARE = 3_000_000         # treść udostępnienia (JSON)
+# administratorzy: e-maile z ADMIN_EMAILS (po przecinku); domyślnie właściciel projektu
+ADMIN_EMAILS = {e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "fabian26012006@gmail.com").split(",") if e.strip()}
 
 app = FastAPI(title="Asystent — konta")
 origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
@@ -88,7 +90,7 @@ with db() as _c:
     _c.executescript(SCHEMA)
     # migracje: kolumny dodane później (istniejące konta zostają)
     _have = {r[1] for r in _c.execute("PRAGMA table_info(users)")}
-    for _col in ("university", "field", "study_year"):
+    for _col in ("university", "field", "study_year", "last_login"):
         if _col not in _have:
             _c.execute(f"ALTER TABLE users ADD COLUMN {_col} TEXT DEFAULT ''")
 
@@ -149,8 +151,18 @@ def public(u, full=False) -> dict:
     d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"], "email": u["email"],
          "university": u["university"] or "", "field": u["field"] or "", "study_year": u["study_year"] or ""}
     if full:
-        d.update(bio=u["bio"], created_at=u["created_at"])
+        d.update(bio=u["bio"], created_at=u["created_at"], is_admin=is_admin(u))
     return d
+
+
+def is_admin(u) -> bool:
+    return (u["email"] or "").lower() in ADMIN_EMAILS
+
+
+def admin_user(u=Depends(current_user)):
+    if not is_admin(u):
+        raise HTTPException(403, "Tylko dla administratora.")
+    return u
 
 
 # ---------- konto ----------
@@ -202,6 +214,8 @@ def login(p: Login, request: Request):
     if not u or not check_pw(p.password, u["pw_hash"]):
         rate_limit(request)   # nieudana próba się liczy
         raise HTTPException(401, "Nieprawidłowy e-mail lub hasło.")
+    with db() as c:
+        c.execute("UPDATE users SET last_login=datetime('now') WHERE id=?", (u["id"],))
     return {"token": new_session(u["id"])}
 
 
@@ -380,3 +394,38 @@ def share_delete(sid: int, u=Depends(current_user)):
     with db() as c:
         c.execute("DELETE FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"]))
     return {"ok": True}
+
+
+# ---------- administrator: lista kont (bez haseł) i reset hasła ----------
+@app.get("/admin/users")
+def admin_users(a=Depends(admin_user)):
+    now = time.time()
+    with db() as c:
+        rows = c.execute("""
+            SELECT u.*,
+              (SELECT COUNT(*) FROM friendships f WHERE f.status='accepted' AND (f.requester=u.id OR f.addressee=u.id)) friends,
+              (SELECT COUNT(*) FROM friendships f WHERE f.status='pending' AND f.addressee=u.id) pending,
+              (SELECT COUNT(*) FROM shares s WHERE s.sender=u.id) shares_sent,
+              (SELECT COUNT(*) FROM shares s WHERE s.recipient=u.id) shares_received,
+              (SELECT COUNT(*) FROM sessions s WHERE s.user_id=u.id AND s.expires>?) sessions
+            FROM users u ORDER BY u.created_at DESC""", (now,)).fetchall()
+    out = []
+    for r in rows:
+        d = {k: r[k] for k in r.keys() if k != "pw_hash"}   # hasła (hash) nigdy nie wychodzą
+        d["is_admin"] = is_admin(r)
+        d["has_avatar"] = bool(r["avatar"])
+        out.append(d)
+    return out
+
+
+@app.post("/admin/users/{uid}/reset-password")
+def admin_reset_password(uid: int, a=Depends(admin_user)):
+    alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # bez mylących znaków (l, 1, O, 0)
+    pw = "".join(secrets.choice(alphabet) for _ in range(12))
+    with db() as c:
+        u = c.execute("SELECT id, email, display_name FROM users WHERE id=?", (uid,)).fetchone()
+        if not u:
+            raise HTTPException(404, "Nie ma takiego konta.")
+        c.execute("UPDATE users SET pw_hash=? WHERE id=?", (hash_pw(pw), uid))
+        c.execute("DELETE FROM sessions WHERE user_id=?", (uid,))   # stare logowania tracą ważność
+    return {"password": pw, "email": u["email"], "display_name": u["display_name"]}

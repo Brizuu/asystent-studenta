@@ -124,6 +124,7 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
   background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-weight:500;text-align:left;transition:background .15s,color .15s;position:relative}
 .bell svg{width:19px;height:19px;flex:none}
 .bell~.bell{margin-top:0}
+.bell[hidden]{display:none}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
 .bell.on svg{stroke:var(--pos)}
 #nav-settings.active{background:var(--glass-2);color:var(--ink)} #nav-settings.active svg{stroke:var(--accent-2)}
@@ -237,9 +238,9 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .sky[data-wx=cloudy] .clouds{filter:brightness(.88) saturate(.8)}
 .wx-fall{position:absolute;left:0;right:0;top:-320px;height:calc(100% + 320px);opacity:0;background-repeat:repeat;background-size:320px 320px;
   will-change:transform;transition:opacity 2s ease;pointer-events:none}
-.wx-rain{animation:wx-rain .9s linear infinite} .wx-snow{animation:wx-snow 14s linear infinite;background-size:320px 320px}
-@keyframes wx-rain{to{transform:translate3d(-40px,320px,0)}} @keyframes wx-snow{to{transform:translate3d(30px,320px,0)}}
-.sky[data-wx=rain] .wx-rain,.sky[data-wx=storm] .wx-rain{opacity:.4} .sky[data-wx=drizzle] .wx-rain{opacity:.2} .sky[data-wx=snow] .wx-snow{opacity:.55}
+.wx-rain{animation:wx-rain 1.8s linear infinite} .wx-snow{animation:wx-snow 30s linear infinite;background-size:320px 320px}
+@keyframes wx-rain{to{transform:translate3d(-30px,320px,0)}} @keyframes wx-snow{to{transform:translate3d(24px,320px,0)}}
+.sky[data-wx=rain] .wx-rain,.sky[data-wx=storm] .wx-rain{opacity:.4} .sky[data-wx=drizzle] .wx-rain{opacity:.14} .sky[data-wx=snow] .wx-snow{opacity:.55}
 .wx-fog{position:absolute;inset:30% 0 0;opacity:0;transition:opacity 2s ease;background:linear-gradient(180deg,transparent,rgba(210,215,230,.16) 40%,rgba(210,215,230,.1));filter:blur(8px)}
 .sky[data-wx=fog] .wx-fog{opacity:1} .sky[data-wx=cloudy] .wx-fog,.sky[data-wx=rain] .wx-fog{opacity:.35}
 .wx-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(80% 60% at 60% 20%,rgba(220,225,255,.5),transparent 70%)}
@@ -302,8 +303,12 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   transition:transform .1s ease-out;vertical-align:1px}
 .wl-chip:active{transform:var(--press)}
 .wl-chip .kico{width:15px;height:15px}
-.portals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-@media(max-width:1180px){.portals{grid-template-columns:repeat(2,minmax(0,1fr))}.portal.p-fin{grid-column:1/-1;min-height:240px}}
+.portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.portals .portal{min-height:0;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;column-gap:20px}
+.portals .portal-art{height:112px;grid-row:1/3;align-self:center}
+.portals .portal-txt{margin:0;padding:0;align-self:end} .portals .portal-txt h2{font-size:26px}
+.portals .portal-foot{margin-top:12px}
+@media(min-width:1700px){.portals{grid-template-columns:repeat(4,minmax(0,1fr))}.portals .portal{display:flex;min-height:290px}.portals .portal-art{height:140px}.portals .portal-txt{margin-top:auto;padding-top:18px}}
 .portal:hover .fin-card{transform:rotate(-5deg) translateY(-6px)} .portal:hover .fin-coins{transform:translateY(-8px)}
 .portal{position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
   background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 12%,rgba(30,30,40,.5)),rgba(24,24,32,.46) 60%,color-mix(in srgb,var(--pc2) 6%,rgba(22,22,30,.5)));
@@ -333,7 +338,8 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .portal-go svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .35s var(--spring,ease)}
 .portal:hover .portal-go svg{transform:translateX(3px)}
 .portal-foot .btn{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:760px){.portals{grid-template-columns:1fr}.portal{min-height:250px}.portal-art{height:120px}}
+@media(max-width:760px){.portals{grid-template-columns:1fr}.portals .portal{display:flex;flex-direction:column;min-height:0}.portals .portal-art{align-self:flex-start}.portals .portal-txt{align-self:stretch}.portals .portal-art{height:104px}.portals .portal-txt{margin-top:14px}}
+.portals .portal>*{min-width:0}
 @media(max-width:600px){#view-pulpit{padding-top:44px}#view-pulpit.active{justify-content:flex-start;min-height:0}.welcome{padding:16px 0 26px;flex-direction:column-reverse;align-items:flex-start}.wl-clock{text-align:left}.ck-time{font-size:44px}.wl-main{flex:none}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s2)}
 .tile{padding:var(--s3);border-radius:var(--r);cursor:pointer;position:relative;overflow:hidden;
@@ -532,7 +538,7 @@ body.on-social .head .eyebrow,body.on-social .head .date{color:#e6e1f2;text-shad
 #view-konto .head[hidden],#view-znajomi .head[hidden]{display:none}
 #acc:has(.auth-stage),#fr:has(.auth-stage){max-width:none}   /* ekran logowania wyśrodkowany na całej szerokości */
 /* Konto i Znajomi: kolumna na środku, profil jak Apple ID (avatar nad nazwą) */
-#view-konto .head,#view-znajomi .head,#view-ustawienia .head{text-align:center;max-width:820px;margin-inline:auto}
+#view-konto .head,#view-znajomi .head,#view-ustawienia .head,#view-admin .head{text-align:center;max-width:820px;margin-inline:auto}
 #view-ustawienia .st-tabs{display:flex;width:max-content;margin:0 auto var(--s3)}
 #view-ustawienia .st-pane{margin-inline:auto}
 .acc-wrap,#fr{margin-inline:auto}
@@ -680,6 +686,75 @@ label.f>*{color:var(--ink)}
 .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
 
+/* ---------- ZADANIA ---------- */
+.td{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}
+.td>*{min-width:0}
+.td-side{padding:12px;border-radius:22px;display:flex;flex-direction:column;gap:3px;position:sticky;top:20px}
+.td-smart,.td-list{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:12px;background:transparent;color:var(--ink-soft);font:inherit;font-size:14px;cursor:pointer;text-align:left;transition:background .15s,color .15s}
+.td-smart:hover,.td-list:hover{background:var(--glass-2);color:var(--ink)}
+.td-smart.on,.td-list.on{background:color-mix(in srgb,var(--c) 16%,var(--glass-2));color:var(--ink)}
+.td-smart .td-ico{width:28px;height:28px;padding:5px;border-radius:9px;background:var(--c);stroke:#fff}
+.td-smart span,.td-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-smart b,.td-list b{font-size:12.5px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.td-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);flex:none;margin:0 9px 0 9px}
+.td-chip .td-dot{width:8px;height:8px;margin:0}
+.td-lh{display:flex;align-items:center;justify-content:space-between;padding:14px 10px 6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+.td-add{width:24px;height:24px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);font-size:15px;cursor:pointer} .td-add:hover{background:var(--glass-2);color:var(--ink)}
+.pr-high{font-style:normal;font-weight:800;color:#ff8f8a;font-size:12px} .pr-low{font-style:normal;font-weight:700;color:#8d8f99;font-size:12px}
+.td-main{padding:22px 24px;border-radius:24px;min-height:420px}
+.td-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.td-head h2{font-size:28px;letter-spacing:-.025em;color:color-mix(in srgb,var(--c) 70%,#fff)} .td-head small{color:var(--ink-dim);font-size:13px}
+.td-quick{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--glass);border:1px dashed var(--line);margin-bottom:10px}
+.td-quick input{flex:1;border:0!important;background:transparent!important;padding:6px 0!important;box-shadow:none!important}
+.td-quick .td-cb{pointer-events:none;opacity:.5}
+.td-items{display:flex;flex-direction:column}
+.td-item{display:flex;align-items:flex-start;gap:12px;padding:12px 10px;border-radius:14px;cursor:pointer;transition:background .15s}
+.td-item:hover{background:var(--glass-2)} .td-item+.td-item{border-top:1px solid var(--line)}
+.td-item .m{flex:1;min-width:0} .td-item b{display:block;font-size:15px;font-weight:500;line-height:1.35}
+.td-item small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-item.is-done b{color:var(--ink-dim);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.3)}
+.td-cb{width:22px;height:22px;border-radius:50%;flex:none;margin-top:1px;border:2px solid color-mix(in srgb,var(--c,#9fabff) 70%,transparent);background:transparent;cursor:pointer;
+  display:grid;place-items:center;padding:0;transition:background .15s,transform .2s var(--spring,ease)}
+.td-cb .td-ico{width:13px;height:13px;stroke:#fff;stroke-width:3;opacity:0;transition:opacity .15s}
+.td-cb:hover .td-ico{opacity:.45} .td-cb.on{background:var(--c,#9fabff);border-color:var(--c,#9fabff)} .td-cb.on .td-ico{opacity:1} .td-cb:active{transform:scale(.88)}
+.td-cb.sm{width:18px;height:18px} .td-cb.sm .td-ico{width:11px;height:11px}
+.td-ico{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.td-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.td-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;font-size:12px;color:var(--ink-soft);background:var(--glass-2)}
+.td-chip.late{background:rgba(255,144,136,.16);color:#ffb0a8} .td-chip.lnk{cursor:pointer} .td-chip.lnk:hover{color:var(--accent-2)}
+.td-mini{display:inline-block;width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden} .td-mini i{display:block;height:100%;background:var(--accent-2)}
+.td-empty{padding:28px 10px;text-align:center;color:var(--ink-dim)}
+.td-donebtn{margin-top:14px;border:0;background:none;color:var(--ink-dim);font:inherit;font-size:13px;cursor:pointer;padding:6px 10px;border-radius:10px} .td-donebtn:hover{color:var(--ink);background:var(--glass-2)}
+.td-items.done{opacity:.75}
+.td-form .lbl .td-ico{width:14px;height:14px}
+.tf-ck{display:flex;align-items:center;gap:10px;padding:4px 0}
+.tf-ck input{flex:1;padding:7px 10px!important} .tf-ck input.done{text-decoration:line-through;color:var(--ink-dim)}
+.tf-ck .x{border:0;background:none;color:var(--ink-dim);cursor:pointer;padding:4px 6px;border-radius:8px} .tf-ck .x:hover{color:var(--ink);background:var(--glass-2)}
+.tf-addck input{width:100%;margin-top:4px}
+.tf-anchors{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12.5px;color:var(--ink-dim)}
+.tf-anchors .an{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:var(--glass);color:var(--ink-soft);font:inherit;font-size:12.5px;cursor:pointer}
+.tf-anchors .an.on{border-color:color-mix(in srgb,var(--kc) 60%,transparent);background:color-mix(in srgb,var(--kc) 16%,var(--glass));color:var(--ink)}
+.tf-anchors .an .kico{width:13px;height:13px}
+.n-todo{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:3px 10px;border-radius:99px;font-size:12px;cursor:pointer;background:rgba(94,175,255,.14);color:#9fd0ff}
+.n-todo:hover{background:rgba(94,175,255,.22)}
+.portal:hover .td-card{transform:rotate(-3deg) translateY(-6px)} .portal:hover .td-flag{transform:translateY(-8px) rotate(8deg)}
+body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
+@media(max-width:900px){.td{grid-template-columns:1fr}.td-side{position:static;flex-direction:row;flex-wrap:wrap}.td-side .td-smart,.td-side .td-list{width:auto;flex:1 1 140px;min-width:0}.td-lh{width:100%}.td-main{padding:18px 16px}}
+/* ---------- ADMINISTRATOR ---------- */
+.adm{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.adm-health{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;vertical-align:3px;background:var(--glass-2);color:var(--ink-dim)}
+.adm-health.ok{background:rgba(116,220,158,.15);color:#9cebbc} .adm-health.bad{background:rgba(255,144,136,.15);color:#ffb0a8}
+.adm-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.adm-h h3{font-size:17px} .adm-n{font-size:13px;color:var(--ink-dim);font-weight:500;margin-left:6px}
+.adm-h input{width:min(280px,100%);padding:9px 14px}
+.adm-u{padding:16px;border-radius:18px;background:var(--glass);border:1px solid var(--line)} .adm-u+.adm-u{margin-top:10px}
+.adm-top{display:flex;align-items:center;gap:14px} .adm-top .m{flex:1;min-width:0}
+.adm-top b{display:flex;align-items:center;gap:8px;font-size:15.5px} .adm-top small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:99px;background:rgba(159,171,255,.18);color:#c3cbff}
+.adm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px}
+.adm-grid span{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:2px}
+.adm-grid .wide{grid-column:1/-1}
+@media(max-width:640px){.adm-grid{grid-template-columns:1fr 1fr}.adm-top{flex-wrap:wrap}}
 /* ---------- FINANSE: budżet (głównie studencki) ---------- */
 .fin{display:flex;flex-direction:column;gap:18px;max-width:1040px;margin-inline:auto}
 #view-finanse .head{text-align:center;max-width:1040px;margin-inline:auto}
@@ -1807,6 +1882,10 @@ body.on-start .c-time{display:none}
         <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
         <span class="lbl">Plan dnia</span>
       </button>
+      <button data-v="zadania">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.2l2.8 2.8L16.5 9"/></svg>
+        <span class="lbl">Zadania</span>
+      </button>
       <button data-v="finanse">
         <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16.5 14.5h1.5"/></svg>
         <span class="lbl">Finanse</span>
@@ -1820,6 +1899,7 @@ body.on-start .c-time{display:none}
         <span class="lbl">Znajomi</span><span class="nav-badge" id="friends-badge" hidden></span>
       </button>
 </nav>
+    <button class="bell" id="nav-admin" onclick="go('admin')" title="Administrator" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M9.2 12.2l2 2 3.8-4"/></svg><span>Administrator</span></button>
     <button class="bell" id="nav-account" onclick="go('konto')" title="Konto"><span class="nav-av" id="nav-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg></span><span id="nav-account-lbl">Konto</span></button>
     <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span><i class="bell-n" id="bell-n" hidden></i></button>
@@ -1941,6 +2021,17 @@ body.on-start .c-time{display:none}
             <button class="btn ghost sm" onclick="event.stopPropagation();openTask(null,todayISO())">+ Nowy wpis</button>
           </div>
         </div>
+        <div class="portal p-todo" style="--pc:#5eafff;--pc2:#ff8f8a" role="button" tabindex="0" onclick="go('zadania')" onkeydown="if(event.key==='Enter')go('zadania')">
+          <div class="portal-art" id="art-todo" aria-hidden="true"></div>
+          <div class="portal-txt">
+            <h2>Zadania</h2>
+            <p id="portal-todo-sub">Listy i checklisty</p>
+          </div>
+          <div class="portal-foot">
+            <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+            <button class="btn ghost sm" onclick="event.stopPropagation();go('zadania');setTimeout(()=>openTodo(),300)">+ Zadanie</button>
+          </div>
+        </div>
         <div class="portal p-fin" style="--pc:#74dc9e;--pc2:var(--sky)" role="button" tabindex="0" onclick="go('finanse')" onkeydown="if(event.key==='Enter')go('finanse')">
           <div class="portal-art" id="art-fin" aria-hidden="true"></div>
           <div class="portal-txt">
@@ -2028,6 +2119,26 @@ body.on-start .c-time{display:none}
     </section>
 
     <!-- USTAWIENIA -->
+    <section class="view" id="view-zadania">
+      <div class="head"><div class="eyebrow">Do zrobienia</div><h1>Zadania</h1><div class="date">Listy, checklisty i przypomnienia w planie</div></div>
+      <div class="td"><aside class="td-side glass" id="td-side"></aside><div class="td-main glass" id="td-main"></div></div>
+    </section>
+
+    <section class="view" id="view-admin">
+      <div class="head"><div class="eyebrow">Zarządzanie</div><h1>Administrator</h1><div class="date">Serwer kont i zarejestrowani użytkownicy</div></div>
+      <div class="adm">
+        <div class="st-card glass">
+          <div class="st-h"><h3>Serwer kont <span class="adm-health" id="adm-health"></span></h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, po wdrożeniu — adres z VPS-a (https://…).</p></div>
+          <div class="st-key"><input id="adm-cloud" placeholder="https://konta.twojadomena.pl" spellcheck="false"><button class="btn" onclick="saveCloudUrl()">Zapisz</button></div>
+        </div>
+        <div class="st-card glass">
+          <div class="adm-h"><h3>Użytkownicy <span class="adm-n" id="adm-count"></span></h3><input id="adm-q" placeholder="Szukaj: imię, e-mail, uczelnia…" oninput="renderAdmin()"></div>
+          <p class="st-note" style="margin:0 0 12px">Hasła nie są widoczne (w bazie są tylko ich skróty). Możesz je wyłącznie zresetować — nowe zostanie wygenerowane i pokazane raz.</p>
+          <div id="adm-users"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="view" id="view-ustawienia">
       <div class="head"><div class="eyebrow">Aplikacja</div><h1>Ustawienia</h1></div>
       <div class="seg st-tabs" id="st-tabs"><button class="on" data-t="ai" onclick="stTab('ai')">Sztuczna inteligencja</button><button data-t="dane" onclick="stTab('dane')">Dane</button></div>
@@ -2055,10 +2166,6 @@ body.on-start .c-time{display:none}
         </div>
       </div>
       <div class="st-pane" id="st-dane" hidden>
-        <div class="st-card glass">
-          <div class="st-h"><h3>Serwer kont</h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, po wdrożeniu — adres z VPS-a (https://…).</p></div>
-          <div class="st-key"><input id="st-cloud" placeholder="https://konta.twojadomena.pl" spellcheck="false"><button class="btn" onclick="saveCloudUrl()">Zapisz</button></div>
-        </div>
         <div class="st-card glass">
           <div class="st-h"><h3>Kopia danych</h3><p>Baza, załączniki i nagrania w jednym pliku ZIP — do przeniesienia na inny komputer albo na zapas.</p></div>
           <div class="st-actions"><button class="btn" onclick="exportData()">Eksportuj dane</button>
@@ -2255,13 +2362,14 @@ function go(v){
   $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
   $$('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
   if(v==='pulpit')loadPulpit(); if(v==='plan')loadPlan();
-  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources(); if(v==='ustawienia')loadSettings(); if(v==='konto')renderAccount(); if(v==='znajomi')loadFriends();
-  $('#nav-settings')?.classList.toggle('active',v==='ustawienia'); $('#nav-account')?.classList.toggle('active',v==='konto');
+  if(v==='finanse')loadFinanse(); if(v==='zrodla')loadSources(); if(v==='ustawienia')loadSettings(); if(v==='admin')loadAdmin(); if(v==='zadania')loadTodo(); if(v==='konto')renderAccount(); if(v==='znajomi')loadFriends();
+  $('#nav-settings')?.classList.toggle('active',v==='ustawienia'); $('#nav-admin')?.classList.toggle('active',v==='admin'); $('#nav-account')?.classList.toggle('active',v==='konto');
   if(v==='nauka'){loadNauka(); showTab(noteActive?'note':nbActive?'notes':'notebooks');}
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
   document.body.classList.toggle('on-fin', v==='finanse');
   document.body.classList.toggle('on-plan', v==='plan');
+  document.body.classList.toggle('on-todo', v==='zadania');
   document.body.classList.toggle('on-start', v==='start'); document.body.classList.remove('lp-down'); if(v==='start'){startLanding();scrollTo(0,0);}
   document.body.classList.toggle('on-social', v==='konto'||v==='znajomi');
   document.body.classList.toggle('on-auth', (v==='konto'||v==='znajomi')&&!ME);
@@ -2331,7 +2439,7 @@ async function loadPulpit(){
   paintTime();
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
-  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today); renderFinPortal(); loadWeather();
+  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today); renderFinPortal(); renderTodoPortal(); loadWeather();
   const nm=nowMin(), left=tasks.filter(t=>isClass(t)?(t.start_time&&evSpan(t)[1]>nm):!t.done).length;   // zajęcia: liczą się do końca trwania
   $('#portal-plan-sub').textContent=tasks.length?(left?`Dziś ${left} ${plural(left,'wpis','wpisy','wpisów')} przed Tobą`:'Dziś wszystko zrobione'):'Dziś wolne — zaplanuj coś';
   $('#portal-nb-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Załóż pierwszy zeszyt';
@@ -2351,16 +2459,16 @@ function paintEarthTiles(){
   const persp=y=>.35+.65*(y/H);
   const conts=[];
   for(let k=0;k<9;k++)conts.push({x:k*W/9+rnd()*120,y:20+rnd()*(H-40),w:140+rnd()*220,h:60+rnd()*120});
-  lx.filter='blur(9px)';
+  const [rawc,raw]=mk();   // plamy bez filtra, rozmycie raz na całym kafelku (jeden filtr zamiast ~1200)
   for(const c of conts){
     for(let i=0;i<46;i++){
       const ox=(rnd()-.5)*c.w*1.6, oy=(rnd()-.5)*c.h, y=Math.max(4,Math.min(H-4,c.y+oy)), p=persp(y), r=(16+rnd()*44)*p;
       const g=60+rnd()*40|0;
-      lx.fillStyle=`rgba(${g+40},${g+70},${g+20},.85)`;
-      for(const dx of [0,-W,W]){lx.beginPath();lx.ellipse(c.x+ox+dx,y,r*1.6,r*.55*p,0,0,Math.PI*2);lx.fill();}
+      raw.fillStyle=`rgba(${g+40},${g+70},${g+20},.85)`;
+      for(const dx of [0,-W,W]){raw.beginPath();raw.ellipse(c.x+ox+dx,y,r*1.6,r*.55*p,0,0,Math.PI*2);raw.fill();}
     }
   }
-  lx.filter='none';
+  lx.filter='blur(9px)'; lx.drawImage(rawc,0,0,W,H); lx.filter='none';
   // światła miast: skupiska na lądzie, ciepłe punkty z poświatą
   for(const c of conts){
     const cities=26+rnd()*22|0;
@@ -2434,10 +2542,10 @@ function paintWxTiles(){
   const T=320; let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
   const mk=()=>{const c=document.createElement('canvas');c.width=c.height=T;return [c,c.getContext('2d')];};
   const [rc,rx]=mk(); rx.lineCap='round';
-  for(let i=0;i<80;i++){const x=rnd()*T,y=rnd()*T,l=10+rnd()*16;rx.strokeStyle=`rgba(205,220,255,${.25+rnd()*.35})`;rx.lineWidth=.8+rnd()*.6;
+  for(let i=0;i<34;i++){const x=rnd()*T,y=rnd()*T,l=10+rnd()*16;rx.strokeStyle=`rgba(205,220,255,${.25+rnd()*.35})`;rx.lineWidth=.8+rnd()*.6;
     for(const dy of [0,-T,T])for(const dx of [0,-T,T]){rx.beginPath();rx.moveTo(x+dx,y+dy);rx.lineTo(x+dx-l*.18,y+dy+l);rx.stroke();}}
   const [sc,sx]=mk();
-  for(let i=0;i<34;i++){const x=rnd()*T,y=rnd()*T,r=.8+rnd()*1.8;sx.fillStyle=`rgba(255,255,255,${.5+rnd()*.45})`;
+  for(let i=0;i<22;i++){const x=rnd()*T,y=rnd()*T,r=.8+rnd()*1.8;sx.fillStyle=`rgba(255,255,255,${.5+rnd()*.45})`;
     for(const dy of [0,-T,T])for(const dx of [0,-T,T]){sx.beginPath();sx.arc(x+dx,y+dy,r,0,Math.PI*2);sx.fill();}}
   $('#sky .wx-rain').style.backgroundImage=`url(${rc.toDataURL()})`; $('#sky .wx-snow').style.backgroundImage=`url(${sc.toDataURL()})`;
 }
@@ -2557,6 +2665,7 @@ function setToday(){$('#plan-date').value=todayISO();loadPlan();}
 $('#plan-date').addEventListener('change',loadPlan);
 /* typy wpisów: [nazwa, ikona (ścieżki svg 24x24, obrys), kolor]; własny typ = etykieta, szary */
 const KINDS=[
+  ['Zadanie','<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.2l2.8 2.8L16.5 9"/>','#5eafff'],
   ['Spotkanie','<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0M15.5 5.3a3 3 0 010 5.4M17 14a5 5 0 013.5 5"/>','#8b7cff'],
   ['Wykład','<path d="M2.5 9L12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11.2v4.3c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-4.3M21.5 9v5"/>','#5eead4'],
   ['Ćwiczenia','<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 013 3L8 18.5z"/><path d="M13.5 7l3 3"/>','#60a5fa'],
@@ -2612,7 +2721,7 @@ function combo(root,{items,value,placeholder,custom=false,readonly=false,onChang
     Object.assign(list.style,{display:'block',left:r.left+'px',width:r.width+'px',top:up?'':r.bottom+6+'px',bottom:up?innerHeight-r.top+6+'px':''});};
   const close=()=>{root.classList.remove('open');list.style.display='';root.appendChild(list);show();};
   const pick=v=>{val=v;close();onChange&&onChange(v);};
-  inp.addEventListener('focus',()=>{open();if(custom)setTimeout(()=>inp.select(),0);});
+  inp.addEventListener('focus',()=>{open();if(!readonly)setTimeout(()=>inp.select(),0);});   // wpisywanie zastępuje obecny wybór zamiast się doklejać
   inp.addEventListener('click',()=>root.classList.contains('open')||open());
   inp.addEventListener('input',()=>{act=0;render(inp.value);if(custom){val=inp.value.trim();const it=items.find(i=>norm(i.label)===norm(val));if(it)val=it.v;icon();onChange&&onChange(val);}});
   inp.addEventListener('blur',()=>setTimeout(close,120));
@@ -3387,6 +3496,7 @@ function avatarHTML(u,size=44){
 function paintNavAccount(){
   $('#nav-av').innerHTML=ME?avatarHTML(ME,22):'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg>';
   $('#nav-account-lbl').textContent=ME?ME.display_name:'Konto';
+  $('#nav-admin').hidden=!(ME&&ME.is_admin);
 }
 async function initAccount(){
   if(LS.get('asys_token')){ try{ME=await cloud('/me');}catch(_){ME=null;} }
@@ -3415,7 +3525,7 @@ function renderAccount(){
         <div class="auth-err" id="au-err"></div>
         <button class="btn" style="width:100%" type="submit">${reg?'Załóż konto':'Zaloguj się'}</button>
       </form></div>
-      <div class="auth-foot">Twoje notatki i plan zostają na tym komputerze — na serwer trafia tylko to, co komuś udostępnisz.<br>Serwer: ${esc(cloudUrl())}</div></div>`;
+      <div class="auth-foot">Twoje notatki i plan zostają na tym komputerze — na serwer trafia tylko to, co komuś udostępnisz.<br>Serwer: ${esc(cloudUrl())} · <button class="lnk" onclick="openCloudServer()">zmień</button></div></div>`;
     setTimeout(()=>$(reg?'#au-name':'#au-login')?.focus(),50); return;
   }
   const since=ME.created_at?new Date(ME.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'}).replace(/^\d+\s/,''):'';   // „od października 2026” (dopełniacz)
@@ -3467,12 +3577,229 @@ async function changePassword(){
   try{await cloud('/me/password',{method:'POST',body:{old:$('#pw-old').value,new:$('#pw-new').value}}); $('#pw-old').value=$('#pw-new').value=''; popout({icon:'ok',title:'Hasło zmienione'});}
   catch(e){popout({icon:'warn',title:'Nie zmieniono hasła',text:e.message});}
 }
-async function saveCloudUrl(){
-  const r=await api('/settings/cloud',{method:'POST',body:JSON.stringify({url:$('#st-cloud').value})});
+async function saveCloudUrl(url){
+  const r=await api('/settings/cloud',{method:'POST',body:JSON.stringify({url:url??$('#adm-cloud').value})});
   if(r.detail){popout({icon:'warn',title:'Nieprawidłowy adres',text:r.detail});return;}
   APP.cloud_url=r.cloud_url; await initAccount();
   let ok=false; try{ok=(await fetch(cloudUrl()+'/health')).ok;}catch(_){}
-  popout(ok?{icon:'ok',title:'Połączono z serwerem kont',text:cloudUrl()}:{icon:'warn',title:'Zapisano, ale serwer nie odpowiada',text:cloudUrl()});
+  await popout(ok?{icon:'ok',title:'Połączono z serwerem kont',text:cloudUrl()}:{icon:'warn',title:'Zapisano, ale serwer nie odpowiada',text:cloudUrl()});
+  if($('#view-admin').classList.contains('active'))loadAdmin();
+}
+async function noteTodoChip(nid){
+  let D; try{D=await api('/todo');}catch(_){return;}
+  if(nid!==noteActive)return;
+  const open=D.items.filter(i=>!i.done&&(i.note_id===nid||(!i.note_id&&i.notebook_id&&i.notebook_id===nbActive)));
+  $('#note-sub .n-todo')?.remove(); if(!open.length)return;
+  const c=document.createElement('div'); c.className='n-todo';
+  c.innerHTML=`${tdIco('check')}${open.length} ${plural(open.length,'zadanie','zadania','zadań')} do tej notatki`;
+  c.onclick=()=>{go('zadania');tdSel='all';}; $('#note-sub').appendChild(c); $('#note-sub').style.display='block';
+}
+/* ================= ZADANIA: listy, checklisty, przypomnienia w planie, powiązania z notatkami ================= */
+let TD={lists:[],items:[]}, tdSel='today', tdDoneOpen=false;
+const PRIO={high:['Wysoki','#ff8f8a'],normal:['Normalny','#9fabff'],low:['Niski','#8d8f99']};
+const TD_COLORS=['#8b7cff','#5eafff','#3fcf8e','#ffb454','#ff7a90','#c27cff'];
+const TD_IC={
+  check:'<path d="M5 12.5l4.2 4.2L19 7"/>', bell:'<path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/>',
+  note:'<path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10A.5.5 0 017 20z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h5"/>',
+  list:'<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="17.5" r="1.2"/>',
+  today:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><circle cx="12" cy="14.8" r="1.6"/>',
+  all:'<rect x="3.5" y="4" width="17" height="16.5" rx="3"/><path d="M8 9.5l2 2 4-4M8 15h8"/>',
+  flag:'<path d="M5 21V4.5M5 4.5h11.5l-2 4 2 4H5"/>',
+};
+const tdIco=(k,c)=>`<svg class="td-ico" viewBox="0 0 24 24" ${c?`style="stroke:${c}"`:''}>${TD_IC[k]}</svg>`;
+async function loadTodo(){
+  try{TD=await api('/todo');}catch(_){return;}
+  if(tdSel!=='today'&&tdSel!=='all'&&!TD.lists.some(l=>l.id===tdSel))tdSel='today';
+  renderTodo();
+}
+const tdToday=it=>!it.done&&it.remind_date&&it.remind_date<=TD.today;
+function renderTodo(){
+  const lists=TD.lists, items=TD.items, nToday=items.filter(tdToday).length, nAll=items.filter(i=>!i.done).length;
+  $('#td-side').innerHTML=`
+    <button class="td-smart${tdSel==='today'?' on':''}" onclick="tdPick('today')" style="--c:#5eafff">${tdIco('today')}<span>Dziś</span><b>${nToday||''}</b></button>
+    <button class="td-smart${tdSel==='all'?' on':''}" onclick="tdPick('all')" style="--c:#9fabff">${tdIco('all')}<span>Wszystkie</span><b>${nAll||''}</b></button>
+    <div class="td-lh"><span>Moje listy</span><button class="td-add" onclick="openTodoList()" title="Nowa lista">+</button></div>
+    ${lists.map(l=>`<button class="td-list${tdSel===l.id?' on':''}" onclick="tdPick(${l.id})" style="--c:${l.color}">
+      <i class="td-dot"></i><span>${esc(l.name)}</span>${l.priority!=='normal'?`<em class="pr-${l.priority}" title="Priorytet: ${PRIO[l.priority][0].toLowerCase()}">${l.priority==='high'?'!!':'↓'}</em>`:''}<b>${l.open||''}</b></button>`).join('')}`;
+  const L=lists.find(l=>l.id===tdSel);
+  const pool=tdSel==='today'?items.filter(i=>tdToday(i)||(i.done&&i.remind_date===TD.today)):tdSel==='all'?items:items.filter(i=>i.list_id===tdSel);
+  const open=pool.filter(i=>!i.done), done=pool.filter(i=>i.done);
+  const title=tdSel==='today'?'Dziś':tdSel==='all'?'Wszystkie':L?L.name:'';
+  const col=L?L.color:tdSel==='today'?'#5eafff':'#9fabff';
+  $('#td-main').innerHTML=`
+    <div class="td-head" style="--c:${col}"><div><h2>${esc(title)}</h2><small>${open.length} ${plural(open.length,'zadanie','zadania','zadań')} do zrobienia${L&&L.priority!=='normal'?' · priorytet '+PRIO[L.priority][0].toLowerCase():''}</small></div>
+      ${L?`<button class="btn ghost sm" onclick="openTodoList(${L.id})">Edytuj listę</button>`:''}</div>
+    <form class="td-quick" onsubmit="event.preventDefault();tdQuickAdd()"><span class="td-cb" style="--c:${col}"></span><input id="td-new" placeholder="${tdSel==='today'?'Nowe zadanie na dziś…':'Nowe zadanie…'}" autocomplete="off"><button class="btn sm" type="submit">Dodaj</button></form>
+    <div class="td-items">${open.map(tdRow).join('')||`<div class="td-empty">${tdSel==='today'?'Na dziś nic nie zostało ✓':'Brak zadań — dodaj pierwsze powyżej.'}</div>`}</div>
+    ${done.length?`<button class="td-donebtn" onclick="tdDoneOpen=!tdDoneOpen;renderTodo()">${tdDoneOpen?'Ukryj':'Pokaż'} ukończone (${done.length})</button>
+      ${tdDoneOpen?`<div class="td-items done">${done.map(tdRow).join('')}</div>`:''}`:''}`;
+}
+function tdRow(it){
+  const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#9fabff',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
+  const when=it.remind_date?(it.remind_date===TD.today?'Dziś':dShort(it.remind_date))+(it.remind_time?' '+it.remind_time:''):'';
+  const chips=[
+    when?`<span class="td-chip${it.overdue?' late':''}">${tdIco('bell')}${when}${it.anchor_title?' · przy: '+esc(it.anchor_title):''}</span>`:'',
+    it.note_id&&it.note_title?`<span class="td-chip lnk" onclick="event.stopPropagation();openLinkedNote(${it.note_nb},${it.note_id})">${tdIco('note')}${esc(it.note_title)}</span>`
+      :it.notebook_id&&it.notebook_name?`<span class="td-chip lnk" onclick="event.stopPropagation();go('nauka');selectNotebook(${it.notebook_id})">${tdIco('note')}${esc(it.notebook_name)}</span>`:'',
+    ch.length?`<span class="td-chip">${tdIco('list')}${chd}/${ch.length}<i class="td-mini"><i style="width:${chd/ch.length*100}%"></i></i></span>`:'',
+    tdSel==='today'||tdSel==='all'?`<span class="td-chip"><i class="td-dot" style="--c:${L.color}"></i>${esc(L.name)}</span>`:''].filter(Boolean).join('');
+  return `<div class="td-item${it.done?' is-done':''}" onclick="openTodo(${it.id})">
+    <button class="td-cb${it.done?' on':''}" style="--c:${L.color}" onclick="event.stopPropagation();tdToggle(${it.id})" aria-label="${it.done?'Oznacz jako niezrobione':'Zrobione'}">${tdIco('check')}</button>
+    <div class="m"><b>${it.priority==='high'?'<em class="pr-high">!!</em> ':it.priority==='low'?'<em class="pr-low">↓</em> ':''}${esc(it.title)}</b>
+      ${it.notes?`<small>${esc(it.notes.split('\n')[0])}</small>`:''}${chips?`<div class="td-chips">${chips}</div>`:''}</div></div>`;
+}
+function tdPick(s){tdSel=s;tdDoneOpen=false;renderTodo();}
+async function tdQuickAdd(){
+  const t=$('#td-new').value.trim(); if(!t)return;
+  const body={title:t}; if(typeof tdSel==='number')body.list_id=tdSel; if(tdSel==='today')body.remind_date=TD.today;
+  await api('/todo/items',{method:'POST',body:JSON.stringify(body)}); await loadTodo(); $('#td-new')?.focus();
+}
+async function tdToggle(id){
+  const it=TD.items.find(i=>i.id===id); it.done=!it.done; renderTodo();   // od razu, bez czekania na serwer
+  await api('/todo/items/'+id,{method:'PATCH',body:JSON.stringify({done:it.done})}); loadTodo();
+}
+/* okno listy */
+function openTodoList(id=null){
+  const l=id?TD.lists.find(x=>x.id===id):null; let color=l?l.color:TD_COLORS[TD.lists.length%TD_COLORS.length], prio=l?l.priority:'normal';
+  const m=$('#modal'); m.style.maxWidth='440px';
+  m.innerHTML=`<h3>${l?'Edytuj listę':'Nowa lista'}</h3><div class="msub">Np. „Uczelnia”, „Projekt grupowy”, „Dom”.</div>
+    <label class="field"><span>Nazwa</span><input id="tl-name" maxlength="60" placeholder="np. Uczelnia"></label>
+    <div class="field"><span>Priorytet listy</span><div class="seg" id="tl-prio" style="display:flex">${['high','normal','low'].map(p=>`<button type="button" data-p="${p}" style="flex:1">${PRIO[p][0]}</button>`).join('')}</div></div>
+    <div class="field"><span>Kolor</span><div class="swatches" id="tl-col">${TD_COLORS.map(c=>`<button type="button" class="swatch" data-c="${c}" style="background:${c}"></button>`).join('')}</div></div>
+    <div class="actions">${l?`<button class="btn danger" style="margin-right:auto" onclick="tdDelList(${l.id})">Usuń</button>`:''}<button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="tl-save">${l?'Zapisz':'Utwórz'}</button></div>`;
+  $('#tl-name').value=l?l.name:'';
+  const paint=()=>{$$('#tl-prio button').forEach(b=>b.classList.toggle('on',b.dataset.p===prio));$$("#tl-col .swatch").forEach(b=>b.classList.toggle('on',b.dataset.c===color));};
+  $('#tl-prio').onclick=e=>{const b=e.target.closest('button');if(b){prio=b.dataset.p;paint();}};
+  $('#tl-col').onclick=e=>{const b=e.target.closest(".swatch");if(b){color=b.dataset.c;paint();}};
+  $('#tl-save').onclick=async()=>{const name=$('#tl-name').value.trim();if(!name){$('#tl-name').focus();return;}
+    const r=await api(l?'/todo/lists/'+l.id:'/todo/lists',{method:l?'PATCH':'POST',body:JSON.stringify({name,priority:prio,color})});
+    closeModal(); if(!l&&r.id)tdSel=r.id; loadTodo();};
+  paint(); openModal(); setTimeout(()=>$('#tl-name').focus(),60);
+}
+async function tdDelList(id){
+  const l=TD.lists.find(x=>x.id===id);
+  if(!await confirmPop('Usunąć listę „'+l.name+'”?','Razem z jej zadaniami i przypomnieniami w planie.'))return;
+  const r=await api('/todo/lists/'+id,{method:'DELETE'}); if(r&&r.detail){popout({icon:'warn',title:'Nie usunięto',text:r.detail});return;}
+  closeModal(); tdSel='today'; loadTodo();
+}
+/* okno zadania: checklista, przypomnienie w planie, powiązanie z notatką lub zeszytem */
+let TF=null;
+async function openTodo(id=null){
+  const it=id?TD.items.find(i=>i.id===id):null;
+  TF=it?{...it,checks:it.checks.map(c=>({...c}))}:{title:'',notes:'',priority:'normal',list_id:typeof tdSel==='number'?tdSel:TD.lists[0]?.id,checks:[],remind_date:'',remind_time:'',anchor_id:null,note_id:null,notebook_id:null};
+  if(!allNotes.length)try{allNotes=await api('/notes/all');}catch(_){}
+  if(!allNotebooks.length)try{allNotebooks=await api('/notebooks');}catch(_){}
+  const m=$('#modal'); m.style.maxWidth='580px';
+  m.innerHTML=`<h3>${it?'Zadanie':'Nowe zadanie'}</h3>
+    <div class="fin-form td-form">
+      <label class="field"><span>Zadanie</span><input id="tf-title" maxlength="200" placeholder="np. Przygotować prezentację"></label>
+      <div class="frow"><div class="field"><span>Lista</span><div id="tf-list"></div></div>
+        <div class="field"><span>Priorytet</span><div class="seg" id="tf-prio" style="display:flex">${['high','normal','low'].map(p=>`<button type="button" data-p="${p}" style="flex:1">${PRIO[p][0]}</button>`).join('')}</div></div></div>
+      <div class="fin-sec"><div class="lbl">${tdIco('list')}Checklista</div><div id="tf-checks"></div>
+        <form class="tf-addck" onsubmit="event.preventDefault();tfAddCheck()"><input id="tf-ck" placeholder="Dodaj punkt i naciśnij Enter" maxlength="200"></form></div>
+      <div class="fin-sec"><div class="lbl">${tdIco('bell')}Przypomnienie w planie · opcjonalnie</div>
+        <div class="frow"><label class="field"><span>Dzień</span><input id="tf-date" type="date"></label><label class="field"><span>Godzina</span><input id="tf-time" type="time"></label></div>
+        <div class="tf-anchors" id="tf-anchors"></div></div>
+      <div class="fin-sec"><div class="lbl">${tdIco('note')}Powiązanie · opcjonalnie</div><div id="tf-link"></div></div>
+      <label class="field"><span>Notatki</span><textarea id="tf-notes" placeholder="Szczegóły, linki…"></textarea></label>
+    </div>
+    <div class="actions">${it?`<button class="btn danger" style="margin-right:auto" onclick="tdDelItem(${it.id})">Usuń</button>`:''}<button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveTodo()">${it?'Zapisz':'Dodaj'}</button></div>`;
+  $('#tf-title').value=TF.title; $('#tf-notes').value=TF.notes||''; $('#tf-date').value=TF.remind_date||''; $('#tf-time').value=TF.remind_time||'';
+  window._cbTL=combo($('#tf-list'),{items:TD.lists.map(l=>({v:l.id,label:l.name})),value:TF.list_id,readonly:true});
+  const nbName=Object.fromEntries(allNotebooks.map(n=>[n.id,n.name]));
+  window._cbTN=combo($('#tf-link'),{placeholder:'Szukaj notatki albo zeszytu…',value:TF.note_id?'n'+TF.note_id:TF.notebook_id?'b'+TF.notebook_id:'',
+    items:[{v:'',label:'— brak —'},...allNotebooks.map(n=>({v:'b'+n.id,label:n.name+' (cały zeszyt)',icon:ICONS.nauka,color:n.color,group:'Zeszyty'})),
+      ...allNotes.filter(n=>n.notebook_id in nbName).map(n=>({v:'n'+n.id,label:n.title||'Bez tytułu',icon:TD_IC.note,color:'var(--accent-2)',group:nbName[n.notebook_id]}))]});
+  const prio=()=>$$('#tf-prio button').forEach(b=>b.classList.toggle('on',b.dataset.p===TF.priority)); prio();
+  $('#tf-prio').onclick=e=>{const b=e.target.closest('button');if(b){TF.priority=b.dataset.p;prio();}};
+  $('#tf-date').onchange=()=>{TF.anchor_id=null;tfAnchors();};
+  $('#tf-time').oninput=()=>{TF.anchor_id=null;$$('#tf-anchors .an').forEach(a=>a.classList.remove('on'));};
+  tfChecks(); tfAnchors(); openModal(); if(!it)setTimeout(()=>$('#tf-title').focus(),60);
+}
+function tfChecks(){
+  const ch=TF.checks;
+  $('#tf-checks').innerHTML=ch.map((c,i)=>`<div class="tf-ck"><button type="button" class="td-cb sm${c.done?' on':''}" onclick="TF.checks[${i}].done=!TF.checks[${i}].done;tfChecks()">${tdIco('check')}</button>
+    <input value="${escAttr(c.text)}" oninput="TF.checks[${i}].text=this.value" class="${c.done?'done':''}"><button type="button" class="x" onclick="TF.checks.splice(${i},1);tfChecks()" aria-label="Usuń punkt">✕</button></div>`).join('');
+}
+function tfAddCheck(){const v=$('#tf-ck').value.trim();if(!v)return;TF.checks.push({text:v,done:false});$('#tf-ck').value='';tfChecks();}
+async function tfAnchors(){   // wpisy z planu w wybranym dniu — przypomnienie „przy” konkretnych zajęciach
+  const d=$('#tf-date').value, box=$('#tf-anchors'); if(!d){box.innerHTML='';return;}
+  let ts=[]; try{ts=(await api('/tasks?day='+d)).filter(t=>t.start_time&&t.kind!=='Zadanie'&&t.id!==TF.task_id);}catch(_){}
+  box.innerHTML=ts.length?`<span>Przy wpisie z planu:</span>${ts.map(t=>{const k=kindOf(t.kind);
+    return `<button type="button" class="an${TF.anchor_id===t.id?' on':''}" style="--kc:${k[2]}" data-id="${t.id}" data-t="${t.start_time}">${kico(k)}${t.start_time} ${esc(t.title)}</button>`;}).join('')}`
+    :'<span>W tym dniu nie ma wpisów w planie — przypomnienie będzie o wybranej godzinie.</span>';
+  box.onclick=e=>{const b=e.target.closest('.an');if(!b)return;TF.anchor_id=+b.dataset.id;$('#tf-time').value=b.dataset.t;$$('#tf-anchors .an').forEach(a=>a.classList.toggle('on',a===b));};
+}
+async function saveTodo(){
+  const title=$('#tf-title').value.trim(); if(!title){$('#tf-title').focus();return;}
+  const v=$('#tf-ck').value.trim(); if(v)TF.checks.push({text:v,done:false});
+  const ln=_cbTN.get()||'', d=$('#tf-date').value||null;
+  const body={title,notes:$('#tf-notes').value,priority:TF.priority,list_id:_cbTL.get(),checks:TF.checks.filter(c=>c.text.trim()),
+    remind_date:d,remind_time:d?($('#tf-time').value||null):null,anchor_id:d?TF.anchor_id:null,
+    note_id:ln.startsWith('n')?+ln.slice(1):null,notebook_id:ln.startsWith('b')?+ln.slice(1):null};
+  const r=await api(TF.id?'/todo/items/'+TF.id:'/todo/items',{method:TF.id?'PATCH':'POST',body:JSON.stringify(body)});
+  if(r&&r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
+  closeModal(); loadTodo();
+}
+async function tdDelItem(id){
+  if(!await confirmPop('Usunąć zadanie?','Jego przypomnienie zniknie też z planu.'))return;
+  await api('/todo/items/'+id,{method:'DELETE'}); closeModal(); loadTodo();
+}
+/* karta Zadań na pulpicie */
+async function renderTodoPortal(){
+  if(!$('#art-todo').firstChild)$('#art-todo').innerHTML=`<svg viewBox="0 0 200 150"><g class="lift td-card"><g transform="rotate(-6 90 80)">
+    <rect x="34" y="14" width="120" height="124" rx="18" fill="#fbf8f3"/><rect x="34" y="14" width="120" height="124" rx="18" fill="none" stroke="rgba(0,0,0,.06)"/>
+    ${[0,1,2].map(i=>`<rect x="52" y="${38+i*30}" width="16" height="16" rx="5" fill="${i<2?'#5eafff':'none'}" stroke="${i<2?'none':'#b9b6c7'}" stroke-width="2"/>
+      ${i<2?`<path d="M55.5 ${46+i*30}l3 3 6-6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`:''}
+      <rect x="78" y="${42+i*30}" width="${[56,44,60][i]}" height="8" rx="4" fill="${i<2?'#d9d6e2':'#a9a5ba'}"/>`).join('')}</g></g>
+    <g class="lift td-flag"><circle cx="160" cy="112" r="18" fill="#ff8f8a"/><path d="M154 120v-16h11l-2 4 2 4h-11" stroke="#fff" stroke-width="2.2" fill="none" stroke-linejoin="round"/></g></svg>`;
+  let D; try{D=await api('/todo');}catch(_){return;}
+  const open=D.items.filter(i=>!i.done), today=open.filter(i=>i.remind_date&&i.remind_date<=D.today);
+  $('#portal-todo-sub').textContent=open.length?`${open.length} do zrobienia${today.length?` · ${today.length} na dziś`:''}`:'Wszystko zrobione ✓';
+}
+/* ---------- ADMINISTRATOR: serwer kont + lista kont ---------- */
+let ADM=[];
+async function loadAdmin(){
+  $('#adm-cloud').value=APP.cloud_url||'';
+  const st=$('#adm-health'); st.textContent='Sprawdzam…'; st.className='adm-health';
+  fetch(cloudUrl()+'/health').then(r=>{st.textContent=r.ok?'Serwer odpowiada':'Serwer nie odpowiada';st.classList.add(r.ok?'ok':'bad');}).catch(()=>{st.textContent='Brak połączenia';st.classList.add('bad');});
+  const box=$('#adm-users');
+  if(!ME||!ME.is_admin){box.innerHTML='<div class="empty">Ta sekcja jest dostępna tylko dla administratora.</div>';return;}
+  try{ADM=await cloud('/admin/users');}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return;}
+  renderAdmin();
+}
+function renderAdmin(){
+  const q=norm($('#adm-q').value||''), list=ADM.filter(u=>!q||[u.display_name,u.email,u.university,u.field].some(x=>norm(x||'').includes(q)));
+  const dt=s=>s?new Date(s.replace(' ','T')+'Z').toLocaleString('pl-PL',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  $('#adm-count').textContent=`${ADM.length} ${plural(ADM.length,'konto','konta','kont')}`;
+  $('#adm-users').innerHTML=list.length?list.map(u=>`<div class="adm-u">
+      <div class="adm-top">${avatarHTML(u,44)}
+        <div class="m"><b>${esc(u.display_name)}${u.is_admin?'<span class="adm-badge">Admin</span>':''}</b><small>${esc(u.email)} · @${esc(u.username)} · ID ${u.id}</small></div>
+        <button class="btn ghost sm" onclick="adminReset(${u.id})">Resetuj hasło</button></div>
+      <div class="adm-grid">
+        <div><span>Uczelnia</span>${esc(u.university||'—')}</div><div><span>Kierunek</span>${esc(u.field||'—')}</div><div><span>Rok</span>${esc(u.study_year||'—')}</div>
+        <div><span>Konto od</span>${dt(u.created_at)}</div><div><span>Ostatnie logowanie</span>${dt(u.last_login)}</div><div><span>Aktywne sesje</span>${u.sessions}</div>
+        <div><span>Znajomi</span>${u.friends}${u.pending?` · ${u.pending} ${plural(u.pending,'zaproszenie','zaproszenia','zaproszeń')}`:''}</div><div><span>Udostępnienia</span>wysłane ${u.shares_sent} · odebrane ${u.shares_received}</div><div><span>Zdjęcie</span>${u.has_avatar?'tak':'nie'}</div>
+        ${u.bio?`<div class="wide"><span>O mnie</span>${esc(u.bio)}</div>`:''}</div></div>`).join('')
+    :'<div class="empty">Brak kont pasujących do wyszukiwania.</div>';
+}
+async function adminReset(id){
+  const u=ADM.find(x=>x.id===id);
+  if(!await confirmPop('Zresetować hasło?',`${u.display_name} (${u.email}) dostanie nowe hasło, a wszystkie jego logowania wygasną.`,'Resetuj'))return;
+  try{
+    const r=await cloud('/admin/users/'+id+'/reset-password',{method:'POST'});
+    let copied=false; try{await navigator.clipboard.writeText(r.password);copied=true;}catch(_){}
+    await popout({icon:'ok',title:'Nowe hasło: '+r.password,text:`${r.display_name} · ${r.email}`,hint:(copied?'Skopiowano do schowka. ':'')+'Przekaż je użytkownikowi — po zalogowaniu może je zmienić w Koncie.'});
+    loadAdmin();
+  }catch(e){popout({icon:'warn',title:'Nie zresetowano hasła',text:e.message});}
+}
+/* zmiana serwera kont z ekranu logowania (karta w Ustawieniach przeniesiona do panelu admina) */
+function openCloudServer(){
+  const m=$('#modal'); m.style.maxWidth='440px';
+  m.innerHTML=`<h3>Serwer kont</h3><div class="msub">Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, po wdrożeniu — adres z VPS-a.</div>
+    <label class="field"><span>Adres</span><input id="cs-cloud" spellcheck="false" placeholder="https://konta.twojadomena.pl"></label>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="closeModal();saveCloudUrl($('#cs-cloud').value).then(renderAccount)">Zapisz</button></div>`;
+  $('#cs-cloud').value=APP.cloud_url||''; openModal();
 }
 /* --- widok Znajomi --- */
 const ICON_SH={note:['var(--accent-2)','<path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10A.5.5 0 017 20z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h5"/>'],
@@ -3634,7 +3961,7 @@ async function shareCurrent(kind,nbId){
 /* ===== USTAWIENIA: połączenie z AI ===== */
 let AIS={};
 function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
-async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); $('#st-cloud').value=APP.cloud_url||''; loadUsage();}
+async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage();}
 const fmtTok=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+' mln':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+' tys.':String(n);
 const usageTone=p=>p>=100?['#ff9088','#ff6b6b']:p>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
 let _usageTimer=null, _usagePrev={};
@@ -4168,6 +4495,7 @@ async function openNote(id){
   const made=noteData.created_at?('utworzono '+fmtDate(noteData.created_at)):'';
   $('#note-sub').innerHTML=line1+(ctx?`<div class="nctx">${esc(ctx)}</div>`:'')+(made?`<div class="nmade">${esc(made)}</div>`:'');
   $('#note-sub').style.display=(line1||ctx||made)?'block':'none';
+  noteTodoChip(noteActive);
   applyTheme(nb?nb.theme:'midnight');
   $('#note-saved').textContent='Zapisano';
   renderBlocks(); loadNotes();

@@ -922,6 +922,8 @@ def set_cloud(p: CloudUrl):
 import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta)
 import usos   # noqa: E402
 import finanse   # noqa: E402
+import zadania   # noqa: E402
 app.include_router(nagrania.router)
 app.include_router(usos.router)
 app.include_router(finanse.router)
+app.include_router(zadania.router)
