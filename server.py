@@ -2,6 +2,11 @@
 Uruchom:  uvicorn server:app --reload
 """
 import os
+import io
+import sys
+import shutil
+import sqlite3
+import zipfile
 import re
 import json
 import time
@@ -13,28 +18,30 @@ from pathlib import Path
 from typing import Any
 from datetime import date
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from db import init_db, get_conn, rows
+from db import init_db, get_conn, rows, DATA_DIR, DB_PATH
 
 app = FastAPI(title="Asystent")
 init_db()
 
-UPLOAD_DIR = Path(__file__).parent / "uploads"
+# pliki aplikacji (w .exe rozpakowane do sys._MEIPASS), dane użytkownika w DATA_DIR
+APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+UPLOAD_DIR = DATA_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 
 @app.get("/")
 def home():
-    return FileResponse("index.html")
+    return FileResponse(APP_DIR / "index.html")
 
 
 @app.get("/logo.png")
 def logo():
-    return FileResponse("logo.png")
+    return FileResponse(APP_DIR / "logo.png")
 
 
 # ---------- modele wejściowe ----------
@@ -415,9 +422,9 @@ def _gemini_key() -> str | None:
     k = os.getenv("GEMINI_API_KEY")
     if k:
         return _norm_key(k)
-    p = Path(__file__).parent / ".gemini_key"
-    if p.exists():
-        return _norm_key(p.read_text(encoding="utf-8"))
+    for p in (DATA_DIR / ".gemini_key", APP_DIR / ".gemini_key"):
+        if p.exists():
+            return _norm_key(p.read_text(encoding="utf-8"))
     return None
 
 
@@ -500,6 +507,62 @@ def ai_note(a: AINote):
         raise HTTPException(502, f"Gemini nie zwrócił notatki{(' (' + fb + ')') if fb else ''}.")
 
     return {"html": _clean_ai_html(out)}
+
+
+# ---------- EKSPORT / IMPORT danych (ZIP: baza + załączniki) ----------
+@app.post("/api/export")
+def export_data():
+    # spójna kopia bazy przez sqlite backup API, zapis do folderu Pobrane
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        tmp = DATA_DIR / "export.tmp.db"
+        src, dst = sqlite3.connect(DB_PATH), sqlite3.connect(tmp)
+        with dst:
+            src.backup(dst)
+        src.close(); dst.close()
+        z.write(tmp, "asystent.db"); tmp.unlink()
+        for f in UPLOAD_DIR.iterdir():
+            if f.is_file():
+                z.write(f, "uploads/" + f.name)
+    out_dir = Path.home() / "Downloads"
+    if not out_dir.is_dir():
+        out_dir = Path.home()
+    out = out_dir / f"asystent-kopia-{date.today().isoformat()}.zip"
+    out.write_bytes(buf.getvalue())
+    return {"path": str(out)}
+
+
+class ImportData(BaseModel):
+    filename: str
+    data: str            # base64: .zip z eksportu albo sam plik asystent.db
+
+
+@app.post("/api/import")
+def import_data(u: ImportData):
+    raw = u.data.split(",", 1)[1] if u.data.startswith("data:") else u.data
+    try:
+        blob = base64.b64decode(raw)
+    except Exception:
+        raise HTTPException(400, "Niepoprawne dane pliku.")
+    files: dict[str, bytes] = {}
+    if blob[:4] == b"PK\x03\x04":
+        with zipfile.ZipFile(io.BytesIO(blob)) as z:
+            for n in z.namelist():
+                if n == "asystent.db" or (n.startswith("uploads/") and not n.endswith("/")):
+                    files[n] = z.read(n)
+    else:
+        files["asystent.db"] = blob
+    db = files.get("asystent.db", b"")
+    if not db.startswith(b"SQLite format 3\x00"):
+        raise HTTPException(400, "To nie jest kopia Asystenta (brak bazy asystent.db).")
+    if DB_PATH.exists():
+        shutil.copy2(DB_PATH, DB_PATH.with_suffix(".db.bak"))   # stara baza na wszelki wypadek
+    DB_PATH.write_bytes(db)
+    for n, b in files.items():
+        if n.startswith("uploads/"):
+            (UPLOAD_DIR / os.path.basename(n)).write_bytes(b)
+    init_db()   # migracje, jeśli kopia jest ze starszej wersji
+    return {"ok": True, "uploads": sum(n.startswith("uploads/") for n in files)}
 
 
 # ---------- SUMMARY (dashboard) ----------

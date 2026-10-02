@@ -110,6 +110,7 @@ h3{font-size:var(--fs-h3);font-weight:600;letter-spacing:-.02em}
 .bell{margin-top:auto;display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:var(--r-sm);
   background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-weight:500;text-align:left;transition:background .15s,color .15s;position:relative}
 .bell svg{width:19px;height:19px;flex:none}
+.bell~.bell{margin-top:0}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
 .bell.on svg{stroke:var(--pos)}
 .bell.on::after{content:"";position:absolute;left:28px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 2px rgba(13,14,21,.9)}
@@ -1084,6 +1085,9 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
         <span class="lbl">Nauka</span>
       </button>
     </nav>
+    <button class="bell" onclick="exportData()" title="Zapisz kopię danych (ZIP) w folderze Pobrane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M4.5 19.5h15"/></svg><span>Eksport danych</span></button>
+    <button class="bell" onclick="$('#import-file').click()" title="Wczytaj kopię (.zip z eksportu albo plik asystent.db)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4.5 19.5h15"/></svg><span>Import danych</span></button>
+    <input type="file" id="import-file" accept=".zip,.db" hidden onchange="importData(this)">
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span></button>
     <div class="foot">Dane lokalnie w Twojej bazie.</div>
   </aside>
@@ -1695,6 +1699,18 @@ $('#src-form').addEventListener('submit',async e=>{
 async function delSrc(id){await api('/sources/'+id,{method:'DELETE'});loadSources();}
 
 /* ---------- POWIADOMIENIA ---------- */
+/* eksport / import danych (kopia ZIP: baza + załączniki) */
+async function exportData(){
+  const r=await api('/export',{method:'POST'});
+  alert(r.path?'Kopia zapisana:\n'+r.path:'Eksport nie powiódł się.');
+}
+async function importData(inp){
+  const f=inp.files[0]; inp.value=''; if(!f)return;
+  if(!confirm('Wczytać „'+f.name+'”? Obecne dane zostaną zastąpione (stara baza zostaje jako asystent.db.bak).'))return;
+  const data=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
+  const r=await api('/import',{method:'POST',body:JSON.stringify({filename:f.name,data})});
+  if(r.ok){alert('Dane wczytane.');location.reload();} else alert(r.detail||'Import nie powiódł się.');
+}
 const bell=$('#bell'); let notified=new Set();
 function syncBell(){bell.classList.toggle('on',Notification?.permission==='granted');}
 bell.addEventListener('click',async()=>{

@@ -1,0 +1,56 @@
+name: Aplikacja desktop (Windows)
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Zależności
+        run: pip install -r requirements.txt pywebview pyinstaller pillow
+      - name: Test serwera (start, eksport, import)
+        shell: python
+        run: |
+          import sys, os
+          sys.path.insert(0, os.getcwd())
+          import os, json, time, threading, base64, urllib.request
+          os.environ.setdefault("ASYSTENT_DATA", "ci-data")
+          import uvicorn, server
+          srv = uvicorn.Server(uvicorn.Config(server.app, host="127.0.0.1", port=8799, log_config=None))
+          threading.Thread(target=srv.run, daemon=True).start()
+          while not srv.started: time.sleep(0.05)
+          def call(path, body=None):
+              req = urllib.request.Request("http://127.0.0.1:8799" + path, data=None if body is None else json.dumps(body).encode(),
+                                           headers={"Content-Type": "application/json"}, method="GET" if body is None and path == "/" else "POST")
+              with urllib.request.urlopen(req) as r: return r.read()
+          assert b"<html" in call("/").lower()
+          call("/api/tasks", {"title": "Kolokwium", "date": "2026-10-05", "kind": "Kolokwium"})
+          path = json.loads(call("/api/export", {}))["path"]
+          r = json.loads(call("/api/import", {"filename": "k.zip", "data": base64.b64encode(open(path, "rb").read()).decode()}))
+          assert r["ok"], r
+          tasks = json.loads(urllib.request.urlopen("http://127.0.0.1:8799/api/tasks").read())
+          assert [(t["title"], t["kind"]) for t in tasks] == [("Kolokwium", "Kolokwium")], tasks
+          print("smoke OK", path)
+          srv.should_exit = True
+      - name: Budowanie Asystent.exe
+        run: pyinstaller --noconfirm --onefile --windowed --name Asystent --icon logo.png --add-data "index.html;." --add-data "logo.png;." desktop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Asystent-windows
+          path: dist/Asystent.exe
+      - name: Wydanie (dla tagów v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Asystent.exe
