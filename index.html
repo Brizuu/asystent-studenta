@@ -218,6 +218,43 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .s-dots{position:absolute;inset:0;opacity:.45;filter:blur(.35px);background-image:radial-gradient(rgba(255,255,255,.3) 1px,transparent 1.3px);background-size:26px 26px;
   mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%);-webkit-mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%)}
 @media(prefers-reduced-motion:reduce){.e-land,.e-lights,.clouds i{animation:none}}
+/* ---------- pulpit: paralaksa, pogoda, ziarno, półksiężyc ---------- */
+.sky .clouds,.sky .earth,.sky .orb,.sky .l-night::before{transition-property:translate,opacity,left,top;transition-duration:1.1s,2.4s,1.2s,1.2s;transition-timing-function:cubic-bezier(.2,.8,.3,1)}
+.sky .clouds{translate:calc(var(--px,0) * -9px) calc(var(--py,0) * -4px)}
+.sky .earth{translate:calc(var(--px,0) * -16px) calc(var(--py,0) * -7px)}
+.sky .orb{translate:calc(var(--px,0) * -5px) calc(var(--py,0) * -3px)}
+.sky .l-night::before{translate:calc(var(--px,0) * -3px) calc(var(--py,0) * -2px)}
+/* półksiężyc: cień wewnętrzny wycina sierp, delikatna poświata */
+.sky .orb::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;opacity:0;
+  box-shadow:inset 11px -6px 0 0 #f1f0ff;transform:rotate(-18deg);filter:drop-shadow(0 0 7px rgba(215,220,255,.75));transition:opacity 2.4s ease}
+.sky[data-tod=night] .orb{background:radial-gradient(circle,rgba(190,200,255,.16) 0 26%,transparent 62%)!important}
+.sky[data-tod=night] .orb::before{opacity:1}
+/* pogoda: zachmurzenie mnoży krycie chmur; deszcz/śnieg z kafelków canvas */
+.clouds i{opacity:calc(var(--co) * var(--wxo,1))} .clouds i+i{opacity:calc(var(--co) * var(--wxo,1) * .7)}
+.sky[data-wx=clear]{--wxo:.35} .sky[data-wx=partly]{--wxo:1} .sky[data-wx=cloudy],.sky[data-wx=drizzle],.sky[data-wx=fog]{--wxo:1.7}
+.sky[data-wx=rain],.sky[data-wx=snow]{--wxo:1.9} .sky[data-wx=storm]{--wxo:2.1}
+.sky[data-wx=rain] .clouds,.sky[data-wx=storm] .clouds,.sky[data-wx=drizzle] .clouds{filter:brightness(.72) saturate(.7)}
+.sky[data-wx=cloudy] .clouds{filter:brightness(.88) saturate(.8)}
+.wx-fall{position:absolute;left:0;right:0;top:-320px;height:calc(100% + 320px);opacity:0;background-repeat:repeat;background-size:320px 320px;
+  will-change:transform;transition:opacity 2s ease;pointer-events:none}
+.wx-rain{animation:wx-rain .9s linear infinite} .wx-snow{animation:wx-snow 14s linear infinite;background-size:320px 320px}
+@keyframes wx-rain{to{transform:translate3d(-40px,320px,0)}} @keyframes wx-snow{to{transform:translate3d(30px,320px,0)}}
+.sky[data-wx=rain] .wx-rain,.sky[data-wx=storm] .wx-rain{opacity:.4} .sky[data-wx=drizzle] .wx-rain{opacity:.2} .sky[data-wx=snow] .wx-snow{opacity:.55}
+.wx-fog{position:absolute;inset:30% 0 0;opacity:0;transition:opacity 2s ease;background:linear-gradient(180deg,transparent,rgba(210,215,230,.16) 40%,rgba(210,215,230,.1));filter:blur(8px)}
+.sky[data-wx=fog] .wx-fog{opacity:1} .sky[data-wx=cloudy] .wx-fog,.sky[data-wx=rain] .wx-fog{opacity:.35}
+.wx-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(80% 60% at 60% 20%,rgba(220,225,255,.5),transparent 70%)}
+.sky[data-wx=storm] .wx-flash{animation:wx-flash 11s linear infinite}
+@keyframes wx-flash{0%,91%,100%{opacity:0}92%{opacity:.9}93%{opacity:.1}94%{opacity:.6}96%{opacity:0}}
+/* ziarno filmowe: statyczny szum, bardzo subtelny */
+.s-grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* chip pogody przy zegarze */
+.wx-chip{display:inline-flex;align-items:center;gap:7px;margin:8px 0 0 8px;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .15s,transform .1s}
+.wx-chip:hover{background:rgba(255,255,255,.16)} .wx-chip:active{transform:var(--press)}
+.wx-chip svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wx-chip span{font-weight:400;color:rgba(255,255,255,.75)}
+@media(prefers-reduced-motion:reduce){.wx-rain,.wx-snow,.sky[data-wx=storm] .wx-flash{animation:none}.sky .clouds,.sky .earth,.sky .orb{translate:none}}
 .welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
 .wl-main{min-width:0;flex:1 1 520px}
 .wl-date{font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.005em;text-shadow:0 1px 14px rgba(0,0,0,.35)}
@@ -252,6 +289,7 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wl-now small{color:var(--ink-soft);font-size:12.5px}
 .wl-now .pg{width:64px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
 .wl-now .pg i{display:block;height:100%;background:var(--kc)}
+.wl-now.brk{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)} .wl-now.brk .live{animation:none;background:rgba(255,255,255,.55)}
 @media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
@@ -646,10 +684,16 @@ label.f>*{color:var(--ink)}
 .fin{display:flex;flex-direction:column;gap:18px;max-width:1040px;margin-inline:auto}
 #view-finanse .head{text-align:center;max-width:1040px;margin-inline:auto}
 /* tło Finansów: głęboki granat z miękką zielenią i fioletem (spokojniej niż domyślne) */
-.soft-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
-  background:radial-gradient(55% 45% at 12% 0%,rgba(159,171,255,.13),transparent 70%),radial-gradient(45% 40% at 95% 10%,rgba(128,220,194,.08),transparent 70%),
-    radial-gradient(60% 50% at 60% 105%,rgba(255,185,140,.07),transparent 70%),linear-gradient(170deg,#1b1c26,#17181f 55%,#1a1923)}
+.soft-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease}
+.soft-bg::before,.soft-bg::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+/* Plan dnia: chłodny granat — indygo i błękit nieba */
+.soft-bg::before{background:radial-gradient(50% 42% at 12% 6%,rgba(110,120,255,.2),transparent 70%),radial-gradient(45% 40% at 92% 14%,rgba(90,170,255,.14),transparent 70%),
+  radial-gradient(60% 50% at 55% 105%,rgba(80,200,180,.09),transparent 70%),linear-gradient(170deg,#161a2c,#12141f 55%,#141726)}
+/* Nauka: ciepły fiolet z brzoskwiniową poświatą — jak lampka nad biurkiem */
+.soft-bg::after{background:radial-gradient(50% 42% at 10% 6%,rgba(150,110,255,.19),transparent 70%),radial-gradient(42% 38% at 94% 12%,rgba(255,165,125,.11),transparent 70%),
+  radial-gradient(60% 50% at 50% 108%,rgba(255,120,160,.07),transparent 70%),linear-gradient(170deg,#1b1628,#141320 55%,#181424)}
 body.on-plan .soft-bg,body.in-nauka .soft-bg{opacity:1}
+body.on-plan .soft-bg::before{opacity:1} body.in-nauka .soft-bg::after{opacity:1}
 .fin-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
   background:radial-gradient(50% 40% at 15% 8%,rgba(63,191,127,.22),transparent 70%),radial-gradient(45% 40% at 90% 15%,rgba(139,124,255,.24),transparent 70%),
     radial-gradient(60% 50% at 70% 100%,rgba(57,135,229,.18),transparent 70%),linear-gradient(170deg,#141a2b,#10131f 55%,#151324)}
@@ -1745,7 +1789,7 @@ body.on-start .c-time{display:none}
     <div class="au-card c-time" style="--d:14"><div class="au-time">11:30</div><div class="au-sh-s">Wykład · s. 233</div></div>
   </div>
 </div>
-<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="clouds"><i></i><i></i></div><div class="earth"><i class="e-land"></i><i class="e-glint"></i><i class="e-lights"></i><i class="e-haze"></i><i class="e-shade"></i></div><div class="s-dots"></div></div>
+<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="clouds"><i></i><i></i></div><div class="earth"><i class="e-land"></i><i class="e-glint"></i><i class="e-lights"></i><i class="e-haze"></i><i class="e-shade"></i></div><div class="wx-fog"></div><div class="wx-fall wx-rain"></div><div class="wx-fall wx-snow"></div><div class="wx-flash"></div><div class="s-dots"></div><div class="s-grain"></div></div>
 
 <div class="app">
   <aside class="rail">
@@ -1869,6 +1913,7 @@ body.on-start .c-time{display:none}
         <div class="wl-clock">
           <div class="ck-time" id="ck-time"></div>
           <div class="ck-tod"><svg class="ck-ico" viewBox="0 0 24 24" id="ck-ico"></svg><span id="ck-tod"></span></div>
+          <button class="wx-chip" id="wx-chip" onclick="openWeather()" title="Pogoda"></button>
           <button class="tod-test" id="tod-test" onclick="cycleTod()" title="Test: podgląd innych pór dnia">Pora dnia: auto</button>
         </div>
       </div>
@@ -2285,7 +2330,7 @@ async function loadPulpit(){
   paintTime();
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
-  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today); renderFinPortal();
+  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today); renderFinPortal(); loadWeather();
   const nm=nowMin(), left=tasks.filter(t=>isClass(t)?(t.start_time&&evSpan(t)[1]>nm):!t.done).length;   // zajęcia: liczą się do końca trwania
   $('#portal-plan-sub').textContent=tasks.length?(left?`Dziś ${left} ${plural(left,'wpis','wpisy','wpisów')} przed Tobą`:'Dziś wszystko zrobione'):'Dziś wolne — zaplanuj coś';
   $('#portal-nb-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Załóż pierwszy zeszyt';
@@ -2336,6 +2381,60 @@ function paintEarthTiles(){
   sky.querySelector('.e-lights').style.backgroundImage=`url(${nc.toDataURL()})`;
 }
 try{paintEarthTiles();}catch(_){}
+/* ---------- pogoda na pulpicie (Open-Meteo przez lokalny serwer) ---------- */
+const WX_IC={
+  clear:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  partly:'<path d="M8 4v1.5M3.8 6.3l1 1M2.5 11H4"/><path d="M5.2 13.5A4 4 0 1112 9"/><path d="M8.5 20h9a3.5 3.5 0 000-7 5 5 0 00-9.6 1.5A2.8 2.8 0 008.5 20z"/>',
+  cloudy:'<path d="M7 19h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 19z"/>',
+  fog:'<path d="M4 9h16M3 13h18M5 17h14"/>',
+  drizzle:'<path d="M7 15h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 15z"/><path d="M9 18v1.5M13 18v1.5M17 18v1.5"/>',
+  rain:'<path d="M7 14h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 14z"/><path d="M8.5 17l-1 3M12.5 17l-1 3M16.5 17l-1 3"/>',
+  snow:'<path d="M7 14h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 14z"/><path d="M8 18h.01M12 20h.01M16 18h.01M10 21.5h.01M14 21.5h.01" stroke-width="2.6"/>',
+  storm:'<path d="M7 14h10.5a4 4 0 000-8 6 6 0 00-11.5 1.8A3.2 3.2 0 007 14z"/><path d="M12.5 15l-2.5 4h3l-2 3.5"/>',
+};
+let WX=null;
+async function loadWeather(force){
+  if(WX&&!force&&Date.now()-WX._t<10*60*1000){paintWeather();return;}
+  try{WX=await api('/weather');WX._t=Date.now();}catch(_){WX=null;}
+  paintWeather();
+}
+function paintWeather(){
+  const chip=$('#wx-chip'), sky=$('#sky'); if(!chip)return;
+  if(!WX||!WX.city){chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC.partly}</svg>Ustaw pogodę`;delete sky.dataset.wx;return;}
+  if(WX.error){chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC.cloudy}</svg>${esc(WX.city)} <span>· brak danych</span>`;delete sky.dataset.wx;chip.title=WX.error;return;}
+  sky.dataset.wx=WX.kind; chip.title=`${WX.label} · ${WX.city}${WX.wind!=null?' · wiatr '+Math.round(WX.wind)+' km/h':''}`;
+  chip.innerHTML=`<svg viewBox="0 0 24 24">${WX_IC[WX.kind]||WX_IC.cloudy}</svg>${WX.temp}° <span>${esc(WX.label)}</span>`;
+}
+function openWeather(){
+  const m=$('#modal'); m.style.maxWidth='420px';
+  m.innerHTML=`<h3>Pogoda na pulpicie</h3><div class="msub">Niebo pokazuje prawdziwą pogodę — chmury, deszcz, śnieg albo mgłę. Dane z Open-Meteo, odświeżane co 10 minut.</div>
+    <label class="field"><span>Miasto</span><input id="wx-city" placeholder="np. Poznań" maxlength="80"></label>
+    <div class="fin-prev" id="wx-prev" ${WX&&WX.city&&!WX.error?'':'hidden'}><span>${WX&&WX.city?esc(WX.city):''}</span><b>${WX&&WX.temp!=null?WX.temp+'° · '+esc(WX.label||''):''}</b></div>
+    <div class="actions">${WX&&WX.city?'<button class="btn ghost" style="margin-right:auto" onclick="saveWeather(\'\')">Wyłącz</button>':''}<button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="saveWeather()">Zapisz</button></div>`;
+  $('#wx-city').value=WX&&WX.city||''; $('#wx-city').onkeydown=e=>{if(e.key==='Enter')saveWeather();};
+  openModal(); setTimeout(()=>$('#wx-city').focus(),60);
+}
+async function saveWeather(city){
+  const c=city??$('#wx-city').value.trim();
+  const r=await api('/settings/weather',{method:'POST',body:JSON.stringify({city:c})});
+  if(r&&r.error){popout({icon:'warn',title:'Nie udało się pobrać pogody',text:r.error});}
+  WX={...r,_t:Date.now()}; paintWeather(); closeModal();
+}
+/* kafelki deszczu i śniegu (rysowane raz) */
+function paintWxTiles(){
+  const T=320; let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const mk=()=>{const c=document.createElement('canvas');c.width=c.height=T;return [c,c.getContext('2d')];};
+  const [rc,rx]=mk(); rx.lineCap='round';
+  for(let i=0;i<80;i++){const x=rnd()*T,y=rnd()*T,l=10+rnd()*16;rx.strokeStyle=`rgba(205,220,255,${.25+rnd()*.35})`;rx.lineWidth=.8+rnd()*.6;
+    for(const dy of [0,-T,T])for(const dx of [0,-T,T]){rx.beginPath();rx.moveTo(x+dx,y+dy);rx.lineTo(x+dx-l*.18,y+dy+l);rx.stroke();}}
+  const [sc,sx]=mk();
+  for(let i=0;i<34;i++){const x=rnd()*T,y=rnd()*T,r=.8+rnd()*1.8;sx.fillStyle=`rgba(255,255,255,${.5+rnd()*.45})`;
+    for(const dy of [0,-T,T])for(const dx of [0,-T,T]){sx.beginPath();sx.arc(x+dx,y+dy,r,0,Math.PI*2);sx.fill();}}
+  $('#sky .wx-rain').style.backgroundImage=`url(${rc.toDataURL()})`; $('#sky .wx-snow').style.backgroundImage=`url(${sc.toDataURL()})`;
+}
+try{paintWxTiles();}catch(_){}
+setInterval(()=>{if($('#view-pulpit').classList.contains('active'))loadWeather();},10*60*1000);
+
 /* test: przełącznik pory dnia (auto → poranek → dzień → wieczór → noc) */
 let todOverride=null;
 function cycleTod(){
@@ -2374,18 +2473,29 @@ function renderWelcome(tasks){
   const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
   const chip=t=>{const k=kindOf(t.kind);return `<span class="wl-chip" style="--kc:${k[2]}" onclick="viewTask(${t.id})">${kico(k)}${esc(t.title)}</span>`;};
   const at=t=>t.room?` w sali <b>${esc(t.room)}</b>${t.building?' ('+esc(t.building.split(' - ')[0])+')':''}`:'';
-  $('#wl-lead').innerHTML=cur?`Teraz ${chip(cur)}${at(cur)} — jeszcze ${evSpan(cur)[1]-n} min.${nxt?` Potem <b>${esc(nxt.title)}</b> o ${nxt.start_time}.`:''}`
+  $('#wl-lead').innerHTML=cur?`Teraz ${chip(cur)}${at(cur)}.${nxt?` Potem <b>${esc(nxt.title)}</b> o ${nxt.start_time}.`:''}`
     :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
     :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
     :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
-  // pigułka „trwa teraz” — wszystko, co właśnie się odbywa (też odhaczone i bez godziny końca)
-  const now=tasks.filter(t=>t.start_time&&(()=>{const [a,b]=evSpan(t);return a<=n&&n<b;})()).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time))[0];
-  const el=$('#wl-now'); el.hidden=!now;
-  if(now){const k=kindOf(now.kind),[a,b]=evSpan(now),end=t=>String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
-    el.style.setProperty('--kc',k[2]);
-    el.innerHTML=`<span class="live"></span><span><b>Trwa teraz:</b> ${esc(now.title)} <small>· do ${now.end_time||end(b)}${now.room?' · s. '+esc(now.room):''}</small></span>
+  // pigułka: co trwa teraz (ile do końca) albo przerwa do następnego wpisu dziś
+  const hm=t=>String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+  const dur=m=>m<60?`${m} min`:`${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
+  const all=tasks.filter(t=>t.start_time).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
+  const now=all.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), next=all.find(t=>toMin(t.start_time)>n);
+  const el=$('#wl-now');
+  if(now){
+    const k=kindOf(now.kind),[a,b]=evSpan(now), gap=next?toMin(next.start_time)-b:null;
+    el.style.setProperty('--kc',k[2]); el.classList.remove('brk');
+    el.innerHTML=`<span class="live"></span><span><b>Trwa:</b> ${esc(now.title)} <small>· jeszcze ${dur(b-n)}, do ${now.end_time||hm(b)}${now.room?' · s. '+esc(now.room):''}${gap>0?` · potem ${dur(gap)} przerwy`:''}</small></span>
       <span class="pg"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></span>`;
-    el.onclick=()=>viewTask(now.id);}
+    el.onclick=()=>viewTask(now.id); el.hidden=false;
+  }else if(next){
+    const prev=all.filter(t=>evSpan(t)[1]<=n).pop(), from=prev?evSpan(prev)[1]:null, to=toMin(next.start_time), k=kindOf(next.kind);
+    el.style.setProperty('--kc',k[2]); el.classList.add('brk');
+    el.innerHTML=`<span class="live"></span><span><b>${prev?'Przerwa':'Do zajęć'}:</b> jeszcze ${dur(to-n)} <small>· potem ${esc(next.title)} o ${next.start_time}</small></span>
+      ${from!=null?`<span class="pg"><i style="width:${Math.round((n-from)/(to-from)*100)}%"></i></span>`:''}`;
+    el.onclick=()=>viewTask(next.id); el.hidden=false;
+  }else el.hidden=true;
 }
 async function renderNextDay(today){
   const r=await api('/tasks/next-day?after='+today), el=$('#wl-next');
@@ -2418,7 +2528,9 @@ async function renderFinPortal(){
       <rect x="64" y="84" width="58" height="6" rx="3" fill="rgba(255,255,255,.55)"/><rect x="64" y="96" width="36" height="6" rx="3" fill="rgba(255,255,255,.35)"/></g></g></svg>`;
   let D; try{D=await api('/costs');}catch(_){return;}
   const s=D.summary, sub=$('#portal-fin-sub'), btn=$('#portal-fin-btn');
-  sub.textContent=s.income?`Zostaje ${s.left<0?'−':''}${zl0(Math.abs(s.left))} miesięcznie`:s.monthly?`Wydatki ~${zl0(s.monthly)} miesięcznie`:'Dodaj dochody i wydatki';
+  const goal=D.settings.savings_goal||0;   // bez kwot na pulpicie — tylko stan budżetu
+  sub.textContent=!s.income&&!s.monthly?'Dodaj dochody i wydatki':!s.income?`${D.costs.length} ${plural(D.costs.length,'koszt stały','koszty stałe','kosztów stałych')}`
+    :s.left<0?'Wydatki przekraczają dochód':goal?(s.left>=goal?'Cel oszczędzania osiągnięty ✓':'Poniżej celu oszczędzania'):'Budżet na plusie';
   const nx=D.upcoming[0];
   if(nx&&nx.days_left<=Math.max(14,nx.remind_days||0)){btn.textContent=`${nx.name} · ${whenTxt(nx.days_left)}`;btn.onclick=e=>{e.stopPropagation();go('finanse');};}
 }
@@ -3221,9 +3333,10 @@ async function cloud(path,{method='GET',body}={}){
   return d;
 }
 addEventListener('pointermove',e=>{
-  if(!(document.body.classList.contains('on-auth')||document.body.classList.contains('on-start'))||reduceMotion())return;
+  const B=document.body.classList, pul=B.contains('on-pulpit');
+  if(!(B.contains('on-auth')||B.contains('on-start')||pul)||reduceMotion())return;
   if(window._pxRaf)return; window._pxRaf=requestAnimationFrame(()=>{window._pxRaf=0;
-    const a=$('.aura'); a.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(3)); a.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(3));});
+    const a=pul?$('#sky'):$('.aura'); a.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(3)); a.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(3));});
 });
 /* „Politechnika Poznańska · Zarządzanie · I rok” — z pól profilu, puste pomijane */
 const studyLine=u=>[u&&u.university,u&&u.field,u&&u.study_year].filter(Boolean).join(' · ');

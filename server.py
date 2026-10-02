@@ -14,6 +14,7 @@ import base64
 import uuid
 import urllib.request
 import urllib.error
+import urllib.parse
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -694,6 +695,63 @@ def ai_usage():
             "reset_at": reset.isoformat().replace("+00:00", "Z"),
             "history": [{"date": d, **{**empty, **days.get(d, {})}} for d in last],
             "model": os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
+
+
+# ---------- POGODA (Open-Meteo, bez klucza) — miasto z Ustawień, wynik trzymany 10 min ----------
+WX_GEO = os.getenv("WEATHER_GEO_BASE", "https://geocoding-api.open-meteo.com")
+WX_API = os.getenv("WEATHER_API_BASE", "https://api.open-meteo.com")
+_wx_cache: dict = {}
+# kod pogody WMO → (rodzaj dla tła, opis)
+_WX = [((0,), "clear", "Bezchmurnie"), ((1,), "clear", "Przeważnie słonecznie"), ((2,), "partly", "Częściowe zachmurzenie"),
+       ((3,), "cloudy", "Pochmurno"), ((45, 48), "fog", "Mgła"), ((51, 53, 55, 56, 57), "drizzle", "Mżawka"),
+       ((61, 63, 65, 66, 67, 80, 81, 82), "rain", "Deszcz"), ((71, 73, 75, 77, 85, 86), "snow", "Śnieg"),
+       ((95, 96, 99), "storm", "Burza")]
+
+
+def _wx_get(url: str) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": "Asystent-studenta"})
+    with urllib.request.urlopen(req, timeout=8) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+@app.get("/api/weather")
+def weather():
+    city = (_settings().get("weather_city") or "").strip()
+    if not city:
+        return {"city": ""}
+    hit = _wx_cache.get(city.lower())
+    if hit and time.time() - hit[0] < 600:
+        return hit[1]
+    try:
+        geo = _wx_get(f"{WX_GEO}/v1/search?name={urllib.parse.quote(city)}&count=1&language=pl&format=json").get("results") or []
+        if not geo:
+            return {"city": city, "error": "Nie znaleziono takiego miasta."}
+        g = geo[0]
+        f = _wx_get(f"{WX_API}/v1/forecast?latitude={g['latitude']}&longitude={g['longitude']}"
+                    "&current=temperature_2m,weather_code,cloud_cover,precipitation,is_day,wind_speed_10m&timezone=auto")
+        cur = f.get("current") or {}
+    except Exception:
+        return {"city": city, "error": "Brak połączenia z serwisem pogody."}
+    code = int(cur.get("weather_code") or 0)
+    kind, label = next(((k, l) for codes, k, l in _WX if code in codes), ("cloudy", "Pochmurno"))
+    out = {"city": g.get("name") or city, "temp": round(float(cur.get("temperature_2m") or 0)), "code": code,
+           "kind": kind, "label": label, "clouds": cur.get("cloud_cover"), "wind": cur.get("wind_speed_10m"),
+           "is_day": bool(cur.get("is_day", 1))}
+    _wx_cache[city.lower()] = (time.time(), out)
+    return out
+
+
+class WeatherCity(BaseModel):
+    city: str = ""
+
+
+@app.post("/api/settings/weather")
+def set_weather_city(p: WeatherCity):
+    st = _settings()
+    st["weather_city"] = " ".join(p.city.split())[:80]
+    SETTINGS.write_text(json.dumps(st), encoding="utf-8")
+    _wx_cache.clear()
+    return weather()
 
 
 # ---------- logo uczelni (pobierane raz, trzymane lokalnie) ----------
