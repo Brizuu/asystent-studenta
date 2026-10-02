@@ -16,6 +16,7 @@ import uvicorn   # noqa: E402
 import webview   # noqa: E402
 from server import app   # noqa: E402
 import nagrania   # noqa: E402  (już zaimportowany przez server)
+import aktualizacje   # noqa: E402
 
 
 def pick_port() -> int:
@@ -39,7 +40,8 @@ def main():
     threading.Thread(target=server.run, daemon=True).start()
     while not server.started:
         time.sleep(0.05)
-    webview.create_window("Asystent", f"http://127.0.0.1:{port}/", width=1400, height=900, min_size=(900, 600))
+    win = webview.create_window(f"Asystent {aktualizacje.app_version()}", f"http://127.0.0.1:{port}/", width=1400, height=900, min_size=(900, 600))
+    aktualizacje.on_quit = win.destroy   # aktualizacja: instalator wystartował → zamknij okno, żeby mógł podmienić pliki
     # private_mode=False + storage_path: localStorage (Spotify, ustawienia) przetrwa restart
     webview.start(private_mode=False, storage_path=str(DATA / "webview"))
     nagrania.rec_stop()   # zamknięcie okna w trakcie nagrywania: domknij plik, nagranie zostaje

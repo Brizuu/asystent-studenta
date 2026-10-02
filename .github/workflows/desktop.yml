@@ -49,14 +49,41 @@ jobs:
           assert json.loads(urllib.request.urlopen("http://127.0.0.1:8799/api/rec").read()) == []
           print("smoke OK", path)
           srv.should_exit = True
+      - name: Wersja (z tagu v1.2.3 albo z pliku VERSION)
+        shell: python
+        run: |
+          import os, re
+          ref = os.environ.get("GITHUB_REF", "")
+          v = ref.split("/v", 1)[1] if ref.startswith("refs/tags/v") else open("VERSION").read().strip()
+          assert re.fullmatch(r"\d+\.\d+\.\d+", v), v
+          open("VERSION", "w").write(v)
+          open(os.environ["GITHUB_ENV"], "a").write(f"APP_VERSION={v}\n")
+          os.makedirs("build", exist_ok=True)
+          from PIL import Image
+          Image.open("icon-512.png").save("build/logo.ico", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+          print("wersja", v)
       - name: Budowanie Asystent.exe
-        run: pyinstaller --noconfirm --onefile --windowed --name Asystent --icon logo.png --add-data "index.html;." --add-data "logo.png;." --add-data "icon-192.png;." --add-data "icon-512.png;." desktop.py
+        run: pyinstaller --noconfirm --onefile --windowed --name Asystent --icon build/logo.ico --add-data "index.html;." --add-data "logo.png;." --add-data "icon-192.png;." --add-data "icon-512.png;." --add-data "VERSION;." desktop.py
+      - name: Instalator AsystentSetup.exe (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc "/DMyAppVersion=$env:APP_VERSION" installer\asystent.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Item dist\AsystentSetup.exe | Format-List Name, Length
       - uses: actions/upload-artifact@v4
         with:
           name: Asystent-windows
-          path: dist/Asystent.exe
+          path: |
+            dist/AsystentSetup.exe
+            dist/Asystent.exe
       - name: Wydanie (dla tagów v*)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Asystent.exe
+          name: Asystent ${{ env.APP_VERSION }}
+          generate_release_notes: true
+          files: |
+            dist/AsystentSetup.exe
+            dist/Asystent.exe

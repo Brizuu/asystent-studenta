@@ -901,7 +901,8 @@ def summary():
 @app.get("/api/config")
 def config():
     cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "http://127.0.0.1:8100")
-    return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/")}
+    return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/"),
+            "version": aktualizacje.app_version(), "windows": os.name == "nt"}
 
 
 class CloudUrl(BaseModel):
@@ -923,7 +924,9 @@ import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta
 import usos   # noqa: E402
 import finanse   # noqa: E402
 import zadania   # noqa: E402
+import aktualizacje   # noqa: E402
 app.include_router(nagrania.router)
 app.include_router(usos.router)
 app.include_router(finanse.router)
 app.include_router(zadania.router)
+app.include_router(aktualizacje.router)
