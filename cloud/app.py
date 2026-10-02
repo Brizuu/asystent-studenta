@@ -1,0 +1,361 @@
+"""Asystent — serwer kont (logowanie, profil, znajomi, udostępnianie notatek).
+
+Osobna usługa od lokalnej aplikacji: notatki i plan zostają na komputerze użytkownika,
+tu trafiają tylko konta, relacje znajomych i to, co ktoś świadomie udostępni.
+
+Lokalnie:   python -m uvicorn cloud.app:app --port 8100
+Produkcja:  patrz cloud/README.md (Docker + Caddy, HTTPS).
+Konfiguracja (zmienne środowiskowe):
+  CLOUD_DB          ścieżka do bazy SQLite (domyślnie cloud/cloud.db)
+  ALLOWED_ORIGINS   adresy aplikacji (CORS), po przecinku; domyślnie lokalne 127.0.0.1/localhost
+"""
+import hashlib
+import hmac
+import json
+import os
+import re
+import secrets
+import sqlite3
+import time
+from collections import defaultdict, deque
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+DB_PATH = Path(os.getenv("CLOUD_DB") or Path(__file__).parent / "cloud.db")
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+SESSION_DAYS = 60
+MAX_AVATAR = 300_000          # data URL avatara (ok. 200 KB obrazka)
+MAX_SHARE = 3_000_000         # treść udostępnienia (JSON)
+
+app = FastAPI(title="Asystent — konta")
+origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    # aplikacja zawsze działa lokalnie (przeglądarka albo okno desktop, czasem na losowym porcie);
+    # token idzie w nagłówku, nie w ciasteczku, więc inne strony i tak go nie mają
+    allow_origin_regex=r"http://(127\.0\.0\.1|localhost)(:\d+)?",
+    allow_methods=["*"], allow_headers=["*"],
+)
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    email        TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    username     TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    display_name TEXT NOT NULL,
+    pw_hash      TEXT NOT NULL,
+    bio          TEXT DEFAULT '',
+    avatar       TEXT DEFAULT '',
+    created_at   TEXT DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires    REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS friendships (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    requester  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    addressee  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status     TEXT NOT NULL DEFAULT 'pending',   -- pending | accepted
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(requester, addressee)
+);
+CREATE TABLE IF NOT EXISTS shares (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipient  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind       TEXT NOT NULL,                     -- note | notebook
+    title      TEXT NOT NULL,
+    payload    TEXT NOT NULL,                     -- JSON (migawka notatki / zeszytu)
+    created_at TEXT DEFAULT (datetime('now'))
+);
+"""
+
+
+def db() -> sqlite3.Connection:
+    c = sqlite3.connect(DB_PATH)
+    c.row_factory = sqlite3.Row
+    c.execute("PRAGMA foreign_keys = ON")
+    return c
+
+
+with db() as _c:
+    _c.executescript(SCHEMA)
+
+
+# ---------- hasła i sesje (stdlib: scrypt + losowe tokeny, w bazie tylko ich hash) ----------
+def hash_pw(pw: str) -> str:
+    salt = secrets.token_bytes(16)
+    h = hashlib.scrypt(pw.encode(), salt=salt, n=2**14, r=8, p=1)
+    return salt.hex() + "$" + h.hex()
+
+
+def check_pw(pw: str, stored: str) -> bool:
+    salt, h = stored.split("$")
+    return hmac.compare_digest(hashlib.scrypt(pw.encode(), salt=bytes.fromhex(salt), n=2**14, r=8, p=1).hex(), h)
+
+
+def _th(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def new_session(uid: int) -> str:
+    token = secrets.token_urlsafe(32)
+    with db() as c:
+        c.execute("DELETE FROM sessions WHERE expires<?", (time.time(),))
+        c.execute("INSERT INTO sessions VALUES(?,?,?)", (_th(token), uid, time.time() + SESSION_DAYS * 86400))
+    return token
+
+
+def current_user(authorization: str = Header(default="")) -> sqlite3.Row:
+    token = authorization.removeprefix("Bearer ").strip()
+    with db() as c:
+        u = c.execute("SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires>?",
+                      (_th(token), time.time())).fetchone() if token else None
+    if not u:
+        raise HTTPException(401, "Zaloguj się ponownie.")
+    return u
+
+
+# prosty limit prób logowania (na IP), żeby utrudnić zgadywanie haseł
+_attempts: dict[str, deque] = defaultdict(deque)
+
+
+def rate_limit(request: Request, limit: int = 10, window: int = 300):
+    ip = request.client.host if request.client else "?"
+    q = _attempts[ip]
+    now = time.time()
+    while q and q[0] < now - window:
+        q.popleft()
+    if len(q) >= limit:
+        raise HTTPException(429, "Za dużo prób. Spróbuj za kilka minut.")
+    q.append(now)
+
+
+def public(u, full=False) -> dict:
+    d = {"id": u["id"], "username": u["username"], "display_name": u["display_name"], "avatar": u["avatar"]}
+    if full:
+        d.update(email=u["email"], bio=u["bio"], created_at=u["created_at"])
+    return d
+
+
+# ---------- konto ----------
+class Register(BaseModel):
+    email: str
+    username: str
+    password: str
+    display_name: str = ""
+
+
+class Login(BaseModel):
+    login: str      # e-mail albo nazwa użytkownika
+    password: str
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
+@app.post("/auth/register")
+def register(p: Register, request: Request):
+    rate_limit(request)
+    email, username = p.email.strip().lower(), p.username.strip()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        raise HTTPException(400, "Podaj poprawny adres e-mail.")
+    if not re.fullmatch(r"[A-Za-z0-9_.]{3,24}", username):
+        raise HTTPException(400, "Nazwa użytkownika: 3–24 znaki, litery, cyfry, „_” lub „.”.")
+    if len(p.password) < 8:
+        raise HTTPException(400, "Hasło musi mieć co najmniej 8 znaków.")
+    try:
+        with db() as c:
+            uid = c.execute("INSERT INTO users(email,username,display_name,pw_hash) VALUES(?,?,?,?)",
+                            (email, username, p.display_name.strip()[:60] or username, hash_pw(p.password))).lastrowid
+    except sqlite3.IntegrityError:
+        raise HTTPException(409, "Ten e-mail albo nazwa użytkownika jest już zajęta.")
+    return {"token": new_session(uid)}
+
+
+@app.post("/auth/login")
+def login(p: Login, request: Request):
+    rate_limit(request)
+    with db() as c:
+        u = c.execute("SELECT * FROM users WHERE email=? OR username=?", (p.login.strip(), p.login.strip())).fetchone()
+    if not u or not check_pw(p.password, u["pw_hash"]):
+        raise HTTPException(401, "Nieprawidłowy login lub hasło.")
+    return {"token": new_session(u["id"])}
+
+
+@app.post("/auth/logout")
+def logout(authorization: str = Header(default="")):
+    with db() as c:
+        c.execute("DELETE FROM sessions WHERE token_hash=?", (_th(authorization.removeprefix("Bearer ").strip()),))
+    return {"ok": True}
+
+
+@app.get("/me")
+def me(u=Depends(current_user)):
+    return public(u, full=True)
+
+
+class Profile(BaseModel):
+    display_name: str | None = None
+    bio: str | None = None
+    avatar: str | None = None       # data:image/...;base64,… albo "" (usuń)
+
+
+@app.patch("/me")
+def update_me(p: Profile, u=Depends(current_user)):
+    f = {}
+    if p.display_name is not None:
+        f["display_name"] = p.display_name.strip()[:60] or u["username"]
+    if p.bio is not None:
+        f["bio"] = p.bio.strip()[:300]
+    if p.avatar is not None:
+        if p.avatar and (not re.match(r"^data:image/(png|jpeg|webp);base64,", p.avatar) or len(p.avatar) > MAX_AVATAR):
+            raise HTTPException(400, "Avatar: obraz PNG/JPG/WebP, do ok. 200 KB.")
+        f["avatar"] = p.avatar
+    if f:
+        with db() as c:
+            c.execute(f"UPDATE users SET {', '.join(k + '=?' for k in f)} WHERE id=?", (*f.values(), u["id"]))
+    with db() as c:
+        return public(c.execute("SELECT * FROM users WHERE id=?", (u["id"],)).fetchone(), full=True)
+
+
+class Password(BaseModel):
+    old: str
+    new: str
+
+
+@app.post("/me/password")
+def change_password(p: Password, u=Depends(current_user)):
+    if not check_pw(p.old, u["pw_hash"]):
+        raise HTTPException(400, "Obecne hasło jest nieprawidłowe.")
+    if len(p.new) < 8:
+        raise HTTPException(400, "Nowe hasło musi mieć co najmniej 8 znaków.")
+    with db() as c:
+        c.execute("UPDATE users SET pw_hash=? WHERE id=?", (hash_pw(p.new), u["id"]))
+    return {"ok": True}
+
+
+# ---------- znajomi ----------
+def _friend_ids(c, uid) -> set[int]:
+    return {r[0] for r in c.execute(
+        "SELECT CASE WHEN requester=? THEN addressee ELSE requester END FROM friendships "
+        "WHERE status='accepted' AND (requester=? OR addressee=?)", (uid, uid, uid))}
+
+
+@app.get("/friends")
+def friends(u=Depends(current_user)):
+    with db() as c:
+        rows = c.execute("""SELECT f.id fid, f.status, f.requester, u.* FROM friendships f
+            JOIN users u ON u.id = CASE WHEN f.requester=? THEN f.addressee ELSE f.requester END
+            WHERE f.requester=? OR f.addressee=? ORDER BY u.display_name""", (u["id"], u["id"], u["id"])).fetchall()
+        unread = {r["sender"]: r["n"] for r in c.execute(
+            "SELECT sender, COUNT(*) n FROM shares WHERE recipient=? GROUP BY sender", (u["id"],))}
+    out = {"friends": [], "incoming": [], "outgoing": []}
+    for r in rows:
+        item = {"fid": r["fid"], **public(r)}
+        if r["status"] == "accepted":
+            out["friends"].append({**item, "shared_with_me": unread.get(r["id"], 0)})
+        else:
+            out["incoming" if r["requester"] != u["id"] else "outgoing"].append(item)
+    return out
+
+
+class FriendRequest(BaseModel):
+    username: str
+
+
+@app.post("/friends/request")
+def friend_request(p: FriendRequest, u=Depends(current_user)):
+    with db() as c:
+        t = c.execute("SELECT * FROM users WHERE username=? OR email=?", (p.username.strip(), p.username.strip())).fetchone()
+        if not t:
+            raise HTTPException(404, "Nie ma takiego użytkownika.")
+        if t["id"] == u["id"]:
+            raise HTTPException(400, "To Twoje konto.")
+        ex = c.execute("SELECT * FROM friendships WHERE (requester=? AND addressee=?) OR (requester=? AND addressee=?)",
+                       (u["id"], t["id"], t["id"], u["id"])).fetchone()
+        if ex:
+            if ex["status"] == "pending" and ex["requester"] == t["id"]:   # on zaprosił nas wcześniej → od razu znajomi
+                c.execute("UPDATE friendships SET status='accepted' WHERE id=?", (ex["id"],))
+                return {"status": "accepted"}
+            raise HTTPException(409, "Zaproszenie już wysłane albo jesteście znajomymi.")
+        c.execute("INSERT INTO friendships(requester,addressee) VALUES(?,?)", (u["id"], t["id"]))
+    return {"status": "pending"}
+
+
+@app.post("/friends/{fid}/accept")
+def friend_accept(fid: int, u=Depends(current_user)):
+    with db() as c:
+        n = c.execute("UPDATE friendships SET status='accepted' WHERE id=? AND addressee=? AND status='pending'",
+                      (fid, u["id"])).rowcount
+    if not n:
+        raise HTTPException(404, "Nie znaleziono zaproszenia.")
+    return {"ok": True}
+
+
+@app.delete("/friends/{fid}")
+def friend_remove(fid: int, u=Depends(current_user)):
+    """Odrzuć / anuluj zaproszenie albo usuń ze znajomych."""
+    with db() as c:
+        c.execute("DELETE FROM friendships WHERE id=? AND (requester=? OR addressee=?)", (fid, u["id"], u["id"]))
+    return {"ok": True}
+
+
+# ---------- udostępnianie ----------
+class Share(BaseModel):
+    to: list[int]                 # id znajomych
+    kind: str                     # note | notebook
+    title: str
+    payload: dict
+
+
+@app.post("/shares")
+def share(p: Share, u=Depends(current_user)):
+    if p.kind not in ("note", "notebook"):
+        raise HTTPException(400, "Nieznany rodzaj udostępnienia.")
+    data = json.dumps(p.payload, ensure_ascii=False)
+    if len(data) > MAX_SHARE:
+        raise HTTPException(413, "Za duże do udostępnienia (limit ok. 3 MB).")
+    with db() as c:
+        ok = _friend_ids(c, u["id"])
+        targets = [t for t in set(p.to) if t in ok]
+        if not targets:
+            raise HTTPException(400, "Wybierz co najmniej jednego znajomego.")
+        for t in targets:
+            c.execute("INSERT INTO shares(sender,recipient,kind,title,payload) VALUES(?,?,?,?,?)",
+                      (u["id"], t, p.kind, p.title.strip()[:120] or "Bez tytułu", data))
+    return {"sent": len(targets)}
+
+
+@app.get("/shares")
+def shares(from_user: int | None = None, u=Depends(current_user)):
+    """Udostępnione MNIE (opcjonalnie tylko od jednego znajomego) — bez treści, sama lista."""
+    q = ("SELECT s.id, s.kind, s.title, s.created_at, s.sender, length(s.payload) size FROM shares s "
+         "WHERE s.recipient=?" + (" AND s.sender=?" if from_user else "") + " ORDER BY s.id DESC")
+    with db() as c:
+        return [dict(r) for r in c.execute(q, (u["id"], from_user) if from_user else (u["id"],))]
+
+
+@app.get("/shares/{sid}")
+def share_get(sid: int, u=Depends(current_user)):
+    with db() as c:
+        r = c.execute("SELECT * FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"])).fetchone()
+    if not r:
+        raise HTTPException(404, "Nie znaleziono.")
+    return {"id": r["id"], "kind": r["kind"], "title": r["title"], "created_at": r["created_at"],
+            "sender": r["sender"], "payload": json.loads(r["payload"])}
+
+
+@app.delete("/shares/{sid}")
+def share_delete(sid: int, u=Depends(current_user)):
+    with db() as c:
+        c.execute("DELETE FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"]))
+    return {"ok": True}

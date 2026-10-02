@@ -45,6 +45,20 @@ Z pliku brane jest to, co USOS podaje: przedmiot, typ (W → Wykład, CW → Ćw
 termin, sala, budynek, adres i link do zajęć. Ponowny import aktualizuje plan bez dublowania
 (Twoje oznaczenia „zrobione”, notatki i powiązania zostają).
 
+## Konta, znajomi i udostępnianie
+
+Osobny serwis w `cloud/` (logowanie, profil z avatarem, znajomi, udostępnianie notatek i zeszytów).
+Lokalnie uruchom go obok aplikacji:
+
+```bash
+pip install -r cloud/requirements.txt
+python -m uvicorn cloud.app:app --port 8100
+```
+
+W aplikacji: ikona **Konto** (na dole paska) → rejestracja/logowanie, **Znajomi** → zaproszenia,
+udostępnione notatki (podgląd albo import do wybranego zeszytu pod własną nazwą),
+**Udostępnij** w notatce i w zeszycie. Wdrożenie na VPS (Docker + HTTPS): `cloud/README.md`.
+
 ## Konfiguracja
 
 - **AI:** Ustawienia (⚙ na dole paska) → *Sztuczna inteligencja*: wklej darmowy klucz Gemini

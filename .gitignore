@@ -25,3 +25,7 @@ Thumbs.db
 build/
 dist/
 *.spec
+
+# Serwer kont (cloud/)
+cloud/cloud.db*
+cloud/.env
