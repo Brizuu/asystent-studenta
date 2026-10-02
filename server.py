@@ -46,6 +46,25 @@ def logo():
     return FileResponse(APP_DIR / "logo.png")
 
 
+@app.get("/icon-{size}.png")
+def app_icon(size: int):
+    if size not in (192, 512):
+        raise HTTPException(404)
+    return FileResponse(APP_DIR / f"icon-{size}.png")
+
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    """Instalacja na telefonie („Dodaj do ekranu głównego”)."""
+    return Response(json.dumps({
+        "name": "Asystent studenta", "short_name": "Asystent", "lang": "pl",
+        "start_url": "/", "scope": "/", "display": "standalone",
+        "background_color": "#0b0b14", "theme_color": "#0b0b14",
+        "icons": [{"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+                  {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}],
+    }, ensure_ascii=False), media_type="application/manifest+json")
+
+
 # ---------- modele wejściowe ----------
 class Task(BaseModel):
     title: str

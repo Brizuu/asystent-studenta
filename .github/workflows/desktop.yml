@@ -50,7 +50,7 @@ jobs:
           print("smoke OK", path)
           srv.should_exit = True
       - name: Budowanie Asystent.exe
-        run: pyinstaller --noconfirm --onefile --windowed --name Asystent --icon logo.png --add-data "index.html;." --add-data "logo.png;." desktop.py
+        run: pyinstaller --noconfirm --onefile --windowed --name Asystent --icon logo.png --add-data "index.html;." --add-data "logo.png;." --add-data "icon-192.png;." --add-data "icon-512.png;." desktop.py
       - uses: actions/upload-artifact@v4
         with:
           name: Asystent-windows
