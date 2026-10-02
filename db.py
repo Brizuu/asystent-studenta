@@ -1,10 +1,14 @@
 """SQLite — trwałe przechowywanie. Plik asystent.db obok kodu, dane nie giną.
 Stdlib sqlite3, bez ORM (mało tabel, nie trzeba ciężkiej zależności).
 """
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "asystent.db"
+# katalog danych: obok kodu (tryb dev) albo ASYSTENT_DATA (aplikacja desktop → %APPDATA%\Asystent)
+DATA_DIR = Path(os.getenv("ASYSTENT_DATA") or Path(__file__).parent)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = DATA_DIR / "asystent.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS tasks (

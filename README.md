@@ -16,9 +16,24 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000
 
 Następnie otwórz **http://127.0.0.1:8000**.
 
+## Aplikacja desktop (Windows)
+
+Gotowy plik **`Asystent.exe`** buduje GitHub Actions przy każdym pushu na `main`
+(zakładka *Actions* → „Aplikacja desktop (Windows)” → artefakt *Asystent-windows*).
+Tag `v*` (np. `v1.0`) publikuje exe w zakładce *Releases*.
+
+- Jeden plik, bez instalacji — okno aplikacji (WebView2, wbudowany w Windows 10/11).
+- Dane: `%APPDATA%\Asystent` (baza `asystent.db`, `uploads/`, klucz `.gemini_key`).
+- **Eksport danych** (pasek menu, na dole) zapisuje kopię ZIP do folderu *Pobrane*;
+  **Import danych** wczytuje taką kopię albo sam plik `asystent.db` (np. ze starej wersji
+  uruchamianej przez uvicorn). Poprzednia baza zostaje jako `asystent.db.bak`.
+
+Ze źródeł: `pip install -r requirements.txt pywebview` i `python desktop.py`.
+
 ## Konfiguracja
 
-- **Notatki AI (Gemini):** wklej swój klucz do pliku `.gemini_key` (wzór: `.gemini_key.example`)
+- **Notatki AI (Gemini):** wklej swój klucz do pliku `.gemini_key` (wzór: `.gemini_key.example`;
+  w aplikacji desktop: `%APPDATA%\Asystent\.gemini_key`)
   albo ustaw zmienną środowiskową `GEMINI_API_KEY`.
 - **Spotify:** utwórz darmową aplikację na developer.spotify.com, a w jej ustawieniach
   dodaj Redirect URI: `http://127.0.0.1:8000/` (musi być `127.0.0.1`, nie `localhost`).

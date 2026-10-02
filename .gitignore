@@ -20,3 +20,8 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Budowanie aplikacji desktop
+build/
+dist/
+*.spec
