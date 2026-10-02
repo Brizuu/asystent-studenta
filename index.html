@@ -241,7 +241,18 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .ck-ico{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
-.wl-next[hidden]{display:none}
+.wl-next[hidden],.wl-now[hidden]{display:none}
+/* trwa teraz: kolor rodzaju wpisu + pasek postępu */
+.wl-now{display:inline-flex;align-items:center;gap:10px;margin:14px 10px 0 0;padding:7px 14px 7px 10px;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px;color:var(--ink);
+  border:1px solid color-mix(in srgb,var(--kc) 45%,transparent);background:color-mix(in srgb,var(--kc) 16%,rgba(20,20,30,.35));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out}
+.wl-now:active{transform:var(--press)}
+.wl-now .live{width:8px;height:8px;border-radius:50%;background:var(--kc);box-shadow:0 0 0 0 color-mix(in srgb,var(--kc) 60%,transparent);animation:live 2s ease-out infinite}
+@keyframes live{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.wl-now small{color:var(--ink-soft);font-size:12.5px}
+.wl-now .pg{width:64px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
+.wl-now .pg i{display:block;height:100%;background:var(--kc)}
+@media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
 .wl-next:hover{background:rgba(255,255,255,.1);color:var(--ink)} .wl-next:active{transform:var(--press)}
@@ -635,6 +646,10 @@ label.f>*{color:var(--ink)}
 .fin{display:flex;flex-direction:column;gap:18px;max-width:1040px;margin-inline:auto}
 #view-finanse .head{text-align:center;max-width:1040px;margin-inline:auto}
 /* tło Finansów: głęboki granat z miękką zielenią i fioletem (spokojniej niż domyślne) */
+.soft-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
+  background:radial-gradient(55% 45% at 12% 0%,rgba(159,171,255,.13),transparent 70%),radial-gradient(45% 40% at 95% 10%,rgba(128,220,194,.08),transparent 70%),
+    radial-gradient(60% 50% at 60% 105%,rgba(255,185,140,.07),transparent 70%),linear-gradient(170deg,#1b1c26,#17181f 55%,#1a1923)}
+body.on-plan .soft-bg,body.in-nauka .soft-bg{opacity:1}
 .fin-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .45s ease;
   background:radial-gradient(50% 40% at 15% 8%,rgba(63,191,127,.22),transparent 70%),radial-gradient(45% 40% at 90% 15%,rgba(139,124,255,.24),transparent 70%),
     radial-gradient(60% 50% at 70% 100%,rgba(57,135,229,.18),transparent 70%),linear-gradient(170deg,#141a2b,#10131f 55%,#151324)}
@@ -1717,6 +1732,7 @@ body.on-start .c-time{display:none}
 <body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
 <div class="fin-bg" aria-hidden="true"></div>
+<div class="soft-bg" aria-hidden="true"></div>
 <div class="aura" aria-hidden="true">
   <div class="au-ribbon"></div><div class="au-ribbon r2"></div><div class="au-grid"></div>
   <div class="au-cards">
@@ -1739,6 +1755,10 @@ body.on-start .c-time{display:none}
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span class="lbl">Pulpit</span>
       </button>
+      <button data-v="nauka">
+        <svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg>
+        <span class="lbl">Nauka</span>
+      </button>
       <button data-v="plan">
         <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
         <span class="lbl">Plan dnia</span>
@@ -1751,15 +1771,11 @@ body.on-start .c-time{display:none}
         <svg viewBox="0 0 24 24"><path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5M4 16.5l8 4.5 8-4.5"/></svg>
         <span class="lbl">Źródła dochodu</span>
       </button>
-      <button data-v="nauka">
-        <svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg>
-        <span class="lbl">Nauka</span>
-      </button>
       <button data-v="znajomi">
         <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0112 0"/><circle cx="17" cy="9" r="2.4"/><path d="M16 13.6a4.6 4.6 0 015.5 4.4"/></svg>
         <span class="lbl">Znajomi</span><span class="nav-badge" id="friends-badge" hidden></span>
       </button>
-    </nav>
+</nav>
     <button class="bell" id="nav-account" onclick="go('konto')" title="Konto"><span class="nav-av" id="nav-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg></span><span id="nav-account-lbl">Konto</span></button>
     <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span><i class="bell-n" id="bell-n" hidden></i></button>
@@ -1847,6 +1863,7 @@ body.on-start .c-time{display:none}
           <div class="wl-date" id="pulpit-date"></div>
           <h1 class="wl-title" id="greet">Dzień dobry</h1>
           <p class="wl-lead" id="wl-lead"></p>
+          <button class="wl-now" id="wl-now" hidden></button>
           <button class="wl-next" id="wl-next" hidden></button>
         </div>
         <div class="wl-clock">
@@ -1856,17 +1873,6 @@ body.on-start .c-time{display:none}
         </div>
       </div>
       <div class="portals">
-        <div class="portal" style="--pc:var(--sky);--pc2:var(--lilac)" role="button" tabindex="0" onclick="go('plan')" onkeydown="if(event.key==='Enter')go('plan')">
-          <div class="portal-art" id="art-cal" aria-hidden="true"></div>
-          <div class="portal-txt">
-            <h2>Harmonogram</h2>
-            <p id="portal-plan-sub">Twój dzień i kalendarz</p>
-          </div>
-          <div class="portal-foot">
-            <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-            <button class="btn ghost sm" onclick="event.stopPropagation();openTask(null,todayISO())">+ Nowy wpis</button>
-          </div>
-        </div>
         <div class="portal" style="--pc:var(--peach);--pc2:var(--rose)" role="button" tabindex="0" onclick="go('nauka')" onkeydown="if(event.key==='Enter')go('nauka')">
           <div class="portal-art" id="art-nb" aria-hidden="true"></div>
           <div class="portal-txt">
@@ -1876,6 +1882,17 @@ body.on-start .c-time{display:none}
           <div class="portal-foot">
             <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
             <button class="btn ghost sm" id="portal-last" hidden></button>
+          </div>
+        </div>
+        <div class="portal" style="--pc:var(--sky);--pc2:var(--lilac)" role="button" tabindex="0" onclick="go('plan')" onkeydown="if(event.key==='Enter')go('plan')">
+          <div class="portal-art" id="art-cal" aria-hidden="true"></div>
+          <div class="portal-txt">
+            <h2>Harmonogram</h2>
+            <p id="portal-plan-sub">Twój dzień i kalendarz</p>
+          </div>
+          <div class="portal-foot">
+            <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+            <button class="btn ghost sm" onclick="event.stopPropagation();openTask(null,todayISO())">+ Nowy wpis</button>
           </div>
         </div>
         <div class="portal p-fin" style="--pc:#74dc9e;--pc2:var(--sky)" role="button" tabindex="0" onclick="go('finanse')" onkeydown="if(event.key==='Enter')go('finanse')">
@@ -2115,7 +2132,7 @@ body.on-start .c-time{display:none}
 <!-- Spotify widget (prawy górny róg) -->
 <div id="spoti" class="spoti">
   <button class="spoti-logo" onclick="spotiToggle()" title="Spotify">
-    <svg viewBox="0 0 168 168" aria-hidden="true"><circle cx="84" cy="84" r="84" fill="#1DB954"/><g fill="none" stroke="#000" stroke-linecap="round"><path d="M42 65Q84 47 126 65" stroke-width="14"/><path d="M50 91Q84 77 118 91" stroke-width="11.5"/><path d="M58 115Q84 105 110 115" stroke-width="9"/></g></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.2" fill="#121212"/><path fill="#1ED760" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
@@ -2198,6 +2215,7 @@ function go(v){
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
   document.body.classList.toggle('on-fin', v==='finanse');
+  document.body.classList.toggle('on-plan', v==='plan');
   document.body.classList.toggle('on-start', v==='start'); document.body.classList.remove('lp-down'); if(v==='start'){startLanding();scrollTo(0,0);}
   document.body.classList.toggle('on-social', v==='konto'||v==='znajomi');
   document.body.classList.toggle('on-auth', (v==='konto'||v==='znajomi')&&!ME);
@@ -2360,6 +2378,14 @@ function renderWelcome(tasks){
     :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
     :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
     :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
+  // pigułka „trwa teraz” — wszystko, co właśnie się odbywa (też odhaczone i bez godziny końca)
+  const now=tasks.filter(t=>t.start_time&&(()=>{const [a,b]=evSpan(t);return a<=n&&n<b;})()).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time))[0];
+  const el=$('#wl-now'); el.hidden=!now;
+  if(now){const k=kindOf(now.kind),[a,b]=evSpan(now),end=t=>String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+    el.style.setProperty('--kc',k[2]);
+    el.innerHTML=`<span class="live"></span><span><b>Trwa teraz:</b> ${esc(now.title)} <small>· do ${now.end_time||end(b)}${now.room?' · s. '+esc(now.room):''}</small></span>
+      <span class="pg"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></span>`;
+    el.onclick=()=>viewTask(now.id);}
 }
 async function renderNextDay(today){
   const r=await api('/tasks/next-day?after='+today), el=$('#wl-next');
