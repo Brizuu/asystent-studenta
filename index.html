@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Asystent</title>
 <link rel="icon" type="image/png" href="/logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Space+Grotesk:wght@500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -48,15 +45,21 @@
   /* skala typografii */
   --fs-eyebrow:12px; --fs-body:15px; --fs-lead:17px;
   --fs-h3:20px; --fs-h2:28px; --fs-h1:clamp(34px,5vw,56px); --fs-num:clamp(30px,4vw,44px);
+  /* font systemowy: SF na Apple, Segoe UI Variable na Windows (optical sizing w pakiecie) */
+  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  /* materiały: górna jasna krawędź = światło na materiale; większa powierzchnia = głębszy cień */
+  --edge:inset 0 1px 0 rgba(255,255,255,.07);
+  --press:scale(.97);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  font-family:'Inter',system-ui,sans-serif;
-  font-size:var(--fs-body); font-weight:450; line-height:1.55;
+  font-family:var(--font-text); font-optical-sizing:auto;
+  font-size:var(--fs-body); font-weight:400; line-height:1.5;
   color:var(--ink); background:var(--bg); min-height:100vh;
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-  letter-spacing:-.006em;
+  letter-spacing:0;   /* tekst podstawowy ~0; duże nagłówki ujemnie, drobny tekst lekko dodatnio */
 }
 /* customowy pasek przewijania (globalnie, też Firefox) */
 *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 55%,var(--line)) transparent}
@@ -72,11 +75,11 @@ body{
 .aurora .b{width:520px;height:520px;background:radial-gradient(circle,#0d9488,transparent 70%);bottom:-180px;right:-100px}
 .aurora .c{width:420px;height:420px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:40%;left:52%;opacity:.24}
 
-h1,h2,h3,.num,.brand{font-family:'Space Grotesk',sans-serif}
-h1{font-size:var(--fs-h1);font-weight:700;line-height:1.02;letter-spacing:-.035em}
-h2{font-size:var(--fs-h2);font-weight:600;line-height:1.1;letter-spacing:-.025em}
-h3{font-size:var(--fs-h3);font-weight:600;letter-spacing:-.02em}
-.eyebrow{font-size:var(--fs-eyebrow);font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+h1,h2,h3,.num,.brand{font-family:var(--font-display)}
+h1{font-size:var(--fs-h1);font-weight:700;line-height:1.05;letter-spacing:-.025em}
+h2{font-size:var(--fs-h2);font-weight:600;line-height:1.12;letter-spacing:-.02em}
+h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em}
+.eyebrow{font-size:var(--fs-eyebrow);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .muted{color:var(--ink-dim)}
 .soft{color:var(--ink-soft)}
@@ -131,66 +134,89 @@ body.in-nauka .main{padding-bottom:14px}
 #nauka-head.compact h1{margin-top:2px;font-size:clamp(22px,3vw,30px)}
 
 /* ---------- szkło / karty ---------- */
-.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);
-  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--edge),0 18px 40px -24px rgba(0,0,0,.6);
+  backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--s2)}
 .stat{padding:var(--s3);border-radius:var(--r);position:relative;overflow:hidden}
 .stat .eyebrow{margin-bottom:14px}
-.stat .big{font-family:'Space Grotesk';font-weight:700;font-size:var(--fs-num);line-height:1;font-variant-numeric:tabular-nums}
+.stat .big{font-family:var(--font-display);font-weight:700;font-size:var(--fs-num);line-height:1;font-variant-numeric:tabular-nums}
 .stat .sub{margin-top:10px;font-size:13px;color:var(--ink-dim)}
 .stat.accent{border-color:rgba(139,124,255,.28)}
 .pos{color:var(--pos)} .neg{color:var(--neg)}
 
 /* kafelki modułów (Pulpit) */
-.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:var(--s3);
-  padding:clamp(24px,4vw,44px);border-radius:28px;margin-bottom:var(--s3);border:1px solid rgba(255,255,255,.1);
-  background:radial-gradient(80% 120% at 0% 0%,rgba(139,124,255,.32),transparent 60%),radial-gradient(70% 110% at 100% 100%,rgba(94,234,212,.22),transparent 60%),
-    radial-gradient(50% 60% at 70% 10%,rgba(255,180,84,.12),transparent 70%),linear-gradient(160deg,#141427,#0d0f19);
-  box-shadow:0 30px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
-.hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
-  background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:22px 22px;
-  mask-image:radial-gradient(60% 80% at 75% 40%,#000,transparent 75%);-webkit-mask-image:radial-gradient(60% 80% at 75% 40%,#000,transparent 75%)}
-.hero>*{position:relative;z-index:1}
-.hero-h{font-size:clamp(40px,5.6vw,68px);margin-top:10px}
-.hero-h em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--accent-2)}
-.hero-h #greet em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;letter-spacing:-.01em;
-  background:linear-gradient(90deg,#c4b8ff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.06em}
-.hero-date{margin-top:10px;color:var(--ink-soft);font-size:var(--fs-lead)}
-.hero-next{margin-top:22px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;max-width:460px;
-  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(6px)}
-.hero-next .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim)}
-.hero-next .t{font-weight:600} .hero-next .m{font-size:13px;color:var(--ink-soft)}
-.hero-next .dot{width:10px;height:10px;border-radius:50%;background:var(--kc,var(--accent-2));box-shadow:0 0 0 4px color-mix(in srgb,var(--kc,var(--accent-2)) 22%,transparent);flex:none}
-.hero-cta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
-.hero-art svg{width:100%;height:auto;display:block;overflow:visible}
-.arc-sun{filter:drop-shadow(0 0 10px rgba(255,200,120,.9)) drop-shadow(0 0 26px rgba(255,170,90,.55));animation:sunpulse 3.2s ease-in-out infinite}
-@keyframes sunpulse{50%{filter:drop-shadow(0 0 14px rgba(255,200,120,1)) drop-shadow(0 0 36px rgba(255,170,90,.7))}}
-.arc-ev{cursor:pointer;transition:opacity .15s} .arc-ev:hover{opacity:.75}
-.doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:var(--s3)}
-.door{padding:var(--s3);border-radius:var(--r);position:relative;overflow:hidden}
-.door::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,var(--dc),transparent)}
-.door-h{display:flex;align-items:center;gap:14px;margin-bottom:var(--s2)}
-.door-ic{width:44px;height:44px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--dc) 16%,transparent)}
-.door-ic svg{width:22px;height:22px;stroke:var(--dc);fill:none;stroke-width:1.7}
-.door-t{flex:1;min-width:0} .door-t h3{font-size:19px} .door-sub{font-size:12.5px;color:var(--ink-dim);margin-top:2px}
-.tl,.rn{display:flex;flex-direction:column;gap:6px}
-.tl-row{display:grid;grid-template-columns:52px 3px 30px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s}
-.tl-row:hover,.rn-row:hover{background:var(--glass-2)}
-.tl-row .tm{font-family:'Space Grotesk';font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink-soft)}
-.tl-row .bar{width:3px;height:28px;border-radius:3px;background:var(--kc)}
-.tl-row .kic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kc) 16%,transparent)}
-.tl-row .tt{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .tl-row .tk{font-size:12px;color:var(--ink-dim)}
-.tl-row.past{opacity:.5} .tl-row.done .tt{text-decoration:line-through;color:var(--ink-dim)}
-.tl-row .now{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#0a0b12;background:var(--accent-2)}
-.rn-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s}
-.rn-row .nb{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;
-  color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent)}
-.rn-row .tt{flex:1 1 55%;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rn-row .meta{flex:0 1 auto;min-width:0;font-size:12px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.door .empty-cta{padding:18px 12px;color:var(--ink-dim);font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-#view-pulpit{padding-top:34px}   /* miejsce na przycisk Spotify w prawym górnym rogu */
-@media(max-width:860px){.hero{grid-template-columns:1fr}.hero-art{max-width:460px}}
-@media(max-width:600px){.rn-row .nbn{display:none}#view-pulpit{padding-top:44px}}
+/* ---------- pulpit: duży tytuł + widżety ---------- */
+#view-pulpit{padding-top:34px}
+.lt-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);flex-wrap:wrap;margin-bottom:28px}
+.lt-date{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--neg)}
+.lt{font-size:clamp(34px,4.6vw,52px);font-weight:700;line-height:1.05;letter-spacing:-.025em;margin-top:4px}
+.lt-actions{display:flex;gap:10px;flex-wrap:wrap}
+.wg-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:auto 1fr;gap:20px;align-items:stretch}
+.wg{position:relative;border-radius:24px;padding:20px 20px 18px;overflow:hidden;
+  background:rgba(26,27,38,.62);border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  box-shadow:var(--edge),0 24px 60px -30px rgba(0,0,0,.75)}
+.wg-next-wrap{grid-column:1/span 5}
+.wg-today{grid-column:6/span 7;grid-row:1/span 2;display:flex;flex-direction:column;min-height:0}
+.wg-notes{grid-column:1/span 5}
+.wg-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;min-height:24px}
+.wg-l{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--kc,var(--accent))}
+.wg-c{font-size:13px;color:var(--ink-dim)}
+.wg-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px;border:0;background:none;color:var(--ink-soft);font:inherit;font-size:13px;cursor:pointer;padding:4px 6px;border-radius:8px}
+.wg-more:hover{color:var(--ink);background:var(--glass)}
+.wg-more .chev,.rn-row .chev{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+/* widżet „Następne” — zabarwiony kolorem typu (kolor na warstwie pod materiałem) */
+.wg-next-wrap{background:linear-gradient(160deg,color-mix(in srgb,var(--kc,var(--accent)) 28%,rgba(26,27,38,.62)),rgba(26,27,38,.62) 65%)}
+.wg-next{border-radius:16px;cursor:pointer;transform-origin:center}
+.wg-next .kicon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kc) 22%,transparent)}
+.wg-next .kicon .kico{width:22px;height:22px}
+.wg-next .nt{font-size:26px;font-weight:650;line-height:1.15;letter-spacing:-.015em;margin-top:14px}
+.wg-next .nm{font-size:14px;color:var(--ink-soft);margin-top:4px}
+.wg-next .cd{display:inline-flex;margin-top:14px;font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.08)}
+.wg-next .prog{height:4px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:16px;overflow:hidden}
+.wg-next .prog i{display:block;height:100%;background:var(--kc)}
+.wg-next .nnote{margin-top:14px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--accent-2)}
+.wg-next .nnote .kico{width:15px;height:15px}
+.wg-next .empty{font-size:17px;font-weight:600;letter-spacing:-.01em;margin:6px 0 4px}
+.wg-next .emptys{font-size:14px;color:var(--ink-dim);margin-bottom:14px}
+/* widżet „Dzisiaj” — oś godzin jak w Kalendarzu */
+.wg-today .allday{margin-bottom:10px}
+.wg-today .allday:empty{display:none}
+.wg-tl{position:relative;flex:1;min-height:320px;max-height:520px;overflow:auto;border-radius:14px;--hh:46px;
+  mask-image:linear-gradient(#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(#000 calc(100% - 28px),transparent)}
+.wg-tl .grid{position:relative;height:calc(18 * var(--hh))}
+.wg-tl .hr{height:var(--hh);display:flex;align-items:flex-start;cursor:pointer;border-radius:8px}
+.wg-tl .hr:hover{background:rgba(255,255,255,.03)}
+.wg-tl .hr span{width:48px;flex:none;font-size:11.5px;color:var(--ink-dim);transform:translateY(-7px);font-variant-numeric:tabular-nums}
+.wg-tl .hr::after{content:"";flex:1;border-top:1px solid rgba(255,255,255,.06)}
+.wg-tl .tev{position:absolute;border-radius:8px;padding:4px 8px;overflow:hidden;cursor:pointer;font-size:12.5px;line-height:1.3;
+  background:color-mix(in srgb,var(--kc) 26%,#1a1b26);border-left:3px solid var(--kc);transition:transform .1s ease-out}
+.wg-tl .tev:active{transform:var(--press)}
+.wg-tl .tev b{display:block;font-weight:600;color:color-mix(in srgb,var(--kc) 45%,#fff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-tl .tev small{color:var(--ink-soft);font-size:11.5px}
+.wg-tl .tev.short{display:flex;align-items:center;gap:6px;padding-top:2px;padding-bottom:2px}
+.wg-tl .tev.short small{flex:none}
+.wg-tl .tev.done{opacity:.5} .wg-tl .tev.done b{text-decoration:line-through}
+.wg-tl .now{position:absolute;left:44px;right:0;border-top:2px solid var(--neg);z-index:2;pointer-events:none}
+.wg-tl .now::before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--neg)}
+/* widżet notatek */
+.rn{display:flex;flex-direction:column}
+.rn-row{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer}
+.rn-row+.rn-row{box-shadow:0 -1px 0 rgba(255,255,255,.05)}
+.rn-row:hover{background:rgba(255,255,255,.04)}
+.rn-row .nb{width:32px;height:32px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+  color:var(--c);background:color-mix(in srgb,var(--c) 20%,transparent)}
+.rn-row .tx{flex:1;min-width:0}
+.rn-row .tt{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn-row .meta{font-size:12px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.01em}
+.rn-row .chev{color:var(--ink-dim);flex:none}
+.wg .empty-cta{padding:14px 8px;color:var(--ink-dim);font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:900px){
+  .wg-grid{grid-template-columns:1fr;grid-template-rows:none}
+  .wg-next-wrap,.wg-today,.wg-notes{grid-column:auto;grid-row:auto}
+  .wg-tl{max-height:420px}
+}
+@media(max-width:600px){#view-pulpit{padding-top:44px}.lt-actions{width:100%}.lt-actions .btn{flex:1 1 auto;white-space:nowrap;padding:11px 14px}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s2)}
 .tile{padding:var(--s3);border-radius:var(--r);cursor:pointer;position:relative;overflow:hidden;
   display:flex;flex-direction:column;gap:16px;transition:transform .18s,border-color .18s,box-shadow .18s}
@@ -199,7 +225,7 @@ body.in-nauka .main{padding-bottom:14px}
 .tile .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
   background:color-mix(in srgb,var(--tc) 16%,transparent)}
 .tile .ic svg{width:23px;height:23px;stroke:var(--tc,var(--accent-2));fill:none;stroke-width:1.7}
-.tile .tstat{font-family:'Space Grotesk';font-weight:700;font-size:30px;line-height:1;color:var(--ink)}
+.tile .tstat{font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1;color:var(--ink)}
 .tile h3{font-size:17px;margin-bottom:3px}
 .tile .tdesc{font-size:12.5px;color:var(--ink-dim)}
 .tile .arr{position:absolute;top:22px;right:22px;color:var(--ink-dim);font-size:17px;transition:transform .18s,color .18s}
@@ -326,13 +352,13 @@ label.f>*{color:var(--ink)}
 .item .t{font-weight:500}
 .item.done .t{text-decoration:line-through;color:var(--ink-dim)}
 .item .meta{font-size:12.5px;color:var(--ink-dim);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
-.item .time{font-family:'Space Grotesk';font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:13.5px;min-width:52px}
+.item .time{font-family:var(--font-display);font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:13.5px;min-width:52px}
 .pill{font-size:11px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
 .pill.high{color:var(--hi);border-color:rgba(255,180,84,.35)}
 .pill.low{color:var(--ink-dim)}
 .x{background:transparent;border:0;color:var(--ink-dim);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:8px;transition:.15s}
 .x:hover{color:var(--neg);background:rgba(255,122,144,.1)}
-.amt{font-family:'Space Grotesk';font-variant-numeric:tabular-nums;font-weight:600;font-size:16px}
+.amt{font-family:var(--font-display);font-variant-numeric:tabular-nums;font-weight:600;font-size:16px}
 .empty{padding:var(--s4);text-align:center;color:var(--ink-dim);font-size:14px}
 .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
@@ -351,7 +377,7 @@ label.f>*{color:var(--ink)}
 .pane{flex:1;min-height:0;overflow:auto;padding:var(--s3);margin-top:-13px;border-radius:0 0 14px 14px}
 .paneh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
 .paneh .hbox{display:flex;flex-direction:column;gap:3px;min-width:0}
-.paneh .htitle{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk';font-weight:600;font-size:17px;color:var(--ink)}
+.paneh .htitle{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--ink)}
 .paneh .eyebrow{font-size:10px;letter-spacing:.18em}
 #pane-note{padding:0}
 #pane-note .editor{height:100%;border-radius:0 0 14px 14px}
@@ -364,7 +390,7 @@ label.f>*{color:var(--ink)}
 .scol .ch{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
 .scol .hbox{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .scol .hbox .eyebrow{font-size:10px;letter-spacing:.2em}
-.scol .htitle{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk';font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scol .htitle{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .scol .htitle svg{width:16px;height:16px;stroke:var(--accent-2);fill:none;stroke-width:1.7;flex:none}
 .iadd{width:26px;height:26px;flex:none}
 .pick{flex:1;overflow:auto;margin:0 -4px;padding:0 4px}
@@ -442,7 +468,7 @@ label.f>*{color:var(--ink)}
   display:none;align-items:center;justify-content:center;padding:20px;animation:fade .2s ease}
 .modal-bd.open{display:flex}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.modal{width:100%;max-width:460px;border-radius:22px;padding:26px;animation:pop .24s cubic-bezier(.34,1.3,.5,1)}
+.modal{width:100%;max-width:460px;border-radius:22px;padding:26px;box-shadow:var(--edge),0 40px 90px -30px rgba(0,0,0,.85);will-change:transform,opacity}
 @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
 .modal h3{margin-bottom:4px}
 .modal .msub{color:var(--ink-dim);font-size:13px;margin-bottom:20px}
@@ -488,7 +514,7 @@ label.f>*{color:var(--ink)}
 .nbcard:hover{background:var(--glass-2);border-color:color-mix(in srgb,var(--c,#8b7cff) 40%,var(--line));transform:translateY(-1px)}
 .nbcard.on{background:color-mix(in srgb,var(--accent) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
 .nbcover{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
-  font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--c,#8b7cff);
+  font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--c,#8b7cff);
   background:color-mix(in srgb,var(--c,#8b7cff) 20%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,#8b7cff) 40%,transparent)}
 .nbcard-main{flex:1;min-width:0}
 .nbcard-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -722,7 +748,7 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
 
 /* edytor */
 .editor{border-radius:0 0 14px 14px;padding:var(--s4);overflow:auto}
-.editor .ntitle{flex:0 1 auto;width:auto;min-width:60px;max-width:100%;background:transparent;border:0;outline:none;font-family:'Space Grotesk';font-weight:700;
+.editor .ntitle{flex:0 1 auto;width:auto;min-width:60px;max-width:100%;background:transparent;border:0;outline:none;font-family:var(--font-display);font-weight:700;
   font-size:23px;letter-spacing:-.02em;color:var(--ink);padding:0}
 .ntitle-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .note-tbadge{flex:none}
@@ -825,12 +851,12 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
 .reading .codelang{display:none!important}
 .block:not(.editing) .colabel{display:inline}
 .block.editing .colabel{display:none}
-.colabel{display:none;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:var(--cc)}
+.colabel{display:none;font-family:var(--font-display);font-weight:600;font-size:13px;color:var(--cc)}
 .block .bctl button{width:26px;height:26px;border-radius:7px;border:0;background:transparent;
   color:var(--ink-soft);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center}
 .block .bctl button:hover{color:var(--ink);background:var(--glass-2)}
 .block .bctl button.bdel:hover{color:var(--neg)}
-.b-h{font-family:'Space Grotesk';font-weight:600;font-size:21px;letter-spacing:-.02em;color:var(--ink);
+.b-h{font-family:var(--font-display);font-weight:600;font-size:21px;letter-spacing:-.02em;color:var(--ink);
   background:transparent;border:0;outline:none;width:100%;padding:6px 8px}
 .b-text{outline:none;color:var(--ink-soft);line-height:1.85;padding:8px;border-radius:8px;min-height:32px}
 .cobody,.tgbody{line-height:1.8}
@@ -886,7 +912,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .tbsep{width:1px;align-self:stretch;background:var(--line);margin:3px 4px}
 .mini-tb{flex-wrap:wrap}
 .b-text a{color:var(--accent-2);text-decoration:underline;text-underline-offset:2px}
-.b-text h3{font-family:'Space Grotesk';font-weight:600;font-size:18px;color:var(--ink);margin:8px 0 4px;letter-spacing:-.02em}
+.b-text h3{font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--ink);margin:8px 0 4px;letter-spacing:-.02em}
 .b-text strong,.b-text b,.cobody b,.cobody strong,.tgbody b,.tgbody strong{font-weight:800;color:#ffffff}
 .b-text ol{padding-left:20px}
 .nblink{color:var(--accent);font-weight:600;text-decoration:none;background:rgba(139,124,255,.14);padding:1px 7px;border-radius:6px;cursor:pointer;white-space:nowrap}
@@ -973,9 +999,9 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .colorpop .cpcustom .cpsave{flex:1;font-size:12px;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink-soft);cursor:pointer}
 .colorpop .cpcustom .cpsave:hover{background:var(--glass-2);color:var(--ink)}
 /* treść tekstu */
-.b-text h1{font-family:'Space Grotesk';font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin:10px 0 4px}
-.b-text h2{font-family:'Space Grotesk';font-size:21px;font-weight:600;color:var(--ink);margin:9px 0 4px}
-.b-text h4{font-family:'Space Grotesk';font-size:15px;font-weight:600;color:var(--ink);margin:7px 0 3px;text-transform:uppercase;letter-spacing:.03em}
+.b-text h1{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin:10px 0 4px}
+.b-text h2{font-family:var(--font-display);font-size:21px;font-weight:600;color:var(--ink);margin:9px 0 4px}
+.b-text h4{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--ink);margin:7px 0 3px;text-transform:uppercase;letter-spacing:.03em}
 .b-text blockquote{margin:8px 0;padding:6px 14px;border-left:3px solid var(--accent);color:var(--ink-soft);font-style:italic;background:rgba(139,124,255,.06);border-radius:0 8px 8px 0}
 .b-text code,.callout code,.tgbody code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:rgba(255,255,255,.08);color:#ffd9a0;padding:1px 6px;border-radius:5px}
 .b-text hr,.hrule{border:0;border-top:1px solid var(--line);margin:14px 0}
@@ -1017,7 +1043,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   border-left:3px solid var(--cc);border-radius:10px;padding:12px 14px}
 .cohead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .coic{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--cc) 20%,transparent);color:var(--cc);font-size:14px;flex:none}
-.cokind{font-family:'Space Grotesk';font-weight:600;font-size:13px;color:var(--cc);background:transparent;border:0;padding:0;cursor:pointer}
+.cokind{font-family:var(--font-display);font-weight:600;font-size:13px;color:var(--cc);background:transparent;border:0;padding:0;cursor:pointer}
 .cokind option{background:#14151d;color:var(--ink)}
 .cobody{outline:none;color:var(--ink-soft);line-height:1.6;min-height:24px}
 .cobody:empty:before{content:attr(data-ph);color:var(--ink-dim)}
@@ -1123,7 +1149,19 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .spoti-btn:hover{filter:brightness(1.07)}
 .spoti-sub{font-size:11px;color:var(--ink-dim);text-align:center;margin-top:8px;line-height:1.4}
 .spoti-x{position:absolute;top:8px;right:10px;background:transparent;border:0;color:var(--ink-dim);cursor:pointer;font-size:14px}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* informacja zwrotna już na wciśnięciu, nie po puszczeniu */
+.btn,.navlist button,.bell,.tile,.item .body,.ev,.tl-row,.rn-row,.wg-next,.chip,.cal .d,.mini-tab,.tab{transition:transform .1s ease-out}
+.btn:active,.navlist button:active,.bell:active,.tile:active,.item .body:active,.ev:active,.tl-row:active,.rn-row:active,.wg-next:active,.chip:active,.mini-tab:active,.tab:active{transform:var(--press)}
+.cal .d:active{transform:scale(.985)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}:root{--press:none}}
+@media(prefers-reduced-transparency:reduce){
+  .glass,.modal,.rail,.combo-list,.spoti-panel{background:#151622!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .modal-bd{backdrop-filter:none}
+}
+@media(prefers-contrast:more){
+  :root{--line:rgba(255,255,255,.32);--ink-dim:#a9afc2;--ink-soft:#d6dae6}
+  .glass,.modal{background:#151622;backdrop-filter:none}
+}
 </style>
 </head>
 <body>
@@ -1164,36 +1202,33 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   <main class="main">
     <!-- PULPIT -->
     <section class="view active" id="view-pulpit">
-      <div class="hero">
-        <div class="hero-txt">
-          <div class="eyebrow">Twój dzień</div>
-          <h1 class="hero-h"><span id="greet">Dzień dobry</span><em>.</em></h1>
-          <div class="hero-date" id="pulpit-date"></div>
-          <div class="hero-next" id="hero-next"></div>
-          <div class="hero-cta">
-            <button class="btn" onclick="go('plan');openDay(todayISO())">Zobacz dzisiejszy dzień</button>
-            <button class="btn ghost" onclick="openTask(null,todayISO())">+ Dodaj wpis</button>
-          </div>
+      <header class="lt-head">
+        <div>
+          <div class="lt-date" id="pulpit-date"></div>
+          <h1 class="lt" id="greet">Dzień dobry</h1>
         </div>
-        <div class="hero-art"><svg id="dayarc" viewBox="0 0 400 236" role="img" aria-label="Przebieg dnia"></svg></div>
-      </div>
-      <div class="doors">
-        <div class="door glass" style="--dc:#8b7cff">
-          <div class="door-h">
-            <div class="door-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg></div>
-            <div class="door-t"><h3>Harmonogram dnia</h3><div class="door-sub" id="door-plan-sub"></div></div>
-            <button class="btn ghost sm" onclick="go('plan')">Kalendarz →</button>
-          </div>
-          <div class="tl" id="pulpit-tasks"></div>
+        <div class="lt-actions">
+          <button class="btn" onclick="openTask(null,todayISO())">+ Nowy wpis</button>
+          <button class="btn ghost" onclick="go('plan')">Kalendarz</button>
+          <button class="btn ghost" onclick="go('nauka')">Zeszyty</button>
         </div>
-        <div class="door glass" style="--dc:#5eead4">
-          <div class="door-h">
-            <div class="door-ic"><svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg></div>
-            <div class="door-t"><h3>Notatki</h3><div class="door-sub" id="door-notes-sub"></div></div>
-            <button class="btn ghost sm" onclick="go('nauka')">Zeszyty →</button>
-          </div>
+      </header>
+      <div class="wg-grid">
+        <section class="wg wg-next-wrap" aria-label="Następne">
+          <div class="wg-h"><span class="wg-l" id="next-label">Następne</span></div>
+          <div class="wg-next" id="wg-next"></div>
+        </section>
+        <section class="wg wg-today" aria-label="Dzisiaj">
+          <div class="wg-h"><span class="wg-l" style="color:var(--neg)">Dzisiaj</span><span class="wg-c" id="today-count"></span>
+            <button class="wg-more" onclick="go('plan');openDay(todayISO())">Cały dzień <svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+          <div class="allday" id="today-allday"></div>
+          <div class="wg-tl" id="today-tl"></div>
+        </section>
+        <section class="wg wg-notes" aria-label="Notatki">
+          <div class="wg-h"><span class="wg-l" style="color:var(--accent-2)">Ostatnie notatki</span><span class="wg-c" id="notes-count"></span>
+            <button class="wg-more" onclick="go('nauka')">Zeszyty <svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
           <div class="rn" id="pulpit-notes"></div>
-        </div>
+        </section>
       </div>
     </section>
 
@@ -1466,72 +1501,67 @@ const ICONS={
 };
 async function loadPulpit(){
   const h=new Date().getHours(), today=todayISO();
-  const [g1,g2]=h<6?['Dobrej','nocy']:h<12?['Dzień','dobry']:h<18?['Miłego','dnia']:['Dobry','wieczór'];
-  $('#greet').innerHTML=`${g1} <em>${g2}</em>`;
-  $('#pulpit-date').textContent=dlong(today);
+  $('#greet').textContent=h<6?'Dobranoc':h<12?'Dzień dobry':h<18?'Miłego dnia':'Dobry wieczór';
+  $('#pulpit-date').textContent=new Date().toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
-  renderDayArc(tasks); renderHeroNext(tasks); renderPulpitTasks(tasks); renderRecentNotes(notes,nbs);
+  renderNext(tasks); renderTodayTimeline(tasks,today); renderRecentNotes(notes,nbs);
 }
 setInterval(()=>{ if($('#view-pulpit').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))loadPulpit(); },60000);   // słońce i „następne” idą z czasem
 const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes();};
 const evSpan=t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;return [a,b>a?b:a+60];};
-/* grafika „łuk dnia”: 6:00–22:00 na półokręgu, wpisy jako kolorowe łuki, teraz = słońce */
-function renderDayArc(tasks){
-  const cx=200,cy=210,R=168,H0=360,H1=1320;   // minuty 6:00 i 22:00
-  const ang=m=>Math.PI*(1-(Math.min(H1,Math.max(H0,m))-H0)/(H1-H0));
-  const pt=(m,r=R)=>[cx+r*Math.cos(ang(m)),cy-r*Math.sin(ang(m))];
-  const arc=(m0,m1,r=R)=>{const [x0,y0]=pt(m0,r),[x1,y1]=pt(m1,r);return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;};
-  const n=nowMin(), timed=tasks.filter(t=>t.start_time);
-  let svg=`<defs><linearGradient id="arcg" x1="0" x2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#5eead4"/></linearGradient>
-    <radialGradient id="sung"><stop offset="0" stop-color="#fff7e0"/><stop offset=".55" stop-color="#ffcf7a"/><stop offset="1" stop-color="#ff9f5a"/></radialGradient></defs>
-    <path d="${arc(H0,H1)}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
-    <path d="${arc(H0,H1,R-26)}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
-  if(n>H0)svg+=`<path d="${arc(H0,Math.min(n,H1))}" fill="none" stroke="url(#arcg)" stroke-width="3" stroke-linecap="round" opacity=".9"/>`;
-  for(let m=H0;m<=H1;m+=240){const [x,y]=pt(m,R+22);svg+=`<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="rgba(255,255,255,.4)" font-family="Space Grotesk,Inter,sans-serif">${m/60}:00</text>`;}
-  timed.forEach(t=>{const k=kindOf(t.kind),[a,b]=evSpan(t); if(b<H0||a>H1)return;
-    svg+=`<path class="arc-ev" d="${arc(Math.max(a,H0),Math.min(b,H1),R-13)}" fill="none" stroke="${k[2]}" stroke-width="9" stroke-linecap="round" opacity="${t.done?.35:.95}" onclick="viewTask(${t.id})"><title>${esc((t.start_time||'')+' '+t.title)}</title></path>`;});
-  const [sx,sy]=pt(n);
-  svg+=`<circle class="arc-sun" cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="9" fill="url(#sung)"/>`;
-  const left=timed.filter(t=>evSpan(t)[1]>n&&!t.done).length;
-  svg+=`<text x="${cx}" y="${cy-38}" text-anchor="middle" font-size="44" font-weight="700" fill="#eceef5" font-family="Space Grotesk,Inter,sans-serif">${new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</text>
-    <text x="${cx}" y="${cy-12}" text-anchor="middle" font-size="13" fill="rgba(255,255,255,.55)" font-family="Inter,sans-serif">${left?left+' '+plural(left,'wpis','wpisy','wpisów')+' przed Tobą':tasks.length?'wszystko na dziś za Tobą':'wolny dzień'}</text>`;
-  $('#dayarc').innerHTML=svg;
-}
-function renderHeroNext(tasks){
+const inTxt=m=>m<60?`za ${m} min`:`za ${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
+/* „Następne”: trwający wpis (z postępem) albo najbliższy; powiązana notatka jednym kliknięciem */
+function renderNext(tasks){
   const n=nowMin(), timed=tasks.filter(t=>t.start_time&&!t.done).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
-  const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
-  const inTxt=m=>m<60?`za ${m} min`:`za ${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
-  const row=(lbl,t,m)=>{const k=kindOf(t.kind);return `<span class="dot" style="--kc:${k[2]}"></span><div><div class="lbl">${lbl}</div><div class="t">${esc(t.title)}</div><div class="m">${m}</div></div>`;};
-  const el=$('#hero-next');
-  el.innerHTML=cur?row('Teraz',cur,`${cur.start_time}–${cur.end_time||''}${k0(cur)}`)
-    :nxt?row('Następne',nxt,`${nxt.start_time} · ${inTxt(toMin(nxt.start_time)-n)}${k0(nxt)}`)
-    :`<span class="dot"></span><div><div class="lbl">Na dziś</div><div class="t">${tasks.length?'Plan wykonany — dobry moment na powtórkę notatek.':'Nic zaplanowanego. Dodaj pierwszy wpis.'}</div></div>`;
-  el.onclick=()=>{const t=cur||nxt; if(t)viewTask(t.id);}; el.style.cursor=(cur||nxt)?'pointer':'';
+  const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), t=cur||timed.find(t=>toMin(t.start_time)>n);
+  const wrap=$('.wg-next-wrap'), el=$('#wg-next');
+  if(!t){
+    wrap.style.removeProperty('--kc'); $('#next-label').textContent='Następne';
+    el.onclick=null;
+    el.innerHTML=`<div class="empty">${tasks.length?'Na dziś to wszystko':'Wolny dzień'}</div>
+      <div class="emptys">${tasks.length?'Dobry moment na powtórkę notatek.':'Nic nie zaplanowano. Dodaj wpis, a pojawi się tutaj.'}</div>
+      <button class="btn sm" onclick="openTask(null,todayISO())">+ Nowy wpis</button>`;
+    return;
+  }
+  const k=kindOf(t.kind),[a,b]=evSpan(t);
+  wrap.style.setProperty('--kc',k[2]); $('#next-label').textContent=cur?'Teraz':'Następne';
+  el.onclick=e=>{ if(!e.target.closest('.nnote'))viewTask(t.id); };
+  el.innerHTML=`<div class="kicon" style="--kc:${k[2]}">${kico(k)}</div>
+    <div class="nt">${esc(t.title)}</div>
+    <div class="nm">${t.start_time}${t.end_time?'–'+t.end_time:''}${k[0]?' · '+esc(k[0]):''}</div>
+    ${cur?`<div class="prog" style="--kc:${k[2]}"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></div><span class="cd">jeszcze ${b-n} min</span>`
+         :`<span class="cd">${inTxt(a-n)}</span>`}
+    ${t.note_title?`<div class="nnote" onclick="openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} Otwórz notatkę: ${esc(t.note_title)}</div>`:''}`;
 }
-const k0=t=>t.kind?' · '+esc(t.kind):'';
-function renderPulpitTasks(tasks){
-  const n=nowMin(), done=tasks.filter(t=>t.done).length;
-  $('#door-plan-sub').textContent=tasks.length?`${tasks.length} ${plural(tasks.length,'wpis','wpisy','wpisów')} dziś · ${done} zrobione`:'Dziś nic nie zaplanowano';
-  const el=$('#pulpit-tasks');
-  if(!tasks.length){el.innerHTML=`<div class="empty-cta">Pusty dzień — zaplanuj coś. <button class="btn sm" onclick="openTask(null,todayISO())">+ Dodaj wpis</button></div>`;return;}
-  el.innerHTML=tasks.map(t=>{const k=kindOf(t.kind), [a,b]=t.start_time?evSpan(t):[0,0];
-    const isNow=t.start_time&&a<=n&&n<b, past=t.start_time&&b<=n;
-    return `<div class="tl-row${past?' past':''}${t.done?' done':''}" style="--kc:${k[2]}" onclick="viewTask(${t.id})">
-      <span class="tm">${t.start_time||'—'}</span><span class="bar"></span><span class="kic">${kico(k)}</span>
-      <span><div class="tt">${esc(t.title)}</div><div class="tk">${esc(k[0]||'Wpis')}${t.end_time?' · do '+t.end_time:''}</div></span>
-      ${isNow?'<span class="now">teraz</span>':'<span></span>'}</div>`;}).join('');
+/* „Dzisiaj”: oś 6:00–24:00, wpisy jako bloki od–do, czerwona linia „teraz”, klik w godzinę = nowy wpis */
+function renderTodayTimeline(tasks,iso){
+  const H0=6, HH=46, n=nowMin(), timed=tasks.filter(t=>t.start_time), allday=tasks.filter(t=>!t.start_time);
+  $('#today-count').textContent=tasks.length?tasks.length+' '+plural(tasks.length,'wpis','wpisy','wpisów'):'';
+  $('#today-allday').innerHTML=allday.map(t=>{const k=kindOf(t.kind);return `<span class="ev" style="--kc:${k[2]}" onclick="viewTask(${t.id})">${kico(k)} ${esc(t.title)}</span>`;}).join('');
+  const y=m=>(m/60-H0)*HH;
+  const ev=dayLayout(timed).filter(e=>e.b>H0*60);
+  $('#today-tl').innerHTML=`<div class="grid">
+    ${Array.from({length:18},(_,i)=>{const h=String(H0+i).padStart(2,'0');return `<div class="hr" onclick="openTask(null,'${iso}','${h}:00')"><span>${h}:00</span></div>`;}).join('')}
+    ${ev.map(e=>{const k=kindOf(e.t.kind),w=`(100% - 52px) / ${e.n}`,top=Math.max(0,y(e.a));
+      const hgt=Math.max(22,y(e.b)-top-3);   // krótki wpis: tytuł i godzina w jednej linii
+      return `<div class="tev${e.t.done?' done':''}${hgt<40?' short':''}" style="--kc:${k[2]};top:${top+1}px;height:${hgt}px;left:calc(50px + ${w} * ${e.col});width:calc(${w} - 4px)" onclick="event.stopPropagation();viewTask(${e.t.id})">
+        <b>${esc(e.t.title)}</b><small>${e.t.start_time}${e.t.end_time?'–'+e.t.end_time:''}</small></div>`;}).join('')}
+    ${n>=H0*60?`<div class="now" style="top:${y(n)}px"></div>`:''}</div>`;
+  const tl=$('#today-tl'), focus=Math.min(n, ev.length?Math.max(ev[0].a, n-60):n);
+  tl.scrollTop=Math.max(0,y(focus)-HH);   // otwórz tam, gdzie dzieje się dzień
 }
 function renderRecentNotes(notes,nbs){
   const nb=Object.fromEntries(nbs.map(x=>[x.id,x]));
-  const list=notes.filter(x=>nb[x.notebook_id]).slice(0,5);
-  $('#door-notes-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Brak zeszytów';
+  const list=notes.filter(x=>nb[x.notebook_id]).slice(0,4);
+  $('#notes-count').textContent=notes.length?notes.length+' '+plural(notes.length,'notatka','notatki','notatek'):'';
   const ago=iso=>{if(!iso)return'';const d=(Date.now()-new Date(iso.replace(' ','T')+'Z'))/6e4;
     return d<60?Math.max(1,Math.round(d))+' min temu':d<1440?Math.round(d/60)+' godz. temu':Math.round(d/1440)+' dni temu';};
   $('#pulpit-notes').innerHTML=list.length?list.map(x=>{const b=nb[x.notebook_id];
     return `<div class="rn-row" onclick="openLinkedNote(${b.id},${x.id})"><span class="nb" style="--c:${b.color}">${esc((b.name||'?')[0].toUpperCase())}</span>
-      <span class="tt">${esc(x.title||'Bez tytułu')}</span><span class="meta"><span class="nbn">${esc(b.name)} · </span>${ago(x.updated_at)}</span></div>`;}).join('')
-    :`<div class="empty-cta">Utwórz pierwszy zeszyt i zacznij notować. <button class="btn sm" onclick="go('nauka')">Przejdź do nauki</button></div>`;
+      <span class="tx"><div class="tt">${esc(x.title||'Bez tytułu')}</div><div class="meta">${esc(b.name)} · ${ago(x.updated_at)}</div></span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>`;}).join('')
+    :`<div class="empty-cta">Utwórz pierwszy zeszyt i zacznij notować. <button class="btn sm" onclick="go('nauka')">Zeszyty</button></div>`;
 }
 
 /* ---------- PLAN ---------- */
@@ -1639,11 +1669,8 @@ function calPick(iso){$('#plan-date').value=iso;loadPlan();openDay(iso);}
 /* okno dnia: oś godzinowa, wpisy jako bloki start–koniec; klik w godzinę = nowy wpis o tej godzinie */
 let returnDay=null;
 const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m;};
-async function openDay(iso){
-  returnDay=iso;
-  const list=await api('/tasks?day='+iso); list.forEach(x=>planTasks[x.id]=x);
-  const timed=list.filter(t=>t.start_time), allday=list.filter(t=>!t.start_time), HH=52;
-  // układ kolumn dla nachodzących wpisów: grupy (klastry) + zachłanne przydzielanie kolumn
+/* układ kolumn dla nachodzących wpisów: grupy (klastry) + zachłanne przydzielanie kolumn */
+function dayLayout(timed){
   const ev=timed.map(t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;if(b<=a)b=Math.min(a+60,1440);return {t,a,b};})
     .sort((x,y)=>x.a-y.a||y.b-x.b);
   let cl=[],end=-1;
@@ -1652,6 +1679,13 @@ async function openDay(iso){
     const cols=[];cl.forEach(o=>{if(o.b>e.a)cols[o.col]=1;}); e.col=cols.findIndex(x=>!x); if(e.col<0)e.col=cols.length;
     cl.push(e); end=Math.max(end,e.b);});
   if(cl.length)flush();
+  return ev;
+}
+async function openDay(iso){
+  returnDay=iso;
+  const list=await api('/tasks?day='+iso); list.forEach(x=>planTasks[x.id]=x);
+  const timed=list.filter(t=>t.start_time), allday=list.filter(t=>!t.start_time), HH=52;
+  const ev=dayLayout(timed);
   const now=new Date(), nowMin=iso===todayISO()?now.getHours()*60+now.getMinutes():null;
   $('#modal').style.maxWidth='680px';
   $('#modal').innerHTML=`
@@ -2188,8 +2222,42 @@ const THEMES=[
   ['ocean','Ocean','linear-gradient(135deg,#0c1626,#0d2536)'],
   ['paper','Jasny','linear-gradient(135deg,#f4f5f8,#e9ebf0)'],
 ];
-function openModal(){$('#modal-bd').classList.add('open');}
-function closeModal(){returnDay=null;$('#modal-bd').classList.remove('open');$('#modal').innerHTML='';$('#modal').style.maxWidth='';}
+/* --- okno: sprężyna (Apple: damping 1.0 = bez odbicia, response 0.35 s) jako krzywa CSS linear() ---
+   pojawia się z miejsca kliknięcia (transform-origin), znika tą samą drogą, zamykanie da się przerwać */
+const SPRING=(()=>{const w=2*Math.PI/.35, x=t=>1-(1+w*t)*Math.exp(-w*t); let T=0; while(x(T)<.999)T+=.005;
+  return {easing:`linear(${Array.from({length:33},(_,i)=>x(i/32*T).toFixed(4)).join(',')})`,duration:Math.round(T*1000)};})();
+const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lastPress=null, modalAnim=null, modalClosing=false;
+addEventListener('pointerdown',e=>{lastPress={x:e.clientX,y:e.clientY};},true);
+function modalFrames(){
+  // materializacja: rozmycie i skala razem (nie samo zanikanie)
+  return reduceMotion()?[{opacity:0},{opacity:1}]
+    :[{opacity:0,transform:'scale(.86)',filter:'blur(8px)'},{opacity:1,transform:'none',filter:'blur(0px)'}];
+}
+function openModal(){
+  const bd=$('#modal-bd'), m=$('#modal');
+  if(modalClosing&&modalAnim){                          // złapane w trakcie zamykania → zawraca od bieżącej klatki
+    modalClosing=false; bd.style.pointerEvents=''; modalAnim.reverse(); return;
+  }
+  if(bd.classList.contains('open'))return;              // podmiana treści w otwartym oknie — bez ponownego wejścia
+  bd.classList.add('open');
+  const r=m.getBoundingClientRect(), p=lastPress||{x:r.left+r.width/2,y:r.top+r.height/2};
+  m.style.transformOrigin=`${Math.round(p.x-r.left)}px ${Math.round(p.y-r.top)}px`;   // zakotwiczone w wyzwalaczu
+  modalAnim=m.animate(modalFrames(),{duration:reduceMotion()?150:SPRING.duration,easing:reduceMotion()?'ease':SPRING.easing});
+  bd.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-out'});
+}
+function closeModal(){
+  returnDay=null;
+  const bd=$('#modal-bd'), m=$('#modal');
+  if(!bd.classList.contains('open')||modalClosing)return;
+  modalClosing=true; bd.style.pointerEvents='none';
+  const done=()=>{ if(!modalClosing)return;             // ktoś otworzył ponownie w trakcie — nie czyścić
+    modalClosing=false; bd.classList.remove('open'); bd.style.pointerEvents=''; m.innerHTML=''; m.style.maxWidth=''; };
+  // ta sama droga z powrotem: odwrócenie animacji wejścia od bieżącej wartości
+  modalAnim=m.animate(modalFrames().reverse(),{duration:reduceMotion()?120:Math.round(SPRING.duration*.7),easing:reduceMotion()?'ease':SPRING.easing});
+  bd.animate([{opacity:1},{opacity:0}],{duration:modalAnim.effect.getTiming().duration,easing:'ease-in'});
+  modalAnim.onfinish=done;
+}
 $('#modal-bd').addEventListener('click',e=>{if(e.target.id==='modal-bd')closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
@@ -3136,7 +3204,7 @@ async function renderNotePdf(mode){
   const holder=document.createElement('div'); holder.style.cssText='position:fixed;left:-99999px;top:0;z-index:-1;width:'+W+'px';
   const wrap=document.createElement('div'); wrap.className='editor pdf-export'; wrap.setAttribute('data-theme',theme);
   wrap.style.cssText='width:'+W+'px;padding:0;box-sizing:border-box';
-  wrap.innerHTML=`<div class="pdf-title" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;margin:0 0 20px">${esc(title)}</div><div class="blocks" style="display:flex;flex-direction:column;gap:14px">${blocksHtml}</div>`;
+  wrap.innerHTML=`<div class="pdf-title" style="font-family:var(--font-display);font-weight:700;font-size:26px;margin:0 0 20px">${esc(title)}</div><div class="blocks" style="display:flex;flex-direction:column;gap:14px">${blocksHtml}</div>`;
   // każdy blok pełną szerokością — kolumny obok siebie zwijamy do pionu, by nic się nie ucięło
   wrap.querySelectorAll('.brow').forEach(r=>{r.style.display='flex';r.style.flexDirection='column';r.style.gap='14px';});
   wrap.querySelectorAll('.bcol').forEach(cc=>{cc.style.flex='1 1 100%';cc.style.width='100%';});
