@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Zależności
-        run: pip install -r requirements.txt pywebview pyinstaller pillow
+        run: pip install -r requirements.txt pywebview pyinstaller pillow sounddevice soundfile
       - name: Test serwera (start, eksport, import)
         shell: python
         run: |
@@ -41,6 +41,12 @@ jobs:
           assert r["ok"], r
           tasks = json.loads(urllib.request.urlopen("http://127.0.0.1:8799/api/tasks").read())
           assert [(t["title"], t["kind"]) for t in tasks] == [("Kolokwium", "Kolokwium")], tasks
+          # nagrywanie: zapis OGG/Opus (libsndfile z pakietu) + PortAudio ładuje się na Windows
+          import numpy, soundfile, sounddevice
+          with soundfile.SoundFile("ci-test.ogg", "w", 16000, 1, format="OGG", subtype="OPUS") as f:
+              f.write(numpy.zeros((16000, 1), dtype="int16"))
+          assert abs(len(soundfile.read("ci-test.ogg")[0]) - 16000) < 400
+          assert json.loads(urllib.request.urlopen("http://127.0.0.1:8799/api/rec").read()) == []
           print("smoke OK", path)
           srv.should_exit = True
       - name: Budowanie Asystent.exe
