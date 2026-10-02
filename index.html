@@ -160,7 +160,7 @@ body.in-nauka .main{padding-bottom:14px}
 #view-pulpit.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 2 * var(--s4))}
 /* niebo zależne od pory dnia: statyczne (bez pętli), zmiana pory = łagodne przenikanie */
 .sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .45s ease;
-  mask-image:linear-gradient(#000 45%,transparent 92%);-webkit-mask-image:linear-gradient(#000 45%,transparent 92%)}
+  mask-image:linear-gradient(#000 58%,rgba(0,0,0,.55) 100%);-webkit-mask-image:linear-gradient(#000 58%,rgba(0,0,0,.55) 100%)}
 .sky .layer{position:absolute;inset:0;opacity:0;transition:opacity 2.4s ease}
 body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście = przenikanie */
 .sky[data-tod=morning] .l-morning,.sky[data-tod=day] .l-day,.sky[data-tod=evening] .l-evening,.sky[data-tod=night] .l-night{opacity:1}
@@ -181,25 +181,43 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   background:radial-gradient(70% 9% at var(--ox,50%) 0%,var(--e1) 0%,var(--e2) 40%,transparent 100%),linear-gradient(180deg,var(--e3) 0%,#05060d 7%);
   box-shadow:0 -1px 0 color-mix(in srgb,var(--atm) 70%,#fff 30%),0 -10px 30px -2px var(--atm),0 -60px 120px -20px var(--atm);
   transition:opacity 2.4s ease,box-shadow 2.4s ease;--e1:#2d5b8f;--e2:#16304f;--e3:#11243c;--atm:rgba(110,170,255,.55)}
-.earth i{position:absolute;inset:0;border-radius:50%;transition:opacity 2.4s ease}
-.e-clouds{opacity:.18;background-size:900px 260px;animation:e-turn 260s linear infinite;
-  background-image:radial-gradient(160px 14px at 120px 40px,#fff,transparent),radial-gradient(220px 18px at 520px 90px,#fff,transparent),
-    radial-gradient(120px 10px at 760px 30px,#fff,transparent),radial-gradient(180px 12px at 330px 150px,#fff,transparent)}
-.e-lights{opacity:0;background-size:420px 90px;animation:e-turn 260s linear infinite;
-  background-image:radial-gradient(1.4px 1.4px at 30px 22px,#ffd38a,transparent),radial-gradient(1.2px 1.2px at 64px 30px,#ffe0a8,transparent),
-    radial-gradient(1.6px 1.6px at 140px 18px,#ffc978,transparent),radial-gradient(1px 1px at 158px 44px,#ffd38a,transparent),
-    radial-gradient(1.4px 1.4px at 240px 26px,#ffe0a8,transparent),radial-gradient(1.2px 1.2px at 300px 60px,#ffc978,transparent),
-    radial-gradient(1.6px 1.6px at 360px 34px,#ffd38a,transparent),radial-gradient(1px 1px at 400px 80px,#ffe0a8,transparent)}
-/* terminator: oświetlona strona pod słońcem, reszta w cieniu */
-.e-shade{background:radial-gradient(60% 6% at var(--ox,50%) 0%,transparent 0%,rgba(3,4,12,.25) 60%,rgba(3,4,12,.6) 100%)}
-@keyframes e-turn{to{background-position:-900px 0}}
+.earth i{position:absolute;transition:opacity 2.4s ease}
+/* ląd i światła: kafelki rysowane raz (canvas), przewijane transformem = powolny obrót planety */
+.e-land,.e-lights{top:0;left:0;height:440px;width:calc(100% + 1800px);background-repeat:repeat-x;background-size:1800px 440px;
+  will-change:transform;animation:e-turn 420s linear infinite}
+.e-land{opacity:.5} .e-lights{opacity:0}
+@keyframes e-turn{to{transform:translate3d(-1800px,0,0)}}
+/* odblask słońca na oceanie + terminator (oświetlona strona pod słońcem) */
+.e-glint{inset:0;border-radius:50%;opacity:.0;background:radial-gradient(9% 1.2% at var(--ox,50%) 0%,rgba(255,240,210,.85),transparent 100%)}
+.e-shade{inset:0;border-radius:50%;background:radial-gradient(60% 6% at var(--ox,50%) 0%,transparent 0%,rgba(3,4,12,.25) 60%,rgba(3,4,12,.6) 100%)}
+.e-haze{inset:0;border-radius:50%;background:linear-gradient(180deg,color-mix(in srgb,var(--atm) 55%,transparent) 0,transparent 1.4%)}
 .sky[data-tod=morning] .earth{--e1:#9a6b6b;--e2:#3a2f45;--e3:#2a2236;--atm:rgba(255,170,120,.55)}
 .sky[data-tod=day] .earth{--e1:#3f7fc0;--e2:#1c3b63;--e3:#152c49;--atm:rgba(140,195,255,.6)}
 .sky[data-tod=evening] .earth{--e1:#8a4b66;--e2:#33203c;--e3:#25182c;--atm:rgba(255,140,120,.5)}
 .sky[data-tod=night] .earth{--e1:#1b2550;--e2:#0d1230;--e3:#0a0d22;--atm:rgba(110,130,255,.35)}
-.sky[data-tod=night] .e-lights{opacity:.85} .sky[data-tod=evening] .e-lights{opacity:.35}
-.sky[data-tod=night] .e-clouds{opacity:.05} .sky[data-tod=night] .e-shade{opacity:.5}
-@media(prefers-reduced-motion:reduce){.e-clouds,.e-lights{animation:none}}
+.sky[data-tod=day] .e-land{opacity:.55} .sky[data-tod=day] .e-glint{opacity:.55}
+.sky[data-tod=morning] .e-land,.sky[data-tod=evening] .e-land{opacity:.38} .sky[data-tod=morning] .e-glint,.sky[data-tod=evening] .e-glint{opacity:.35}
+.sky[data-tod=morning] .e-lights{opacity:.25} .sky[data-tod=evening] .e-lights{opacity:.6}
+.sky[data-tod=night] .e-land{opacity:.2} .sky[data-tod=night] .e-lights{opacity:1} .sky[data-tod=night] .e-shade{opacity:.3}
+/* chmury u góry: dwie warstwy, kolor zależny od pory dnia */
+.clouds{position:absolute;left:0;right:0;top:0;height:46%;overflow:hidden;
+  mask-image:linear-gradient(#000 35%,transparent);-webkit-mask-image:linear-gradient(#000 35%,transparent);--cc:255,255,255;--co:.5}
+.clouds i{position:absolute;top:0;bottom:0;left:0;width:calc(100% + 1600px);background-repeat:repeat-x;background-size:1600px 100%;
+  filter:blur(16px);opacity:var(--co);will-change:transform;animation:cloud-drift 300s linear infinite;transition:opacity 2.4s ease;
+  background-image:radial-gradient(150px 34px at 120px 18%,rgba(var(--cc),.55),transparent 70%),radial-gradient(220px 44px at 260px 24%,rgba(var(--cc),.45),transparent 70%),
+    radial-gradient(180px 30px at 640px 12%,rgba(var(--cc),.5),transparent 70%),radial-gradient(260px 50px at 820px 30%,rgba(var(--cc),.35),transparent 70%),
+    radial-gradient(160px 28px at 1180px 16%,rgba(var(--cc),.5),transparent 70%),radial-gradient(230px 40px at 1340px 26%,rgba(var(--cc),.4),transparent 70%)}
+.clouds i+i{animation-duration:520s;animation-direction:reverse;opacity:calc(var(--co) * .7);filter:blur(24px);background-size:2100px 100%;
+  background-position:700px 30px;width:calc(100% + 2100px)}
+.clouds i+i{animation-name:cloud-drift2}
+@keyframes cloud-drift{to{transform:translate3d(-1600px,0,0)}}
+@keyframes cloud-drift2{from{transform:translate3d(-2100px,0,0)}to{transform:translate3d(0,0,0)}}
+.sky[data-tod=morning] .clouds{--cc:255,214,190;--co:.55} .sky[data-tod=day] .clouds{--cc:255,255,255;--co:.5}
+.sky[data-tod=evening] .clouds{--cc:255,170,160;--co:.5} .sky[data-tod=night] .clouds{--cc:150,160,215;--co:.16}
+/* kropki jak przy logowaniu, z leciutkim rozmyciem */
+.s-dots{position:absolute;inset:0;opacity:.45;filter:blur(.35px);background-image:radial-gradient(rgba(255,255,255,.3) 1px,transparent 1.3px);background-size:26px 26px;
+  mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%);-webkit-mask-image:radial-gradient(75% 65% at 50% 40%,transparent 20%,#000 62%,transparent 95%)}
+@media(prefers-reduced-motion:reduce){.e-land,.e-lights,.clouds i{animation:none}}
 .welcome{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);padding:28px 0 40px;flex-wrap:wrap}
 .wl-main{min-width:0;flex:1 1 520px}
 .wl-date{font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.005em;text-shadow:0 1px 14px rgba(0,0,0,.35)}
@@ -1711,7 +1729,7 @@ body.on-start .c-time{display:none}
     <div class="au-card c-time" style="--d:14"><div class="au-time">11:30</div><div class="au-sh-s">Wykład · s. 233</div></div>
   </div>
 </div>
-<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="earth"><i class="e-clouds"></i><i class="e-lights"></i><i class="e-shade"></i></div></div>
+<div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="clouds"><i></i><i></i></div><div class="earth"><i class="e-land"></i><i class="e-glint"></i><i class="e-lights"></i><i class="e-haze"></i><i class="e-shade"></i></div><div class="s-dots"></div></div>
 
 <div class="app">
   <aside class="rail">
@@ -2259,6 +2277,47 @@ async function loadPulpit(){
   if(last){lb.textContent='Ostatnio: '+(last.title||'Bez tytułu'); lb.onclick=e=>{e.stopPropagation();openLinkedNote(last.notebook_id,last.id);};}
 }
 setInterval(()=>{ if($('#view-pulpit').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))loadPulpit(); },60000);   // słońce i „następne” idą z czasem
+/* Ziemia u dołu nieba: kontynenty i światła miast rysowane raz na kafelku 1800×260 (powtarzanym w poziomie) */
+function paintEarthTiles(){
+  const W=1800,H=440,dpr=Math.min(2,window.devicePixelRatio||1);
+  let seed=20261002; const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const mk=()=>{const c=document.createElement('canvas');c.width=W*dpr;c.height=H*dpr;const x=c.getContext('2d');x.scale(dpr,dpr);return [c,x];};
+  const [lc,lx]=mk(), [nc,nx]=mk();
+  // im bliżej horyzontu (góra kafelka), tym bardziej spłaszczone i mniejsze — perspektywa krzywizny
+  const persp=y=>.35+.65*(y/H);
+  const conts=[];
+  for(let k=0;k<9;k++)conts.push({x:k*W/9+rnd()*120,y:20+rnd()*(H-40),w:140+rnd()*220,h:60+rnd()*120});
+  lx.filter='blur(9px)';
+  for(const c of conts){
+    for(let i=0;i<46;i++){
+      const ox=(rnd()-.5)*c.w*1.6, oy=(rnd()-.5)*c.h, y=Math.max(4,Math.min(H-4,c.y+oy)), p=persp(y), r=(16+rnd()*44)*p;
+      const g=60+rnd()*40|0;
+      lx.fillStyle=`rgba(${g+40},${g+70},${g+20},.85)`;
+      for(const dx of [0,-W,W]){lx.beginPath();lx.ellipse(c.x+ox+dx,y,r*1.6,r*.55*p,0,0,Math.PI*2);lx.fill();}
+    }
+  }
+  lx.filter='none';
+  // światła miast: skupiska na lądzie, ciepłe punkty z poświatą
+  for(const c of conts){
+    const cities=26+rnd()*22|0;
+    for(let i=0;i<cities;i++){
+      const cx=c.x+(rnd()-.5)*c.w*1.3, cy=Math.max(6,Math.min(H-6,c.y+(rnd()-.5)*c.h*.8)), p=persp(cy), big=rnd()<.25;
+      const pts=big?16+rnd()*14:4+rnd()*6;
+      for(const dx of [0,-W,W]){
+        if(big){const gr=nx.createRadialGradient(cx+dx,cy,0,cx+dx,cy,14*p);gr.addColorStop(0,'rgba(255,196,120,.35)');gr.addColorStop(1,'rgba(255,196,120,0)');nx.fillStyle=gr;nx.beginPath();nx.ellipse(cx+dx,cy,14*p*1.6,14*p*.6,0,0,Math.PI*2);nx.fill();}
+        for(let j=0;j<pts;j++){
+          const px=cx+dx+(rnd()-.5)*(big?26:12)*p*1.6, py=cy+(rnd()-.5)*(big?10:5)*p, r=(.5+rnd()*.9)*p;
+          nx.fillStyle=rnd()<.7?'rgba(255,214,150,.95)':'rgba(255,240,205,.95)';
+          nx.beginPath();nx.arc(px,py,r,0,Math.PI*2);nx.fill();
+        }
+      }
+    }
+  }
+  const sky=$('#sky'); if(!sky)return;
+  sky.querySelector('.e-land').style.backgroundImage=`url(${lc.toDataURL()})`;
+  sky.querySelector('.e-lights').style.backgroundImage=`url(${nc.toDataURL()})`;
+}
+try{paintEarthTiles();}catch(_){}
 /* test: przełącznik pory dnia (auto → poranek → dzień → wieczór → noc) */
 let todOverride=null;
 function cycleTod(){
