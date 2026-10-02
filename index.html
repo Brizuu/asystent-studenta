@@ -187,6 +187,11 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .ck-ico{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
+.wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
+.wl-next:hover{background:rgba(255,255,255,.1);color:var(--ink)} .wl-next:active{transform:var(--press)}
+.wl-next b{color:var(--ink);font-weight:600} .wl-next .dots{display:inline-flex;gap:3px} .wl-next .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.wl-next svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2}
 .wl-lead b{color:var(--ink);font-weight:600}
 .wl-chip{display:inline-flex;align-items:center;gap:7px;padding:3px 12px 3px 9px;border-radius:999px;cursor:pointer;color:var(--ink);font-weight:600;
   background:color-mix(in srgb,var(--kc,var(--accent)) 20%,transparent);border:1px solid color-mix(in srgb,var(--kc,var(--accent)) 40%,transparent);
@@ -195,22 +200,22 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wl-chip .kico{width:15px;height:15px}
 .portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 .portal{position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
-  background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 24%,rgba(255,255,255,.07)),rgba(255,255,255,.035) 60%,color-mix(in srgb,var(--pc2) 10%,rgba(255,255,255,.02)));
+  background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 12%,rgba(30,30,40,.5)),rgba(24,24,32,.46) 60%,color-mix(in srgb,var(--pc2) 6%,rgba(22,22,30,.5)));
   backdrop-filter:blur(28px) saturate(185%);-webkit-backdrop-filter:blur(28px) saturate(185%);
-  border:1px solid color-mix(in srgb,var(--pc) 30%,rgba(255,255,255,.12));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.03),0 30px 70px -34px color-mix(in srgb,var(--pc) 55%,rgba(0,0,0,.8));
+  border:1px solid color-mix(in srgb,var(--pc) 18%,rgba(255,255,255,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.03),0 30px 70px -34px color-mix(in srgb,var(--pc) 32%,rgba(0,0,0,.8));
   transition:transform .45s var(--spring,ease),box-shadow .45s var(--spring,ease)}
 /* akcent: miękka poświata koloru w rogu + odblask na górnej krawędzi szkła */
-.portal::before{content:"";position:absolute;z-index:-1;inset:-30% 40% 45% -20%;border-radius:50%;filter:blur(40px);opacity:.55;
+.portal::before{content:"";position:absolute;z-index:-1;inset:-30% 40% 45% -20%;border-radius:50%;filter:blur(44px);opacity:.28;
   background:radial-gradient(closest-side,var(--pc),transparent);transition:opacity .45s var(--spring,ease)}
 .portal::after{content:"";position:absolute;z-index:-1;left:12%;right:12%;top:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
-.portal:hover::before{opacity:.8}
-.portal:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 40px 80px -34px color-mix(in srgb,var(--pc) 65%,rgba(0,0,0,.85))}
+.portal:hover::before{opacity:.42}
+.portal:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 40px 80px -34px color-mix(in srgb,var(--pc) 42%,rgba(0,0,0,.85))}
 .portal:active{transform:var(--press);transition-duration:.1s}
 .portal:focus-visible{outline:2px solid var(--pc);outline-offset:3px}
 .portal-art{height:150px;display:flex;align-items:center}
-.portal-art svg{height:100%;width:auto;overflow:visible}
+.portal-art svg{height:100%;width:auto;overflow:visible;filter:drop-shadow(0 14px 18px rgba(0,0,0,.32)) drop-shadow(0 2px 4px rgba(0,0,0,.22))}   /* ilustracja „leży” na szkle */
 .portal-art .lift{transition:transform .5s var(--spring,ease);transform-box:fill-box;transform-origin:50% 100%}
 .portal:hover .art-cal-tile{transform:rotate(-4deg) translateY(-4px)}
 .portal:hover .nb1{transform:rotate(-10deg) translate(-10px,-2px)} .portal:hover .nb3{transform:rotate(8deg) translate(12px,-4px)} .portal:hover .nb2{transform:translateY(-6px)}
@@ -315,6 +320,19 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .rec-row .st-limit,.rec-row .st-error{color:var(--hi);border-color:rgba(255,180,84,.35)}
 .rec-row .rec-err{flex-basis:100%;font-size:12px;color:var(--hi)}
 .rec-row .rec-act{margin-left:auto;display:flex;gap:6px}
+.pop-bd{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,8,12,.45)}
+.pop-bd[hidden]{display:none}
+.pop{width:min(340px,100%);border-radius:24px;padding:24px 22px 18px;text-align:center;color:var(--ink);
+  background:rgba(34,34,44,.78);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 40px 90px -30px rgba(0,0,0,.85)}
+.pop-ic{width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--pi) 20%,transparent)}
+.pop-ic svg{width:26px;height:26px;stroke:var(--pi);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pop-t{font-size:17px;font-weight:650;letter-spacing:-.01em;line-height:1.3}
+.pop-x{margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-soft);white-space:pre-line;word-break:break-word}
+.pop-x:empty,.pop-hint:empty{display:none}
+.pop-hint{margin-top:12px;font-size:12.5px;color:var(--ink-dim);line-height:1.4}
+.pop .btn{width:100%;margin-top:18px}
+@media(prefers-reduced-transparency:reduce){.pop{background:#22222c;backdrop-filter:none}}
 .recpill{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:160;display:flex;align-items:center;gap:9px;padding:9px 16px;
   border-radius:999px;border:1px solid rgba(255,122,144,.4);background:#1a1016;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.7)}
 .recpill[hidden]{display:none} .notelink .kico{width:13px;height:13px;vertical-align:-2px} .notelink:hover{text-decoration:underline}
@@ -352,6 +370,7 @@ label.f>*{color:var(--ink)}
 .item:hover{border-color:rgba(255,255,255,.16)}
 .item .tik{width:22px;height:22px;border-radius:7px;border:1.6px solid var(--ink-dim);cursor:pointer;flex:none;
   display:flex;align-items:center;justify-content:center;transition:.15s}
+.tik-ph{width:22px;flex:none}
 .item .tik.done{background:var(--pos);border-color:var(--pos)}
 .item .tik svg{width:13px;height:13px;stroke:#0a0b12;stroke-width:3;fill:none;opacity:0}
 .item .tik.done svg{opacity:1}
@@ -1216,6 +1235,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
           <div class="wl-date" id="pulpit-date"></div>
           <h1 class="wl-title" id="greet">Dzień dobry</h1>
           <p class="wl-lead" id="wl-lead"></p>
+          <button class="wl-next" id="wl-next" hidden></button>
         </div>
         <div class="wl-clock">
           <div class="ck-time" id="ck-time"></div>
@@ -1440,6 +1460,9 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
+<div class="pop-bd" id="pop-bd" hidden><div class="pop" id="pop" role="alertdialog" aria-modal="true" aria-labelledby="pop-t">
+  <div class="pop-ic" id="pop-ic"></div><div class="pop-t" id="pop-t"></div><div class="pop-x" id="pop-x"></div><div class="pop-hint" id="pop-hint"></div>
+  <button class="btn" id="pop-ok">OK</button></div></div>
 <button class="recpill" id="recpill" hidden onclick="recStop()" title="Zatrzymaj nagrywanie"></button>
 
 <script>
@@ -1523,8 +1546,8 @@ async function loadPulpit(){
   paintTime();
   const [tasks,nbs,notes]=await Promise.all([api('/tasks?day='+today),api('/notebooks'),api('/notes/all')]);
   tasks.forEach(x=>planTasks[x.id]=x);
-  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs);
-  const left=tasks.filter(t=>!t.done).length;
+  renderWelcome(tasks); renderCalArt(d,tasks); renderNbArt(nbs); renderNextDay(today);
+  const nm=nowMin(), left=tasks.filter(t=>isClass(t)?(t.start_time&&evSpan(t)[1]>nm):!t.done).length;   // zajęcia: liczą się do końca trwania
   $('#portal-plan-sub').textContent=tasks.length?(left?`Dziś ${left} ${plural(left,'wpis','wpisy','wpisów')} przed Tobą`:'Dziś wszystko zrobione'):'Dziś wolne — zaplanuj coś';
   $('#portal-nb-sub').textContent=nbs.length?`${nbs.length} ${plural(nbs.length,'zeszyt','zeszyty','zeszytów')} · ${notes.length} ${plural(notes.length,'notatka','notatki','notatek')}`:'Załóż pierwszy zeszyt';
   // skrót do ostatnio edytowanej notatki — jedno kliknięcie od powrotu do pracy
@@ -1566,6 +1589,18 @@ function renderWelcome(tasks){
     :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
     :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
     :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
+}
+async function renderNextDay(today){
+  const r=await api('/tasks/next-day?after='+today), el=$('#wl-next');
+  el.hidden=!r.date; if(!r.date)return;
+  r.tasks.forEach(x=>planTasks[x.id]=x);
+  const d=new Date(r.date+'T00:00'), diff=Math.round((d-new Date(today+'T00:00'))/864e5);
+  const when=diff===1?'Jutro':d.toLocaleDateString('pl-PL',{weekday:'long'}).replace(/^./,c=>c.toUpperCase());
+  const first=r.tasks.find(t=>t.start_time), n=r.tasks.length, cls=r.tasks.every(isClass);
+  el.innerHTML=`<span class="dots">${r.tasks.slice(0,4).map(t=>`<i style="--c:${kindOf(t.kind)[2]}"></i>`).join('')}</span>
+    <span><b>${when}</b>${diff>1?', '+d.toLocaleDateString('pl-PL',{day:'numeric',month:'short'}):''} · ${n} ${cls?plural(n,'zajęcia','zajęcia','zajęć'):plural(n,'wpis','wpisy','wpisów')}${first?' od '+first.start_time:''}</span>
+    <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+  el.onclick=()=>{$('#plan-date').value=r.date;go('plan');openDay(r.date);};
 }
 /* ilustracja: ikona Kalendarza (dzień tygodnia + duża data) i kropki dzisiejszych wpisów */
 function renderCalArt(d,tasks){
@@ -1612,6 +1647,7 @@ const KINDS=[
   ['Dom','<path d="M3.5 11L12 4l8.5 7M5.5 9.5V20h13V9.5M10 20v-5.5h4V20"/>','#fb923c']];
 const TAG_ICON='<path d="M3.5 12.5v-8a1 1 0 011-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.3"/>';
 const roomOf=t=>t.room?`s. ${t.room}${t.building?' · '+t.building.split(' - ')[0]:''}`:'';   // budynek bez opisu: „A23a”
+const isClass=t=>!!t.ext_uid;   // zajęcia z planu uczelni — bez odhaczania
 const kindOf=k=>KINDS.find(x=>x[0]===k)||[k||'',TAG_ICON,'#9ca3af'];
 const kico=k=>`<svg class="kico" viewBox="0 0 24 24" style="--kc:${k[2]}">${k[1]}</svg>`;
 const norm=x=>(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ł/g,'l');
@@ -1664,7 +1700,8 @@ async function loadPlan(){
   const m=await api('/tasks?month='+d.slice(0,7)), t=m.filter(x=>x.date===d);
   planTasks={}; m.forEach(x=>planTasks[x.id]=x);
   if(m[0]&&!('kind' in m[0])&&!window._staleWarned){window._staleWarned=1;alert('Serwer działa na starej wersji — zrestartuj uvicorn, inaczej typ i notatka nie zapiszą się.');}
-  $('#plan-count').textContent=(t.length? t.length+' '+plural(t.length,'zadanie','zadania','zadań'):'Zadania')+' — '+dlong(d);
+  const allCls=t.length&&t.every(isClass);
+  $('#plan-count').textContent=(t.length? t.length+' '+(allCls?plural(t.length,'zajęcia','zajęcia','zajęć'):plural(t.length,'wpis','wpisy','wpisów')):'Wpisy')+' — '+dlong(d);
   renderTasks(t,'#plan-tasks','Brak wpisów na ten dzień. Kliknij dzień w kalendarzu, aby dodać.');
   renderCal(d,m);
 }
@@ -1806,7 +1843,7 @@ function viewTask(id){
     t.remind_at&&['Przypomnienie',t.remind_at.slice(11,16)],
     t.room&&['Sala',`<b>${esc(t.room)}</b>${t.building?' · '+esc(t.building):''}`],
     t.address&&['Adres',`<a class="notelink" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.address)}" target="_blank" rel="noopener">${esc(t.address)}</a>`],
-    ['Status',t.done?'Zrobione':'Do zrobienia'],
+    !isClass(t)&&['Status',t.done?'Zrobione':'Do zrobienia'],
     t.url&&['USOS',`<a class="notelink" href="${escAttr(t.url)}" target="_blank" rel="noopener">Strona zajęć ↗</a>`],
     t.note_title&&['Notatka',`<span class="notelink" onclick="closeModal();openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} ${esc(t.note_title)}</span>`]
   ].filter(Boolean);
@@ -1831,7 +1868,7 @@ function renderTasks(list,sel,emptyMsg){
     const rem=t.remind_at?`<span class="pill">◔ ${t.remind_at.slice(11,16)}</span>`:'';
     const nl=t.note_title?`<span class="notelink" onclick="event.stopPropagation();openLinkedNote(${t.note_nb},${t.note_id})">${kico(['',ICONS.nauka,'var(--accent-2)'])} ${esc(t.note_title)}</span>`:'';
     return `<div class="item ${t.done?'done':''}">
-      <div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
+      ${isClass(t)?'<div class="tik-ph"></div>':`<div class="tik ${t.done?'done':''}" onclick="toggleTask(${t.id},${t.done?0:1})"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>`}
       <div class="kic" style="--kc:${k[2]}" title="${escAttr(k[0])}">${kico(k)}</div>
       <div class="time">${time}</div>
       <div class="body" onclick="viewTask(${t.id})"><div class="t">${esc(t.title)}</div><div class="meta">${k[0]?`<span style="color:${k[2]}">${esc(k[0])}</span>`:''}${roomOf(t)?`<span>${esc(roomOf(t))}</span>`:''}${pr}${rem}${nl}${t.notes?'<span>'+esc(t.notes)+'</span>':''}</div></div>
@@ -1842,9 +1879,10 @@ function renderTasks(list,sel,emptyMsg){
 async function importIcs(inp){
   const f=inp.files[0]; inp.value=''; if(!f)return;
   const r=await api('/import/ics',{method:'POST',body:JSON.stringify({data:await f.text()})});
-  if(r.detail){alert(r.detail);return;}
+  if(r.detail){popout({icon:'warn',title:'Nie udało się zaimportować planu',text:r.detail});return;}
   const d=x=>new Date(x+'T00:00').toLocaleDateString('pl-PL',{day:'numeric',month:'short',year:'numeric'});
-  alert(`Plan zaimportowany: ${r.added} nowych, ${r.updated} zaktualizowanych zajęć\n(${d(r.first)} – ${d(r.last)}).\n\nPonowny import tego pliku zaktualizuje plan bez dublowania.`);
+  popout({icon:'ok',title:'Plan zaimportowany',text:`${r.added} ${plural(r.added,'nowe zajęcia','nowe zajęcia','nowych zajęć')}${r.updated?` · ${r.updated} zaktualizowanych`:''}\n${d(r.first)} – ${d(r.last)}`,
+    hint:'Po zmianach w USOS zaimportuj plik ponownie — plan się zaktualizuje, bez dublowania.'});
   $('#plan-date').value=r.first>todayISO()?r.first:todayISO(); loadPlan();
 }
 async function toggleTask(id,done){await api('/tasks/'+id,{method:'PATCH',body:JSON.stringify({done:!!done})});refresh();}
@@ -1981,17 +2019,43 @@ async function recDelete(id){
   await api('/rec/'+id,{method:'DELETE'}); recSig=''; renderRecBar();
 }
 
+/* ===== własny komunikat (zamiast alert) — kolejka, Enter/Esc zamyka, sprężyna jak okna ===== */
+const POP_IC={ok:['var(--pos)','<path d="M5 12.5l4.5 4.5L19 7.5"/>'],info:['var(--accent)','<path d="M12 11v6M12 7.5v.5"/>'],
+  warn:['var(--hi)','<path d="M12 7v6.5M12 17v.5"/>']};
+let popQ=Promise.resolve();
+function popout({title='',text='',hint='',icon='info',ok='OK'}={}){
+  return popQ=popQ.then(()=>new Promise(res=>{
+    const bd=$('#pop-bd'), [c,ico]=POP_IC[icon]||POP_IC.info;
+    $('#pop-ic').style.setProperty('--pi',c); $('#pop-ic').innerHTML=`<svg viewBox="0 0 24 24">${ico}</svg>`;
+    $('#pop-t').textContent=title; $('#pop-x').textContent=text; $('#pop-hint').textContent=hint; $('#pop-ok').textContent=ok;
+    bd.hidden=false;
+    $('#pop').animate(reduceMotion()?[{opacity:0},{opacity:1}]:[{opacity:0,transform:'scale(.9)'},{opacity:1,transform:'none'}],
+      {duration:reduceMotion()?150:SPRING.duration,easing:reduceMotion()?'ease':SPRING.easing});
+    const close=()=>{document.removeEventListener('keydown',key,true);
+      $('#pop').animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.96)'}],{duration:140,easing:'ease-in'}).onfinish=()=>{bd.hidden=true;res();};};
+    const key=e=>{if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}};
+    document.addEventListener('keydown',key,true);
+    $('#pop-ok').onclick=close; bd.onclick=e=>{if(e.target===bd)close();};
+    setTimeout(()=>$('#pop-ok').focus(),30);
+  }));
+}
+// wszystkie dotychczasowe alert() → ten sam komunikat (pierwsza linia = tytuł, reszta = opis)
+window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
+  popout({title:t,text:rest.join('\n').trim(),icon:/nie udało|nie udalo|błąd|brak|za duży|nie jest|nie wspiera|za mało|starej wersji|najpierw/i.test(msg)?'warn':'info'});};
+
 /* eksport / import danych (kopia ZIP: baza + załączniki) */
 async function exportData(){
   const r=await api('/export',{method:'POST'});
-  alert(r.path?'Kopia zapisana:\n'+r.path:'Eksport nie powiódł się.');
+  if(r.path)popout({icon:'ok',title:'Kopia zapisana',text:r.path,hint:'Wczytasz ją przez „Import danych” na tym lub innym komputerze.'});
+  else popout({icon:'warn',title:'Eksport nie powiódł się'});
 }
 async function importData(inp){
   const f=inp.files[0]; inp.value=''; if(!f)return;
   if(!confirm('Wczytać „'+f.name+'”? Obecne dane zostaną zastąpione (stara baza zostaje jako asystent.db.bak).'))return;
   const data=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
   const r=await api('/import',{method:'POST',body:JSON.stringify({filename:f.name,data})});
-  if(r.ok){alert('Dane wczytane.');location.reload();} else alert(r.detail||'Import nie powiódł się.');
+  if(r.ok){await popout({icon:'ok',title:'Dane wczytane',text:'Aplikacja odświeży się, żeby pokazać wczytane dane.'});location.reload();}
+  else popout({icon:'warn',title:'Import nie powiódł się',text:r.detail||''});
 }
 const bell=$('#bell'); let notified=new Set();
 function syncBell(){bell.classList.toggle('on',Notification?.permission==='granted');}
