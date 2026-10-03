@@ -232,6 +232,7 @@ def run(p: SyncRun):
     with get_conn() as c:
         st = _state(c)
         dev_uid = st["device_uid"]
+        _set(c, cloud=p.cloud, token=p.token)   # do wysłania zmian przy zamykaniu aplikacji (run_saved)
     cursor = int(st.get("cursor") or 0)
     stats = {"added": 0, "updated": 0, "deleted": 0, "skipped": 0}
     applied: set = set()
@@ -294,6 +295,20 @@ def settings(p: SyncSettings):
 def reset():
     """Inne konto na tym urządzeniu: przy następnej synchronizacji wyślij wszystko od nowa."""
     with get_conn() as c:
-        _set(c, last_push="", cursor=0, last_sync=None)
+        _set(c, last_push="", cursor=0, last_sync=None, token="")
         c.execute("DELETE FROM sync_seen")
     return {"ok": True}
+
+
+def run_saved() -> dict | None:
+    """Zamykanie aplikacji desktop: wyślij zaległe zmiany kontem z ostatniej synchronizacji (jeśli synchronizacja jest włączona)."""
+    with get_conn() as c:
+        st = _state(c)
+        if st.get("auto", "1") != "1" or not st.get("token") or not st.get("cloud"):
+            return None
+        if not collect(c, st.get("last_push") or ""):
+            return None
+    try:
+        return run(SyncRun(cloud=st["cloud"], token=st["token"]))
+    except Exception:
+        return None
