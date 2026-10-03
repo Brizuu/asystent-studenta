@@ -387,7 +387,7 @@ class Share(BaseModel):
 
 @app.post("/shares")
 def share(p: Share, u=Depends(current_user)):
-    if p.kind not in ("note", "notebook"):
+    if p.kind not in ("note", "notebook", "plan"):
         raise HTTPException(400, "Nieznany rodzaj udostępnienia.")
     data = json.dumps(p.payload, ensure_ascii=False)
     if len(data) > MAX_SHARE:

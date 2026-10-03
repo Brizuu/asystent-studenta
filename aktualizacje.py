@@ -13,6 +13,7 @@ import urllib.request
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 router = APIRouter()
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
@@ -119,3 +120,25 @@ def install():
 @router.get("/api/update/status")
 def status():
     return _dl
+
+
+# ---------- wygląd okna aplikacji desktop: własny pasek tytułu albo pasek Windows (po ponownym uruchomieniu) ----------
+class WindowPrefs(BaseModel):
+    frameless: bool
+
+
+@router.get("/api/desktop/window")
+def window_prefs():
+    from db import DATA_DIR
+    try:
+        d = json.loads((DATA_DIR / "okno.json").read_text(encoding="utf-8"))
+    except Exception:
+        d = {}
+    return {"frameless": bool(d.get("frameless", os.name == "nt")), "active": bool(os.getenv("ASYSTENT_FRAMELESS"))}
+
+
+@router.post("/api/desktop/window")
+def set_window_prefs(p: WindowPrefs):
+    from db import DATA_DIR
+    (DATA_DIR / "okno.json").write_text(json.dumps({"frameless": p.frameless}), encoding="utf-8")
+    return window_prefs()

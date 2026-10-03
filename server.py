@@ -577,7 +577,13 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
         raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
 
 
-def _note_prompt(text: str, topic: str, fmt: str = "html") -> str:
+def _instr_line(instructions: str) -> str:
+    instructions = (instructions or "").strip()[:2000]
+    return (f"WSKAZÓWKI STUDENTA (najważniejsze — dostosuj do nich zakres, układ i akcenty notatki): „{instructions}”\n"
+            if instructions else "")
+
+
+def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "") -> str:
     fmt_rule = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
                 "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>. "
                 "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
@@ -592,7 +598,7 @@ def _note_prompt(text: str, topic: str, fmt: str = "html") -> str:
     prompt = (
         "Jesteś doświadczonym korepetytorem akademickim. Zamień poniższą, podyktowaną i chaotyczną "
         "wypowiedź z wykładu w PEŁNĄ, uporządkowaną notatkę do nauki na studia.\n"
-        + topic_line +
+        + topic_line + _instr_line(instructions) +
         "Zasady:\n"
         "- Pisz po polsku, rzeczowo i zrozumiale dla studenta.\n"
         "- Popraw interpunkcję, literówki i gramatykę; usuń dygresje, wtrącenia i wulgaryzmy.\n"
@@ -611,6 +617,7 @@ def _note_prompt(text: str, topic: str, fmt: str = "html") -> str:
 class NotePrompt(BaseModel):
     text: str
     topic: str = ""
+    instructions: str = ""
 
 
 @app.post("/api/ai/note/prompt")
@@ -618,7 +625,7 @@ def ai_note_prompt(a: NotePrompt):
     """Tryb bez klucza: gotowe polecenie do wklejenia w zwykły czat (Gemini/ChatGPT)."""
     if not a.text.strip():
         raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
-    return {"prompt": _note_prompt(a.text, a.topic, "markdown")}
+    return {"prompt": _note_prompt(a.text, a.topic, "markdown", a.instructions)}
 
 
 # ---------- USTAWIENIA: połączenie z AI ----------
@@ -818,6 +825,100 @@ def ai_note(a: AINote):
     return {"html": _clean_ai_html(out)}
 
 
+HTML_RULE = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: <h3>, <h4>, <p>, <ul>, <ol>, <li>, "
+             "<strong>, <em>. Bez atrybutów style/class, bez komentarzy, wstępu i znaczników ```.")
+
+
+def _ai_call(parts: list, kind: str, max_tokens: int = 8192, timeout: int = 180) -> str:
+    if not _gemini_key():
+        raise HTTPException(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
+    try:
+        return gemini(parts, max_tokens=max_tokens, temperature=0.4, timeout=timeout, kind=kind)
+    except GeminiError as e:
+        if e.status in (429, 503):
+            raise HTTPException(503, "Model Gemini jest chwilowo przeciążony albo wyczerpano limit. Spróbuj ponownie za chwilę.")
+        raise HTTPException(400 if e.status == 400 else 502, e.msg)
+
+
+def _doc_bytes(url: str) -> tuple[bytes, str]:
+    """Plik z bloku „Osadź / PDF”: wgrany (uploads/…) albo link http(s) do PDF."""
+    url = (url or "").strip()
+    if re.match(r"^https?://", url, re.I):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 Asystent"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                b = r.read(20 * 1024 * 1024 + 1)
+        except Exception as e:
+            raise HTTPException(400, f"Nie udało się pobrać pliku z linku: {e}")
+    else:
+        f = UPLOAD_DIR / os.path.basename(url.split("?")[0].split("#")[0])
+        if not f.is_file():
+            raise HTTPException(404, "Nie znaleziono pliku — wgraj PDF jeszcze raz.")
+        b = f.read_bytes()
+    if len(b) > 20 * 1024 * 1024:
+        raise HTTPException(413, "Plik jest za duży dla AI (limit 20 MB) — podziel go albo wgraj mniejszy.")
+    mt = ("application/pdf" if b[:4] == b"%PDF" else "image/png" if b[:4] == b"\x89PNG" else "image/jpeg" if b[:3] == b"\xff\xd8\xff"
+          else "image/webp" if b[8:12] == b"WEBP" else "")
+    if not mt:
+        raise HTTPException(400, "To nie jest PDF ani obraz — AI potrzebuje pliku PDF (albo zdjęcia).")
+    return b, mt
+
+
+class AIDocNote(BaseModel):
+    url: str
+    instructions: str = ""
+    topic: str = ""
+
+
+@app.post("/api/ai/pdf-note")
+def ai_pdf_note(a: AIDocNote):
+    """Notatka do nauki z wgranego PDF (Gemini czyta plik bezpośrednio — także skany, wzory i tabele)."""
+    b, mt = _doc_bytes(a.url)
+    topic = a.topic.strip()
+    prompt = ("Jesteś doświadczonym korepetytorem akademickim. Na podstawie załączonego dokumentu (materiały z zajęć) "
+              "przygotuj PEŁNĄ, uporządkowaną notatkę do nauki na studia.\n"
+              + (f"Temat: „{topic}”.\n" if topic else "")
+              + _instr_line(a.instructions) +
+              "Zasady:\n- Pisz po polsku, rzeczowo i zrozumiale.\n"
+              "- Opieraj się na treści dokumentu; nie zmyślaj faktów. Zachowaj definicje, wzory, daty, nazwiska i przykłady.\n"
+              "- Jeśli w dokumencie są pytania (kontrolne, egzaminacyjne, zadania) — wypisz je wyraźnie i podaj odpowiedzi lub rozwiązania.\n"
+              "- Uporządkuj: tytuł, sekcje tematyczne, listy, pogrubione kluczowe pojęcia, na końcu „Najważniejsze do zapamiętania”.\n"
+              + HTML_RULE)
+    out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf")
+    return {"html": _clean_ai_html(out)}
+
+
+def _improve_prompt(html: str, instructions: str, fmt: str = "html") -> str:
+    return ("Jesteś doświadczonym korepetytorem akademickim i redaktorem. Ulepsz poniższą notatkę studenta, tak żeby była "
+            "lepsza do nauki: czytelniejsza struktura (nagłówki, listy), poprawiony język i błędy, uzupełnione oczywiste luki i "
+            "skróty myślowe, wyróżnione kluczowe pojęcia, na końcu krótkie podsumowanie, jeśli go brakuje.\n"
+            + _instr_line(instructions) +
+            "Zasady:\n- Zachowaj WSZYSTKIE fakty, definicje, wzory, daty i przykłady — nic merytorycznego nie usuwaj.\n"
+            "- Nie zmyślaj nowych faktów; dopowiedzenia tylko oczywiste i zgodne z treścią.\n"
+            "- Znaczniki w postaci [[OBRAZ 1]], [[OBRAZ 2]]… to obrazy — zostaw je bez zmian, każdy w osobnym akapicie, w sensownym miejscu.\n"
+            + (HTML_RULE if fmt == "html" else "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (###, -, **), bez wstępu.")
+            + "\n\nNotatka:\n" + html)
+
+
+class AIImprove(BaseModel):
+    html: str
+    instructions: str = ""
+
+
+@app.post("/api/ai/improve")
+def ai_improve(a: AIImprove):
+    if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):
+        raise HTTPException(400, "Ta notatka jest pusta — nie ma czego poprawiać.")
+    out = _ai_call([{"text": _improve_prompt(a.html[:200_000], a.instructions)}], kind="improve")
+    return {"html": _clean_ai_html(out)}
+
+
+@app.post("/api/ai/improve/prompt")
+def ai_improve_prompt(a: AIImprove):
+    """Tryb bez klucza: polecenie poprawki do wklejenia w zwykły czat."""
+    return {"prompt": _improve_prompt(a.html[:200_000], a.instructions, "markdown")}
+
+
 # ---------- EKSPORT / IMPORT danych (ZIP: baza + załączniki) ----------
 @app.post("/api/export")
 def export_data():
@@ -831,6 +932,10 @@ def export_data():
         src, dst = sqlite3.connect(DB_PATH), sqlite3.connect(tmp)
         with dst:
             src.backup(dst)
+            try:   # sesja serwera kont nie trafia do kopii (plik bywa przekazywany dalej)
+                dst.execute("DELETE FROM sync_state WHERE k IN ('token','cloud')")
+            except sqlite3.Error:
+                pass
         src.close(); dst.close()
         z.write(tmp, "asystent.db"); tmp.unlink()
         for f in (UPLOAD_DIR.iterdir() if UPLOAD_DIR.is_dir() else []):
@@ -911,7 +1016,8 @@ def summary():
 def config():
     cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "https://bte-poland.pl/asystent")
     return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/"),
-            "version": aktualizacje.app_version(), "windows": os.name == "nt", "web": bool(os.getenv("ASYSTENT_WEB"))}
+            "version": aktualizacje.app_version(), "windows": os.name == "nt", "web": bool(os.getenv("ASYSTENT_WEB")),
+            "frameless": bool(os.getenv("ASYSTENT_FRAMELESS"))}
 
 
 class CloudUrl(BaseModel):
