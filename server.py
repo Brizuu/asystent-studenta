@@ -454,8 +454,8 @@ class AINote(BaseModel):
 
 
 def _norm_key(k: str) -> str:
-    # usuń białe znaki i ewentualne otaczające cudzysłowy
-    return k.strip().strip('"').strip("'").strip()
+    # usuń otaczające cudzysłowy i wszystkie białe znaki (wklejony klucz bywa łamany na linie / ze spacją)
+    return "".join(k.strip().strip('"').strip("'").split())
 
 
 def _gemini_key() -> str | None:
@@ -547,10 +547,11 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
     }).encode("utf-8")
     model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
     base = os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com")
-    url = base + "/v1beta/models/" + model + ":generateContent?key=" + key
+    url = base + "/v1beta/models/" + model + ":generateContent"
     data = None
     for attempt in range(tries):
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        # klucz w nagłówku (nie w adresie): dowolne znaki, nie trafia do logów z adresami
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 data = json.loads(r.read().decode("utf-8"))
@@ -659,8 +660,9 @@ def set_ai_settings(p: AiSettings):
         if not k:
             kf.unlink(missing_ok=True)
         else:
-            if not re.fullmatch(r"[A-Za-z0-9_\-]{20,}", k):
-                raise HTTPException(400, "To nie wygląda na klucz Gemini (zwykle zaczyna się od „AIza…”).")
+            # dowolny format (Google zmienia postać kluczy) — o poprawności decyduje test połączenia
+            if len(k) < 8 or len(k) > 1000:
+                raise HTTPException(400, "Klucz jest za krótki albo za długi — skopiuj go jeszcze raz z Google AI Studio.")
             kf.write_text(k, encoding="utf-8")
     return get_ai_settings()
 
