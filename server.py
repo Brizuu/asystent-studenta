@@ -833,7 +833,7 @@ def export_data():
             src.backup(dst)
         src.close(); dst.close()
         z.write(tmp, "asystent.db"); tmp.unlink()
-        for f in UPLOAD_DIR.iterdir():
+        for f in (UPLOAD_DIR.iterdir() if UPLOAD_DIR.is_dir() else []):
             if f.is_file():
                 z.write(f, "uploads/" + f.name)
         for f in (DATA_DIR / "recordings").glob("*/*"):
@@ -869,6 +869,7 @@ def import_data(u: ImportData):
     DB_PATH.write_bytes(db)
     for n, b in files.items():
         if n.startswith("uploads/"):
+            UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
             (UPLOAD_DIR / os.path.basename(n)).write_bytes(b)
         elif n.startswith("recordings/") and n.count("/") == 2:
             rid, name = n.split("/")[1:]
@@ -939,6 +940,7 @@ import sync   # noqa: E402
 def init_all():
     """Wszystkie tabele, migracje i triggery synchronizacji dla bieżącego katalogu danych."""
     init_db()
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     finanse.init()
     zadania.init()
     sync.setup()
