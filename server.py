@@ -536,14 +536,15 @@ def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit
 
 
 def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeout: int = 90, tries: int = 3,
-           kind: str = "other") -> str:
+           kind: str = "other", json_mode: bool = False) -> str:
     """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu."""
     key = _gemini_key()
     if not key:
         raise GeminiError(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
     body = json.dumps({
         "contents": [{"parts": parts}],
-        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens,
+                             **({"responseMimeType": "application/json"} if json_mode else {})},
     }).encode("utf-8")
     model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
     base = os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com")
@@ -1039,6 +1040,7 @@ import nagrania   # noqa: E402  (po definicji gemini — moduł z niego korzysta
 import usos   # noqa: E402
 import finanse   # noqa: E402
 import zadania   # noqa: E402
+import quiz   # noqa: E402
 import aktualizacje   # noqa: E402
 import sync   # noqa: E402
 
@@ -1049,6 +1051,7 @@ def init_all():
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     finanse.init()
     zadania.init()
+    quiz.init()
     sync.setup()
 
 
@@ -1057,5 +1060,6 @@ app.include_router(nagrania.router)
 app.include_router(usos.router)
 app.include_router(finanse.router)
 app.include_router(zadania.router)
+app.include_router(quiz.router)
 app.include_router(aktualizacje.router)
 app.include_router(sync.router)

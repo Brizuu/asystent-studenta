@@ -47,6 +47,10 @@ def init():
             position INTEGER DEFAULT 0
         );
         """)
+        # Kanban: Do zrobienia / W trakcie / Zrobione (zrobione = done)
+        if "status" not in [r[1] for r in _c.execute("PRAGMA table_info(todo_items)")]:
+            _c.execute("ALTER TABLE todo_items ADD COLUMN status TEXT DEFAULT 'todo'")
+            _c.execute("UPDATE todo_items SET status='done' WHERE done=1")
         if not _c.execute("SELECT 1 FROM todo_lists LIMIT 1").fetchone():
             _c.execute("INSERT INTO todo_lists(name, priority, color) VALUES('Moje zadania', 'normal', '#8b7cff')")
 
@@ -181,6 +185,8 @@ class TodoItem(BaseModel):
     remind_time: str | None = None
     anchor_id: int | None = None
     checks: list[Check] | None = None
+    status: str | None = None
+    position: int | None = None
 
 
 LINK_FIELDS = ("note_id", "notebook_id", "remind_date", "remind_time", "anchor_id")
@@ -208,6 +214,12 @@ def _clean_item(p: TodoItem, partial: bool) -> tuple[dict, list | None]:
             f["remind_time"] = datetime.strptime(f["remind_time"], "%H:%M").strftime("%H:%M")
         except ValueError:
             raise HTTPException(400, "Zła godzina przypomnienia.")
+    if "status" in f:   # kolumna Kanbana; „Zrobione” = odhaczone
+        if f["status"] not in ("todo", "doing", "done"):
+            f["status"] = "todo"
+        f["done"] = f["status"] == "done"
+    elif "done" in f:
+        f["status"] = "done" if f["done"] else "todo"
     if "done" in f:
         f["done"] = int(bool(f["done"]))
         f["done_at"] = datetime.now().isoformat(timespec="seconds") if f["done"] else None
@@ -267,3 +279,86 @@ def del_item(iid: int):
         c.execute("DELETE FROM todo_checks WHERE item_id=?", (iid,))
         c.execute("DELETE FROM todo_items WHERE id=?", (iid,))
     return {"ok": True}
+
+
+# ---------- tworzenie kart (Kanban) z notatki: checklisty bez AI albo plan zadań od Gemini ----------
+class FromNote(BaseModel):
+    note_id: int
+    list_id: int | None = None
+    instructions: str = ""
+    ai: bool = False
+
+
+def _target_list(c, lid):
+    if lid and c.execute("SELECT 1 FROM todo_lists WHERE id=?", (lid,)).fetchone():
+        return lid
+    return c.execute("SELECT id FROM todo_lists ORDER BY CASE priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, id LIMIT 1").fetchone()[0]
+
+
+def _insert_items(list_id: int, note_id: int, items: list) -> int:
+    n = 0
+    with get_conn() as c:
+        lid = _target_list(c, list_id)
+        have = {r[0].strip().lower() for r in c.execute("SELECT title FROM todo_items WHERE list_id=? AND done=0", (lid,))}
+        for it in items:
+            p = TodoItem(list_id=lid, title=str(it.get("title") or "")[:200], notes=str(it.get("notes") or "")[:4000],
+                         priority=it.get("priority") if it.get("priority") in PRIOS else "normal", note_id=note_id,
+                         status=it.get("status") if it.get("status") in ("todo", "doing", "done") else "todo",
+                         remind_date=it.get("remind_date") or None,
+                         checks=[Check(text=str(x)[:200]) for x in (it.get("checks") or []) if str(x).strip()][:30])
+            if not (p.title or "").strip() or p.title.strip().lower() in have:
+                continue
+            try:
+                f, checks = _clean_item(p, False)
+            except HTTPException:
+                f, checks = _clean_item(p.model_copy(update={"remind_date": None}), False)   # zła data od AI — bez terminu
+            iid = c.execute(f"INSERT INTO todo_items({','.join(f)}) VALUES({','.join('?' * len(f))})", tuple(f.values())).lastrowid
+            _save_checks(c, iid, checks)
+            _sync_calendar(c, iid)
+            have.add(p.title.strip().lower())
+            n += 1
+    return n
+
+
+@router.post("/api/todo/from-note")
+def from_note(p: FromNote):
+    import json as _json
+    import re as _re
+    from quiz import load_note, parse_json_list, _html_text
+    title, text = load_note(p.note_id)
+    if not p.ai:
+        # bez AI: punkty z list zadań (checklist) i list punktowanych w notatce
+        with get_conn() as c:
+            raw = c.execute("SELECT content FROM notes WHERE id=?", (p.note_id,)).fetchone()["content"] or "[]"
+        items = []
+        for b in _json.loads(raw):
+            if b.get("type") == "checklist":
+                items += [{"title": i.get("text"), "status": "done" if i.get("done") else "todo"} for i in b.get("items") or [] if (i.get("text") or "").strip()]
+            elif b.get("type") in ("text", "callout", "toggle"):
+                items += [{"title": _html_text(li)} for li in _re.findall(r"<li[^>]*>(.*?)</li>", b.get("html") or "", _re.S) if _html_text(li)]
+        if not items:
+            raise HTTPException(400, "W tej notatce nie ma list ani checklist — użyj opcji z AI.")
+        return {"added": _insert_items(p.list_id, p.note_id, items)}
+    from server import gemini, GeminiError, _gemini_key
+    if not _gemini_key():
+        raise HTTPException(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
+    if len(text) < 20:
+        raise HTTPException(400, "Notatka jest pusta — nie ma z czego zrobić zadań.")
+    ins = p.instructions.strip()[:1500]
+    prompt = ("Na podstawie notatki studenta (np. opis projektu, sylabus, wymagania na zaliczenie, ustalenia z zajęć) przygotuj "
+              "konkretny plan pracy jako karty zadań na tablicę Kanban.\n"
+              + (f"WSKAZÓWKI STUDENTA (najważniejsze): „{ins}”\n" if ins else "") +
+              f"Dzisiaj jest {date.today().isoformat()}. Zasady:\n"
+              "- 4–15 zadań, każde wykonalne i zaczynające się od czasownika (np. „Przygotować…”, „Powtórzyć…”).\n"
+              "- Jeśli w notatce są terminy, ustaw remind_date (YYYY-MM-DD); inaczej pomiń to pole.\n"
+              "- priority: high | normal | low. Opcjonalnie checks: lista 2–6 kroków.\n"
+              'Zwróć WYŁĄCZNIE tablicę JSON: [{"title": "...", "notes": "...", "priority": "normal", "remind_date": "2026-11-20", "checks": ["..."]}]\n\n'
+              f"Notatka „{title}”:\n{text[:100_000]}")
+    try:
+        out = gemini([{"text": prompt}], max_tokens=6000, temperature=0.4, timeout=150, kind="tasks", json_mode=True)
+    except GeminiError as e:
+        if e.status in (429, 503):
+            raise HTTPException(503, "Model Gemini jest chwilowo przeciążony albo wyczerpano limit. Spróbuj ponownie za chwilę.")
+        raise HTTPException(400 if e.status == 400 else 502, e.msg)
+    items = [x for x in parse_json_list(out) if isinstance(x, dict)]
+    return {"added": _insert_items(p.list_id, p.note_id, items)}

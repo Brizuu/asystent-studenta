@@ -166,7 +166,7 @@ body.in-nauka .main{padding-bottom:14px}
 /* kafelki modułów (Pulpit) */
 /* ---------- pulpit: powitanie + dwa wejścia (Harmonogram, Zeszyty) ---------- */
 #view-pulpit{padding-top:34px;max-width:1120px;margin-inline:auto}
-#view-pulpit.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 2 * var(--s4))}
+#view-pulpit.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 2 * var(--s4) - var(--tb,0px))}
 /* niebo zależne od pory dnia: statyczne (bez pętli), zmiana pory = łagodne przenikanie */
 .sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .45s ease;
   mask-image:linear-gradient(#000 58%,rgba(0,0,0,.55) 100%);-webkit-mask-image:linear-gradient(#000 58%,rgba(0,0,0,.55) 100%)}
@@ -1936,15 +1936,15 @@ body.on-start .c-time{display:none}
 @media(prefers-reduced-motion:reduce){.lg .tassel,.lg .sheen,.lp-icon,body.on-start .au-card,.lp-more svg{animation:none}.lp-reveal{opacity:1;transform:none}.uni-row{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.uni[aria-hidden]{display:none}}
 
 /* ---------- własny pasek tytułu (aplikacja na Windows, okno bez ramki) ---------- */
-body.has-tbar{--tb:34px}
-.tbar{position:fixed;top:0;left:0;right:0;height:34px;z-index:450;display:flex;align-items:center;user-select:none;-webkit-user-select:none;
+body.has-tbar{--tb:30px}
+.tbar{position:fixed;top:0;left:0;right:0;height:30px;z-index:450;display:flex;align-items:center;user-select:none;-webkit-user-select:none;
   background:rgba(11,11,20,.88);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);border-bottom:1px solid rgba(255,255,255,.07)}
 .tbar .tb-brand{display:flex;align-items:center;gap:9px;padding:0 12px 0 14px;height:100%;cursor:default}
 .tbar .tb-brand .mark{width:18px;height:18px;flex:none}
 .tbar .tb-brand b{font-size:12.5px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
 .tbar .tb-brand small{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
 .tbar .tb-fill{flex:1;height:100%}
-.tbar .tb-btn{width:46px;height:34px;border:0;background:transparent;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,color .12s}
+.tbar .tb-btn{width:44px;height:30px;border:0;background:transparent;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,color .12s}
 .tbar .tb-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4}
 .tbar .tb-btn:hover{background:rgba(255,255,255,.09);color:var(--ink)}
 .tbar .tb-btn.tb-x:hover{background:#e81123;color:#fff}
@@ -1993,6 +1993,96 @@ body.win-max .wrz{display:none}
   font-size:13px;font-weight:600;color:#ece8ff;background:linear-gradient(90deg,rgba(22,20,40,.86),rgba(58,46,108,.9),rgba(22,20,40,.86));background-size:200% 100%;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);min-height:44px;animation:ai-shim 1.6s linear infinite;
   border:1px solid color-mix(in srgb,#b9a8ff 50%,transparent)}
 @media(prefers-reduced-motion:reduce){.ai-bar i,.ai-skel i,.block.ai-working::after{animation:none}}
+
+/* nagrywanie w notatce: dyskretne, gdy nic się nie nagrywa; w trybie nauki schowane */
+.recbar.quiet{padding:0;border:0;background:transparent;margin:0 0 8px}
+.rec-start{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--ink-dim);font:inherit;font-size:12.5px;padding:4px 8px;border-radius:8px;cursor:pointer;opacity:.75;transition:opacity .15s,background .15s,color .15s}
+.rec-start i{width:7px;height:7px;border-radius:50%;background:color-mix(in srgb,var(--neg) 70%,transparent)}
+.rec-start:hover{opacity:1;background:rgba(255,255,255,.05);color:var(--ink-soft)} .rec-start[disabled]{cursor:default;opacity:.45}
+.reading .recbar{display:none!important}
+/* nagłówek notatki: przedmiot i prowadzący lekko wyróżnieni */
+.nhead .nctx{margin-top:5px;font-size:12.5px;color:var(--ink-soft);letter-spacing:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.nhead .nctx b{color:var(--ink);font-weight:600}
+.nhead .nctx span{display:inline-flex;align-items:center;gap:5px}
+.nhead .nctx svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+/* okruszki w Nauce: mniejsze, pogrubione tylko „Zeszyty” */
+#nauka-head.compact h1{font-size:clamp(17px,1.9vw,21px);font-weight:500;letter-spacing:-.01em}
+#nauka-head.compact h1 .crumb:first-child{font-weight:700}
+#nauka-head.compact h1 .crumb.cur{color:var(--ink-soft)}
+#nauka-head.compact .crumb-sep{margin:0 6px!important}
+
+@media(max-height:940px){.rail .foot{display:none}}
+@media(max-height:820px) and (min-width:821px){.rail{gap:10px;padding-top:16px;padding-bottom:12px}.navlist{margin-top:4px;gap:2px}.navlist button{padding-top:9px;padding-bottom:9px}.rail-bottom{margin-top:8px;padding-top:8px;gap:2px}.rail-bottom .bell{padding:8px 12px}}
+
+/* Pulpit na niższym ekranie laptopa: powitanie, karta „Teraz” i 4 kafelki mieszczą się bez przewijania */
+@media(max-height:960px) and (min-width:821px){
+  body.on-pulpit .main{padding-top:14px;padding-bottom:14px}
+  #view-pulpit{padding-top:0}
+  #view-pulpit.active{min-height:calc(100vh - var(--tb,0px) - 28px)}
+  .welcome{padding:4px 0 18px}
+  .wl-date{font-size:15px}
+  .wl-title{font-size:clamp(36px,min(6vw,7.4vh),70px)}
+  .wl-lead{margin-top:6px;font-size:clamp(15px,min(1.5vw,2.2vh),19px)}
+  .wl-next{margin-top:10px}
+  .ck-time{font-size:clamp(40px,min(5vw,7.6vh),68px)}
+  .wl-clock .wl-now{margin-top:10px}
+  .wl-now{padding-top:11px} .wl-now .wn-title{font-size:16px;margin-top:3px} .wl-now .wn-left b{font-size:21px}
+  .wl-now .pg{margin-top:9px} .wl-now .wn-then{margin-top:9px;padding:8px 16px}
+  .portals{gap:14px}
+  .portals .portal{padding:16px 20px;border-radius:22px}
+  .portals .portal-art{height:clamp(64px,10vh,96px)}
+  .portals .portal-txt h2{font-size:22px}
+  .portals .portal-foot{margin-top:8px}
+}
+
+/* Kanban */
+.td-hacts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.td-viewseg{display:flex} .td-viewseg button{display:inline-flex;align-items:center;gap:6px}
+.td-viewseg .td-ico{width:15px;height:15px}
+.kb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.kb-col{border-radius:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);padding:10px;min-height:220px;transition:background .15s,border-color .15s}
+.kb-col.over{background:color-mix(in srgb,var(--kc) 10%,transparent);border-color:color-mix(in srgb,var(--kc) 55%,transparent)}
+.kb-col header{display:flex;align-items:center;gap:8px;padding:2px 4px 10px;font-size:13px}
+.kb-col header i{width:8px;height:8px;border-radius:50%;background:var(--kc)} .kb-col header b{flex:1}
+.kb-col header span{font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.kb-list{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.kb-card{padding:10px 12px;border-radius:12px;background:rgba(20,21,32,.6);border:1px solid var(--line);border-left:3px solid var(--c);cursor:grab;transition:transform .12s,box-shadow .15s,opacity .15s}
+.kb-card:hover{box-shadow:0 10px 24px -14px rgba(0,0,0,.7);transform:translateY(-1px)}
+.kb-card.dragging{opacity:.4}
+.kb-card b{display:block;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink)}
+.kb-card small{display:block;margin-top:3px;font-size:12px;color:var(--ink-dim)}
+.kb-card .td-chips{margin-top:7px} .kb-card .td-chip{font-size:11.5px}
+.nexport.nquiz{color:#d9d2ff;border-color:color-mix(in srgb,#b9a8ff 40%,transparent)}
+.kb-card.is-done b{text-decoration:line-through;color:var(--ink-dim)}
+.kb-empty{font-size:12px;color:var(--ink-dim);text-align:center;padding:16px 6px;border:1px dashed var(--line);border-radius:10px}
+.kb-add input{width:100%;margin-top:8px;padding:8px 10px!important;border-radius:10px;font-size:13px;background:transparent!important;border:1px dashed var(--line)!important}
+@media(max-width:900px){.kb{grid-template-columns:1fr}}
+
+/* quiz */
+.quiz-modal{padding:22px 24px!important}
+.qz-top{display:flex;align-items:flex-start;gap:12px} .qz-top>div{flex:1;min-width:0}
+.qz-top h3{font-size:17px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .qz-top small{font-size:12.5px;color:var(--ink-dim)} .qz-top small b{color:var(--pos)}
+.qz-x{border:0;background:transparent;color:var(--ink-dim);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:8px} .qz-x:hover{background:var(--glass-2);color:var(--ink)}
+.qz-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin:12px 0 18px;overflow:hidden}
+.qz-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#54d996,#5eead4);transition:width .4s cubic-bezier(.2,.9,.3,1)}
+.qz-card{padding:20px 22px;border-radius:18px;background:linear-gradient(160deg,rgba(185,168,255,.1),rgba(255,255,255,.03));border:1px solid color-mix(in srgb,#b9a8ff 30%,transparent);animation:pop .25s ease}
+.qz-src{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#d9d2ff;margin-bottom:8px}
+.qz-q{font-size:clamp(17px,2vw,21px);font-weight:600;line-height:1.4;color:#fff}
+.qz-a{position:relative;margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.18);border:1px dashed rgba(255,255,255,.14);cursor:pointer;min-height:64px;outline:none}
+.qz-a-txt{font-size:15px;line-height:1.6;color:var(--ink-soft);filter:blur(7px);user-select:none;transition:filter .25s}
+.qz-a-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#ece8ff;transition:opacity .2s}
+.qz-a.on{border-style:solid;border-color:rgba(84,217,150,.35);background:rgba(84,217,150,.06)} .qz-a.on .qz-a-txt{filter:none;user-select:text;color:var(--ink)} .qz-a.on .qz-a-hint{opacity:0;pointer-events:none}
+.qz-a:focus-visible{box-shadow:0 0 0 3px rgba(159,171,255,.35)}
+.qz-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.qz-acts .btn{justify-content:center;padding:13px;font-size:15px} .qz-acts kbd{font:inherit;font-size:11px;opacity:.55;margin-left:6px;padding:1px 6px;border-radius:5px;border:1px solid currentColor}
+.qz-know{background:linear-gradient(135deg,#54d996,#5eead4)!important;color:#0d2a1f!important}
+.qz-foot{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.qz-done{text-align:center;padding:26px 10px} .qz-emoji{font-size:44px} .qz-done b{display:block;font-size:20px;margin-top:6px} .qz-done small{display:block;color:var(--ink-dim);margin:6px 0 14px}
+.qz-wait{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:34px 10px} .qz-wait .ai-spin{width:34px;height:34px;border-width:3px} .qz-wait small{color:var(--ink-dim);max-width:340px}
+.qz-list{display:flex;flex-direction:column;gap:8px;max-height:58vh;overflow:auto;margin:14px 0 4px}
+.qz-li{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.qz-li .m{flex:1;min-width:0} .qz-li b{display:block;font-size:13.5px} .qz-li small{display:block;font-size:12.5px;color:var(--ink-dim);margin-top:3px;white-space:pre-line}
+.qz-li.ok{border-color:rgba(84,217,150,.3)} .qz-li.ok b::before{content:'✓ ';color:var(--pos)}
 </style>
 </head>
 <body class="on-pulpit">
@@ -2356,6 +2446,7 @@ body.win-max .wrz{display:none}
             <div class="hbox"><span class="eyebrow">Notatki w zeszycie</span>
               <span class="htitle"><span class="cover" id="notes-cover" style="--c:#8b7cff"></span><span id="notes-head">—</span></span></div>
             <div class="pnbtns">
+              <button class="btn ghost sm" onclick="openQuiz({notebook_id:nbActive})" title="Nauka z pytań wszystkich notatek tego zeszytu">✦ Quiz z zeszytu</button>
               <button class="btn ghost sm" onclick="shareCurrent('notebook')" title="Udostępnij cały zeszyt znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
               <button class="btn ghost sm" onclick="openGroupCreator()">+ Grupa</button>
               <button class="btn ghost sm" onclick="openNoteCreator()">+ Nowa notatka</button>
@@ -2381,6 +2472,7 @@ body.win-max .wrz{display:none}
                 </div>
                 <div class="nhead-row2">
                   <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
+                  <button class="btn ghost xs nexport nquiz" onclick="openQuiz({note_id:noteActive})" title="Quiz z tej notatki: pytania od AI, odpowiedź do odsłonięcia, „Umiem” / „Pomiń”"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.6 9.6a2.4 2.4 0 114 1.8c-.9.7-1.6 1.1-1.6 2.3M12 16.6h.01"/></svg> Quiz</button>
                   <button class="btn ghost xs nexport" onclick="shareCurrent('note')" title="Udostępnij notatkę znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
                   <button class="btn ghost xs nexport" onclick="exportNotePdf()" title="Eksportuj notatkę do PDF"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 21h14"/></svg> PDF</button>
                 </div>
@@ -3549,13 +3641,14 @@ async function renderRecBar(){
   if(!APP.desktop||!noteActive){bar.style.display='none';return;}
   const nid=noteActive, list=await api('/rec?note_id='+nid); if(nid!==noteActive)return;
   recList=list; bar.style.display='';
+  bar.classList.toggle('quiet',!(recState.id)&&!list.some(r=>r.status!=='recording'));
   const mine=recState.id&&recState.note_id===nid, other=recState.id&&!mine;
   // pełny render tylko gdy coś się zmieniło; co sekundę aktualizujemy sam licznik i poziom dźwięku
   const sig=JSON.stringify([mine,other,list.filter(r=>r.status!=='recording')]);
   if(sig!==recSig){ recSig=sig;
     bar.innerHTML=`<div class="rec-top">${mine
       ?`<button class="btn danger sm" onclick="recStop()">■ Zatrzymaj</button><span class="rec-live"><i></i><span id="rec-time"></span></span><span class="rec-meter" title="Poziom dźwięku z mikrofonu"><b id="rec-lvl"></b></span><span class="rec-hint">Nagranie zapisuje się na dysku na bieżąco.</span>`
-      :`<button class="btn ghost sm" onclick="recStart()" ${other?'disabled title="Trwa nagrywanie w innej notatce"':''}>● Nagraj wykład</button><span class="rec-hint">${other?'Trwa nagrywanie w innej notatce.':'Nagranie zostaje na dysku — na tekst zamienisz je później jednym kliknięciem.'}</span>`}</div>`
+      :`<button class="rec-start" onclick="recStart()" ${other?'disabled title="Trwa nagrywanie w innej notatce"':'title="Nagranie zostaje na dysku — na tekst zamienisz je później jednym kliknięciem."'}><i></i>Nagraj wykład</button>${other?'<span class="rec-hint">Trwa nagrywanie w innej notatce.</span>':''}`}</div>`
       +list.filter(r=>r.status!=='recording').map(r=>`<div class="rec-row">
         <span class="rec-t">${esc(r.title)}</span><span class="rec-m">${fmtDur(r.seconds)} · ${r.parts} ${plural(r.parts,'część','części','części')}</span>
         <span class="rec-s st-${r.status}">${REC_ST[r.status]||r.status}${r.status==='transcribing'?` ${r.done_parts}/${r.parts}`:''}${r.status==='done'&&r.inserted?' · w notatce ✓':''}</span>
@@ -3823,9 +3916,13 @@ function renderTodo(){
   const open=pool.filter(i=>!i.done), done=pool.filter(i=>i.done);
   const title=tdSel==='today'?'Dziś':tdSel==='all'?'Wszystkie':L?L.name:'';
   const col=L?L.color:tdSel==='today'?'#5eafff':'#9fabff';
-  $('#td-main').innerHTML=`
-    <div class="td-head" style="--c:${col}"><div><h2>${esc(title)}</h2><small>${open.length} ${plural(open.length,'zadanie','zadania','zadań')} do zrobienia${L&&L.priority!=='normal'?' · priorytet '+PRIO[L.priority][0].toLowerCase():''}</small></div>
-      ${L?`<button class="btn ghost sm" onclick="openTodoList(${L.id})">Edytuj listę</button>`:''}</div>
+  const kb=tdView()==='kanban';
+  const head=`<div class="td-head" style="--c:${col}"><div><h2>${esc(title)}</h2><small>${open.length} ${plural(open.length,'zadanie','zadania','zadań')} do zrobienia${L&&L.priority!=='normal'?' · priorytet '+PRIO[L.priority][0].toLowerCase():''}</small></div>
+      <div class="td-hacts"><div class="seg td-viewseg"><button class="${kb?'':'on'}" onclick="tdSetView('list')" title="Lista">${tdIco('list')}Lista</button><button class="${kb?'on':''}" onclick="tdSetView('kanban')" title="Tablica Kanban">${KB_ICO}Kanban</button></div>
+      <button class="btn ghost sm" onclick="tdFromNote()" title="Karty z notatki: z list i checklist albo plan pracy od AI">✦ Z notatki</button>
+      ${L?`<button class="btn ghost sm" onclick="openTodoList(${L.id})">Edytuj listę</button>`:''}</div></div>`;
+  if(kb){$('#td-main').innerHTML=head+renderKanban(pool,col);wireKanban();return;}
+  $('#td-main').innerHTML=head+`
     <form class="td-quick" onsubmit="event.preventDefault();tdQuickAdd()"><span class="td-cb" style="--c:${col}"></span><input id="td-new" placeholder="${tdSel==='today'?'Nowe zadanie na dziś…':'Nowe zadanie…'}" autocomplete="off"><button class="btn sm" type="submit">Dodaj</button></form>
     <div class="td-items">${open.map(tdRow).join('')||`<div class="td-empty">${tdSel==='today'?'Na dziś nic nie zostało ✓':'Brak zadań — dodaj pierwsze powyżej.'}</div>`}</div>
     ${done.length?`<button class="td-donebtn" onclick="tdDoneOpen=!tdDoneOpen;renderTodo()">${tdDoneOpen?'Ukryj':'Pokaż'} ukończone (${done.length})</button>
@@ -3846,6 +3943,70 @@ function tdRow(it){
       ${it.notes?`<small>${esc(it.notes.split('\n')[0])}</small>`:''}${chips?`<div class="td-chips">${chips}</div>`:''}</div></div>`;
 }
 function tdPick(s){tdSel=s;tdDoneOpen=false;renderTodo();}
+/* ---------- KANBAN: Do zrobienia / W trakcie / Zrobione, przeciąganie kart między kolumnami ---------- */
+const KB_ICO='<svg class="td-ico" viewBox="0 0 24 24"><rect x="3.5" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="15.5" y="4" width="5" height="13" rx="1.5"/></svg>';
+const KB_COLS=[['todo','Do zrobienia','#9fabff'],['doing','W trakcie','#ffb454'],['done','Zrobione','#54d996']];
+const tdView=()=>{try{return localStorage.getItem('td_view')||'list';}catch(_){return 'list';}};
+function tdSetView(v){try{localStorage.setItem('td_view',v);}catch(_){}renderTodo();}
+const kbStatus=it=>it.done?'done':(it.status==='doing'?'doing':'todo');
+function renderKanban(pool,col){
+  const card=it=>{const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#9fabff',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
+    const when=it.remind_date?(it.remind_date===TD.today?'Dziś':dShort(it.remind_date))+(it.remind_time?' '+it.remind_time:''):'';
+    return `<div class="kb-card${it.done?' is-done':''}" draggable="true" data-id="${it.id}" style="--c:${L.color}" onclick="openTodo(${it.id})">
+      <b>${it.priority==='high'?'<em class="pr-high">!!</em> ':it.priority==='low'?'<em class="pr-low">↓</em> ':''}${esc(it.title)}</b>
+      ${it.notes?`<small>${esc(it.notes.split('\n')[0])}</small>`:''}
+      <div class="td-chips">${when?`<span class="td-chip${it.overdue?' late':''}">${tdIco('bell')}${when}</span>`:''}
+        ${ch.length?`<span class="td-chip">${tdIco('list')}${chd}/${ch.length}<i class="td-mini"><i style="width:${chd/ch.length*100}%"></i></i></span>`:''}
+        ${it.note_title?`<span class="td-chip lnk" onclick="event.stopPropagation();openLinkedNote(${it.note_nb},${it.note_id})">${tdIco('note')}${esc(it.note_title)}</span>`:''}
+        ${tdSel==='today'||tdSel==='all'?`<span class="td-chip"><i class="td-dot" style="--c:${L.color}"></i>${esc(L.name)}</span>`:''}</div></div>`;};
+  return `<div class="kb">${KB_COLS.map(([k,l,c])=>{const its=pool.filter(i=>kbStatus(i)===k);
+    return `<section class="kb-col" data-st="${k}" style="--kc:${c}"><header><i></i><b>${l}</b><span>${its.length}</span></header>
+      <div class="kb-list">${its.map(card).join('')||`<div class="kb-empty">${k==='done'?'Przeciągnij tu skończone':'Przeciągnij kartę tutaj'}</div>`}</div>
+      ${k!=='done'?`<form class="kb-add" onsubmit="event.preventDefault();kbAdd('${k}',this)"><input placeholder="+ Dodaj kartę" autocomplete="off"></form>`:''}</section>`;}).join('')}</div>`;
+}
+function wireKanban(){
+  let dragId=null;
+  $$('.kb-card').forEach(c=>{c.addEventListener('dragstart',e=>{dragId=+c.dataset.id;c.classList.add('dragging');try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(dragId));}catch(_){}});
+    c.addEventListener('dragend',()=>{c.classList.remove('dragging');$$('.kb-col').forEach(x=>x.classList.remove('over'));});});
+  $$('.kb-col').forEach(col=>{
+    col.addEventListener('dragover',e=>{if(dragId==null)return;e.preventDefault();col.classList.add('over');});
+    col.addEventListener('dragleave',e=>{if(!col.contains(e.relatedTarget))col.classList.remove('over');});
+    col.addEventListener('drop',async e=>{e.preventDefault();col.classList.remove('over');const id=dragId;dragId=null;if(id==null)return;
+      const it=TD.items.find(i=>i.id===id), st=col.dataset.st; if(!it||kbStatus(it)===st)return;
+      it.status=st; it.done=st==='done'; renderTodo();   // od razu, zapis w tle
+      await api('/todo/items/'+id,{method:'PATCH',body:JSON.stringify({status:st})}); loadTodo();});
+  });
+}
+async function kbAdd(st,form){
+  const inp=form.querySelector('input'), t=inp.value.trim(); if(!t)return;
+  const body={title:t,status:st}; if(typeof tdSel==='number')body.list_id=tdSel; if(tdSel==='today')body.remind_date=TD.today;
+  await api('/todo/items',{method:'POST',body:JSON.stringify(body)}); await loadTodo();
+  const again=[...$$('.kb-col')].find(c=>c.dataset.st===st)?.querySelector('.kb-add input'); again?.focus();
+}
+/* karty z notatki: listy i checklisty (bez AI) albo plan pracy od Gemini */
+async function tdFromNote(){
+  const nbs=await api('/notebooks'); const notes=(await Promise.all(nbs.map(n=>api('/notes?notebook_id='+n.id).then(l=>l.map(x=>({...x,nb:n})))))).flat();
+  if(!notes.length){popout({icon:'info',title:'Nie masz jeszcze notatek',text:'Utwórz notatkę w Nauce (np. opis projektu albo sylabus), a potem zrób z niej karty.'});return;}
+  let mode='plain';
+  const m=$('#modal'); m.style.maxWidth='520px';
+  m.innerHTML=`<h3>Karty z notatki</h3><div class="msub">Zadania trafią do ${typeof tdSel==='number'?'listy „'+esc((TD.lists.find(l=>l.id===tdSel)||{}).name||'')+'”':'pierwszej listy'} i na tablicę Kanban.</div>
+    <div class="field"><span>Notatka</span><div id="fn-note"></div></div>
+    <div class="field"><span>Sposób</span><div class="ai-modes"><button type="button" data-k="plain"><b>Z list i checklist</b><small>Punkty z notatki stają się kartami. Bez AI, natychmiast.</small></button>
+      <button type="button" data-k="ai"><b>✦ Plan od AI</b><small>Gemini rozpisze pracę na zadania z terminami i krokami.</small></button></div></div>
+    <label class="field" id="fn-ins-w" hidden><span>Wskazówki dla AI (opcjonalnie)</span><textarea id="fn-ins" rows="2" placeholder="np. projekt grupowy na 20 listopada, podziel na etapy"></textarea></label>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="fn-go">Utwórz karty</button></div>`;
+  const cb=combo($('#fn-note'),{items:notes.map(n=>({v:n.id,label:n.title||'Bez tytułu',group:n.nb.name,icon:ICONS.nauka,color:n.nb.color})),value:(noteActive&&notes.some(n=>n.id===noteActive))?noteActive:notes[0].id,placeholder:'Szukaj notatki…'});
+  const paint=()=>{$$('#modal .ai-modes button').forEach(b=>b.classList.toggle('on',b.dataset.k===mode));$('#fn-ins-w').hidden=mode!=='ai';};
+  $$('#modal .ai-modes button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;paint();}); paint(); openModal();
+  $('#fn-go').onclick=async()=>{
+    const body={note_id:+cb.get(),list_id:typeof tdSel==='number'?tdSel:null,ai:mode==='ai',instructions:$('#fn-ins').value};
+    closeModal(); const stop=mode==='ai'?aiProgress({title:'Gemini planuje zadania',stages:['Wysyłam notatkę','Gemini rozpisuje pracę','Układam karty']}):()=>{};
+    try{const r=await api('/todo/from-note',{method:'POST',body:JSON.stringify(body)}); if(r.detail)throw new Error(r.detail);
+      stop(); tdSetView('kanban'); await loadTodo();
+      popout({icon:'ok',title:r.added?`Dodano ${r.added} ${plural(r.added,'kartę','karty','kart')}`:'Nic nowego',text:r.added?'Są w kolumnie „Do zrobienia”.':'Te zadania już są na liście.'});}
+    catch(e){stop();popout({icon:'warn',title:'Nie udało się utworzyć kart',text:e.message});}
+  };
+}
 async function tdQuickAdd(){
   const t=$('#td-new').value.trim(); if(!t)return;
   const body={title:t}; if(typeof tdSel==='number')body.list_id=tdSel; if(tdSel==='today')body.remind_date=TD.today;
@@ -4407,7 +4568,7 @@ async function loadUsage(){
   const reset=new Date(U.reset_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
   const bar=(key,pct,tone,cls='')=>`<div class="ubar${cls}" style="--c1:${tone[0]};--c2:${tone[1]}"><i data-k="${key}" data-w="${pct}" style="width:${_usagePrev[key]??0}%"></i></div>`;
   const rows=[['rpm','Zapytania na minutę',m.req,L.rpm,String],['tpm','Tokeny na minutę',m.tok,L.tpm,fmtTok]];
-  const K=[['note','Notatki AI'],['pdf','Notatki z PDF'],['improve','Poprawki AI'],['transcribe','Nagrania → tekst'],['test','Test połączenia'],['other','Inne']].filter(k=>t.kinds[k[0]]);
+  const K=[['note','Notatki AI'],['pdf','Notatki z PDF'],['improve','Poprawki AI'],['quiz','Quizy'],['tasks','Zadania z notatek'],['transcribe','Nagrania → tekst'],['test','Test połączenia'],['other','Inne']].filter(k=>t.kinds[k[0]]);
   const kmax=Math.max(1,...K.map(k=>t.kinds[k[0]])), hmax=Math.max(1,...U.history.map(d=>d.in+d.out));
     box.innerHTML=`<div class="us-top"><h3>Zużycie AI</h3><span class="mdl">${esc(U.model)}</span><span class="us-tier">Darmowy plan</span>
       <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/usage','_blank')">AI Studio ↗</button></div>
@@ -4797,7 +4958,7 @@ function closeModal(){
   if(!bd.classList.contains('open')||modalClosing)return;
   modalClosing=true; bd.style.pointerEvents='none';
   const done=()=>{ if(!modalClosing)return;             // ktoś otworzył ponownie w trakcie — nie czyścić
-    modalClosing=false; bd.classList.remove('open'); bd.style.pointerEvents=''; m.innerHTML=''; m.style.maxWidth=''; };
+    modalClosing=false; bd.classList.remove('open'); bd.style.pointerEvents=''; m.innerHTML=''; m.style.maxWidth=''; m.classList.remove('quiz-modal'); if(typeof QZ!=='undefined')QZ=null; };
   // ta sama droga z powrotem: odwrócenie animacji wejścia od bieżącej wartości
   modalAnim=m.animate(modalFrames().reverse(),{duration:reduceMotion()?120:Math.round(SPRING.duration*.7),easing:reduceMotion()?'ease':SPRING.easing});
   bd.animate([{opacity:1},{opacity:0}],{duration:modalAnim.effect.getTiming().duration,easing:'ease-in'});
@@ -4925,9 +5086,12 @@ async function openNote(id){
   const desc=noteData.description?esc(noteData.description):'';
   const line1=desc?`<div class="nsub-line"><span>${desc}</span></div>`:'';
   // linia kontekstu (przedmiot · prowadzący · sala), a „utworzono" osobno pod spodem
-  const ctx=[nb?('▦ '+nb.name):'', nb&&nb.teacher?nb.teacher:'', nb&&nb.room?('sala '+nb.room):''].filter(Boolean).join('  ·  ');
+  const SV={nb:'<svg viewBox="0 0 24 24"><path d="M4 5.5A2 2 0 016 4h5v16H6a2 2 0 01-2-2z"/><path d="M20 5.5A2 2 0 0018 4h-5v16h5a2 2 0 002-2z"/></svg>',
+    t:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0114 0"/></svg>',r:'<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>'};
+  const ctxH=[nb?`<span>${SV.nb}<b>${esc(nb.name)}</b></span>`:'', nb&&nb.teacher?`<span>${SV.t}<b>${esc(nb.teacher)}</b></span>`:'', nb&&nb.room?`<span>${SV.r}sala ${esc(nb.room)}</span>`:''].filter(Boolean).join('');
+  const ctx=ctxH;
   const made=noteData.created_at?('utworzono '+fmtDate(noteData.created_at)):'';
-  $('#note-sub').innerHTML=line1+(ctx?`<div class="nctx">${esc(ctx)}</div>`:'')+(made?`<div class="nmade">${esc(made)}</div>`:'');
+  $('#note-sub').innerHTML=line1+(ctx?`<div class="nctx">${ctx}</div>`:'')+(made?`<div class="nmade">${esc(made)}</div>`:'');
   $('#note-sub').style.display=(line1||ctx||made)?'block':'none';
   noteTodoChip(noteActive);
   applyTheme(nb?nb.theme:'midnight');
@@ -5232,11 +5396,32 @@ function buildTextBlock(d,b){
   ed.innerHTML=b.html||'';
   if(b.fontSize)ed.style.fontSize=b.fontSize+'px';
 
-  const save=()=>{b.html=stripDecor(ed);scheduleSave();};
+  // ===== własna historia bloku (Ctrl+Z / Ctrl+Y): formatowanie robione na DOM nie trafia na stos przeglądarki =====
+  let H=[{html:b.html||'',sel:null}], hi=0, lastType=0;
+  const selOff=()=>{const s=getSelection();if(!s.rangeCount||!ed.contains(s.anchorNode))return null;const r=s.getRangeAt(0),pre=document.createRange();
+    pre.selectNodeContents(ed);pre.setEnd(r.startContainer,r.startOffset);const a=pre.toString().length;pre.setEnd(r.endContainer,r.endOffset);return [a,pre.toString().length];};
+  const posAt=off=>{const w=document.createTreeWalker(ed,NodeFilter.SHOW_TEXT);let n,c=0,last=null;while(n=w.nextNode()){if(off<=c+n.length)return [n,off-c];c+=n.length;last=n;}
+    return last?[last,last.length]:[ed,ed.childNodes.length];};
+  function hist(typing){
+    const h=stripDecor(ed); if(H[hi]&&H[hi].html===h){H[hi].sel=selOff()||H[hi].sel;return;}
+    const now=Date.now(), st={html:h,sel:selOff(),typing:!!typing};
+    if(typing&&H[hi].typing&&now-lastType<1000&&hi>0)H[hi]=st;          // pisanie ciągiem = jeden krok cofania
+    else{H=H.slice(0,hi+1);H.push(st);if(H.length>200)H.shift();hi=H.length-1;}
+    if(typing)lastType=now;
+  }
+  function histMark(){if(H[hi]&&H[hi].html===stripDecor(ed))H[hi].sel=selOff()||H[hi].sel; H[hi].typing=false;}   // przed operacją: zapamiętaj zaznaczenie
+  function histGo(d){
+    const j=hi+d; if(j<0||j>=H.length)return; hi=j; const st=H[hi];
+    ed.innerHTML=st.html; b.html=st.html; scheduleSave();
+    if(st.sel){try{const r=document.createRange(),[a1,a2]=[posAt(st.sel[0]),posAt(st.sel[1])];r.setStart(a1[0],a1[1]);r.setEnd(a2[0],a2[1]);
+      const s=getSelection();s.removeAllRanges();s.addRange(r);}catch(_){}}
+    remember(); updateActive(); lastType=0;
+  }
+  const save=(typing)=>{b.html=stripDecor(ed);scheduleSave();hist(typing===true);};
   let lastRange=null, enterStreak=0;
   const remember=()=>{const s=window.getSelection(); if(s.rangeCount && ed.contains(s.anchorNode)) lastRange=s.getRangeAt(0).cloneRange();};
   const restore=()=>{ed.focus(); if(lastRange){const s=window.getSelection(); s.removeAllRanges(); s.addRange(lastRange);}};
-  const execRaw=(cmd,val)=>{try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,val);remember();save();updateActive();};
+  const execRaw=(cmd,val)=>{histMark();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,val);remember();save();updateActive();};
   // przyciski paska i skróty: żywe zaznaczenie (mousedown preventDefault je trzyma) — bez skoków karetki
   const run=(cmd,val=null)=>{ed.focus();execRaw(cmd,val);};
   // popupy (kolor, rozmiar, link): najpierw przywróć zapamiętane zaznaczenie
@@ -5295,7 +5480,7 @@ function buildTextBlock(d,b){
   }
   // kind: rodzaj; make: () => nowy element (null = tylko zdejmij); allOn: czy całe zaznaczenie już ma ten format
   function applyFmt(kind,make,mode){
-    ed.focus(); const s=getSelection(); if(!s.rangeCount)return;
+    ed.focus(); histMark(); const s=getSelection(); if(!s.rangeCount)return;
     let r=s.getRangeAt(0); if(!ed.contains(r.commonAncestorContainer))return;
     if(r.collapsed){const w=wordRange(r);if(!w)return;r=w;}
     const test=FMT_EL[kind];
@@ -5562,14 +5747,18 @@ function buildTextBlock(d,b){
     document.querySelectorAll('.block.editing').forEach(x=>{if(x!==d)x.classList.remove('editing');});
     d.classList.add('editing'); activeEditable=ed; setTimeout(updateActive,0);
   });
-  ed.addEventListener('input',()=>{save();handleMention(ed);calcSuggest(ed);scheduleGrammar(ed);});
+  ed.addEventListener('input',()=>{save(true);handleMention(ed);calcSuggest(ed);scheduleGrammar(ed);});
   ed.addEventListener('keyup',()=>{remember();updateActive();});
   ed.addEventListener('mouseup',()=>{remember();updateActive();});
   ed.addEventListener('focus',()=>scheduleGrammar(ed,600));
   ed.addEventListener('blur',()=>setTimeout(()=>{if(!d.contains(document.activeElement))d.classList.remove('editing');hideMention();closeCalcSuggest();},200));
   document.addEventListener('selectionchange',()=>{if(document.activeElement===ed)updateActive();});
 
+  ed.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'){e.preventDefault();histGo(-1);}else if(e.inputType==='historyRedo'){e.preventDefault();histGo(1);}});
   ed.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&!e.altKey){const k=e.key.toLowerCase();
+      if(k==='z'&&!e.shiftKey){e.preventDefault();histGo(-1);return;}
+      if(k==='y'||(k==='z'&&e.shiftKey)){e.preventDefault();histGo(1);return;}}
     mentionKeydown(e);
     if(mentionEl.style.display!=='none')return;
     // listy: Tab = wcięcie (punkt podrzędny, inna kropka), Shift+Tab = poziom wyżej
@@ -5949,6 +6138,110 @@ function insertAiBlock(id,html){
       el.classList.add('editing'); el.scrollIntoView({block:'center'});}
 }
 
+/* ===== QUIZ: pytania z notatki (Gemini), odpowiedź rozmyta, „Umiem” zdejmuje z puli, „Pomiń” odkłada na później ===== */
+let QZ=null;
+async function openQuiz(scope){
+  if(scope.note_id){clearTimeout(saveTimer);await saveNote();}
+  const cards=await api('/quiz?'+(scope.note_id?'note_id='+scope.note_id:'notebook_id='+scope.notebook_id));
+  const title=scope.note_id?(noteData&&noteData.title)||'Notatka':(allNotebooks.find(n=>n.id===scope.notebook_id)||{}).name||'Zeszyt';
+  QZ={scope,title,cards,queue:cards.filter(c=>!c.learned),cur:null,shown:false,view:'study'};
+  $('#modal').style.maxWidth='720px'; openModal(); $('#modal').classList.add('quiz-modal');
+  if(!cards.length){scope.note_id?qzForm():qzEmptyNb();return;}
+  qzNext(false);
+}
+function qzEmptyNb(){
+  $('#modal').innerHTML=`<h3>Quiz z zeszytu „${esc(QZ.title)}”</h3><div class="msub">W tym zeszycie nie ma jeszcze pytań. Otwórz notatkę i kliknij „Quiz” — pytania ze wszystkich notatek trafią tutaj.</div>
+    <div class="actions"><button class="btn" onclick="qzClose()">Rozumiem</button></div>`;
+}
+function qzClose(){closeModal();$('#modal').classList.remove('quiz-modal');QZ=null;}
+function qzForm(more=false){
+  let count=20;
+  $('#modal').innerHTML=`<h3>✦ ${more?'Więcej pytań':'Quiz z notatki'}</h3><div class="msub">AI przygotuje pytania z notatki „${esc(QZ.title)}”. Odpowiedź będzie rozmyta — odsłonisz ją kliknięciem, a „Umiem” zdejmie pytanie z puli.</div>
+    <div class="field"><span>Ile pytań</span><div class="seg" id="qz-n" style="display:flex">${[10,20,30,40].map(n=>`<button type="button" data-n="${n}" style="flex:1">${n}</button>`).join('')}</div></div>
+    <label class="field"><span>Na czym się skupić? (opcjonalnie)</span><textarea id="qz-ins" rows="2" placeholder="np. definicje i daty, pytania jak na egzaminie ustnym"></textarea></label>
+    <div class="ai-chips">${['Definicje i pojęcia','Pytania jak na egzaminie','Daty i nazwiska','Wzory i przykłady','Porównania i różnice'].map(p=>`<button type="button" data-p="${p}">${p}</button>`).join('')}</div>
+    <div class="actions">${more||QZ.cards.length?'<button class="btn ghost" onclick="qzNext(false)">Wróć</button>':'<button class="btn ghost" onclick="qzClose()">Anuluj</button>'}<button class="btn" id="qz-go">✦ ${more?'Dodaj pytania':'Utwórz quiz'}</button></div>`;
+  const paint=()=>$$('#qz-n button').forEach(b=>b.classList.toggle('on',+b.dataset.n===count)); paint();
+  $$('#qz-n button').forEach(b=>b.onclick=()=>{count=+b.dataset.n;paint();});
+  $$('#modal .ai-chips button').forEach(c=>c.onclick=()=>{const t=$('#qz-ins'),v=t.value.trim();t.value=v.includes(c.dataset.p)?v:(v?v+'. ':'')+c.dataset.p;c.classList.add('on');});
+  $('#qz-go').onclick=()=>qzGenerate(count,$('#qz-ins').value.trim(),!more);
+}
+async function qzGenerate(count,instructions,replace){
+  const note_id=QZ.scope.note_id;
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  if(AIS.mode==='chat'||!AIS.has_key)return qzViaChat(count,instructions,replace);
+  $('#modal').innerHTML=`<div class="qz-wait"><span class="ai-spin"></span><b>Gemini układa pytania…</b><small>Zwykle 10–40 s. Możesz zamknąć to okno — quiz zapisze się w notatce.</small>
+    <button class="btn ghost sm" onclick="qzClose()">Zamknij</button></div>`;
+  const stop=aiProgress({title:'Gemini tworzy quiz',stages:['Wysyłam notatkę','Gemini wybiera najważniejsze zagadnienia','Układam pytania i odpowiedzi']});
+  try{const r=await api('/quiz/generate',{method:'POST',body:JSON.stringify({note_id,count,instructions,replace})}); if(r.detail)throw new Error(r.detail);
+    stop(); if(!QZ||QZ.scope.note_id!==note_id){popout({icon:'ok',title:'Quiz gotowy',text:`${r.added} pytań w notatce — kliknij „Quiz”, żeby się uczyć.`});return;}
+    await openQuiz({note_id});}
+  catch(e){stop(); if(QZ)qzForm(!replace); popout({icon:'warn',title:'Nie udało się utworzyć quizu',text:e.message});}
+}
+async function qzViaChat(count,instructions,replace){
+  const note_id=QZ.scope.note_id, r=await api('/quiz/prompt',{method:'POST',body:JSON.stringify({note_id,count,instructions})});
+  let copied=false; try{await navigator.clipboard.writeText(r.prompt);copied=true;}catch(_){}
+  const chat=AIS.chat==='chatgpt'?'chatgpt':'gemini', name=chat==='chatgpt'?'ChatGPT':'Gemini'; window.open(CHAT_URL[chat],'_blank');
+  $('#modal').innerHTML=`<h3>Quiz przez ${name}</h3><div class="msub">${copied?'Polecenie jest w schowku.':'Skopiuj polecenie.'} Wklej je w czacie, a odpowiedź (pary „P: … / O: …”) wklej tutaj.</div>
+    ${copied?'':`<label class="field"><span>Polecenie</span><textarea readonly onclick="this.select()">${esc(r.prompt)}</textarea></label>`}
+    <label class="field chatpaste"><span>Odpowiedź z czatu</span><textarea id="qz-paste" placeholder="P: …&#10;O: …"></textarea></label>
+    <div class="actions"><button class="btn ghost" onclick="qzForm(${!replace})">Wróć</button><button class="btn" id="qz-imp">Zapisz pytania</button></div>`;
+  $('#qz-imp').onclick=async()=>{const t=$('#qz-paste').value.trim(); if(!t)return;
+    const x=await api('/quiz/import',{method:'POST',body:JSON.stringify({note_id,text:t,replace})});
+    if(x.detail){popout({icon:'warn',title:'Nie udało się odczytać pytań',text:x.detail});return;} openQuiz({note_id});};
+}
+function qzNext(advance=true){
+  if(!QZ)return; QZ.view='study'; QZ.shown=false; if(advance||!QZ.cur)QZ.cur=QZ.queue[0]||null;
+  const total=QZ.cards.length, learned=QZ.cards.filter(c=>c.learned).length, pct=total?Math.round(learned/total*100):0;
+  const top=`<div class="qz-top"><div><h3>${QZ.scope.note_id?'Quiz':'Quiz z zeszytu'} · ${esc(QZ.title)}</h3><small>Nauczone <b>${learned}</b> z ${total} · w puli ${QZ.queue.length}</small></div>
+    <button class="qz-x" onclick="qzClose()" aria-label="Zamknij">✕</button></div><div class="qz-bar"><i style="width:${pct}%"></i></div>`;
+  const foot=`<div class="qz-foot"><button class="btn ghost sm" onclick="qzList()">Lista pytań</button>${QZ.scope.note_id?'<button class="btn ghost sm" onclick="qzForm(true)">✦ Więcej pytań</button>':''}
+    <button class="btn ghost sm" onclick="qzReset()">Zacznij od nowa</button></div>`;
+  if(!QZ.cur){
+    $('#modal').innerHTML=top+`<div class="qz-done"><div class="qz-emoji">🎉</div><b>Wszystko nauczone!</b><small>${total} ${plural(total,'pytanie','pytania','pytań')} zdjęte z puli. Wróć za kilka dni i powtórz od nowa.</small>
+      <div class="actions" style="justify-content:center"><button class="btn" onclick="qzReset()">Powtórz od nowa</button>${QZ.scope.note_id?'<button class="btn ghost" onclick="qzForm(true)">✦ Więcej pytań</button>':''}</div></div>`+foot;
+    return;
+  }
+  const c=QZ.cur;
+  $('#modal').innerHTML=top+`<div class="qz-card">${QZ.scope.notebook_id?`<span class="qz-src">${esc(c.note_title||'')}</span>`:''}
+      <div class="qz-q">${esc(c.q)}</div>
+      <div class="qz-a" id="qz-a" tabindex="0" role="button" aria-label="Pokaż odpowiedź"><div class="qz-a-txt">${esc(c.a).replace(/\n/g,'<br>')}</div><span class="qz-a-hint">Kliknij, aby zobaczyć odpowiedź · Spacja</span></div></div>
+    <div class="qz-acts"><button class="btn ghost qz-skip" onclick="qzSkip()">↻ Pomiń <kbd>1</kbd></button><button class="btn qz-know" onclick="qzKnow()">✓ Umiem <kbd>2</kbd></button></div>`+foot;
+  $('#qz-a').onclick=qzReveal;
+}
+function qzReveal(){if(!QZ||!QZ.cur)return;QZ.shown=!QZ.shown;$('#qz-a')?.classList.toggle('on',QZ.shown);}
+function qzSkip(){
+  if(!QZ||!QZ.cur)return; const c=QZ.queue.shift();
+  QZ.queue.splice(Math.min(QZ.queue.length,3),0,c);   // wraca za kilka pytań
+  api('/quiz/'+c.id,{method:'PATCH',body:JSON.stringify({skip:true})}).catch(()=>{});
+  QZ.cur=null; qzNext();
+}
+function qzKnow(){
+  if(!QZ||!QZ.cur)return; const c=QZ.queue.shift(); c.learned=true;
+  api('/quiz/'+c.id,{method:'PATCH',body:JSON.stringify({learned:true})}).catch(()=>{});
+  QZ.cur=null; qzNext();
+}
+async function qzReset(){
+  await api('/quiz/reset',{method:'POST',body:JSON.stringify(QZ.scope)}); openQuiz(QZ.scope);
+}
+function qzList(){
+  QZ.view='list';
+  $('#modal').innerHTML=`<div class="qz-top"><div><h3>Pytania · ${esc(QZ.title)}</h3><small>${QZ.cards.length} ${plural(QZ.cards.length,'pytanie','pytania','pytań')}</small></div><button class="qz-x" onclick="qzClose()" aria-label="Zamknij">✕</button></div>
+    <div class="qz-list">${QZ.cards.map(c=>`<div class="qz-li${c.learned?' ok':''}"><div class="m"><b>${esc(c.q)}</b><small>${esc(c.a)}</small></div>
+      <button class="btn ghost xs" onclick="qzToggle(${c.id})">${c.learned?'Do nauki':'Umiem'}</button><button class="btn ghost xs" title="Usuń pytanie" onclick="qzDel(${c.id})">✕</button></div>`).join('')}</div>
+    <div class="actions"><button class="btn ghost" style="margin-right:auto;color:var(--neg)" onclick="qzDelAll()">Usuń quiz</button><button class="btn" onclick="qzNext(false)">Wróć do nauki</button></div>`;
+}
+async function qzToggle(id){const c=QZ.cards.find(x=>x.id===id);c.learned=!c.learned;await api('/quiz/'+id,{method:'PATCH',body:JSON.stringify({learned:c.learned})});
+  QZ.queue=QZ.cards.filter(x=>!x.learned);QZ.cur=null;qzList();}
+async function qzDel(id){await api('/quiz/'+id,{method:'DELETE'});QZ.cards=QZ.cards.filter(x=>x.id!==id);QZ.queue=QZ.queue.filter(x=>x.id!==id);if(QZ.cur&&QZ.cur.id===id)QZ.cur=null;qzList();}
+async function qzDelAll(){const sc=QZ.scope; qzClose(); if(!await confirmPop('Usunąć cały quiz?','Pytania i postęp nauki znikną.','Usuń'))return;
+  await api('/quiz/reset',{method:'POST',body:JSON.stringify({...sc,delete:true})}); popout({icon:'ok',title:'Quiz usunięty'});}
+addEventListener('keydown',e=>{
+  if(!QZ||QZ.view!=='study'||!$('#modal-bd').classList.contains('open')||/INPUT|TEXTAREA/.test(document.activeElement?.tagName||''))return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();qzReveal();}
+  else if(e.key==='1'||e.key==='ArrowLeft'){e.preventDefault();qzSkip();}
+  else if(e.key==='2'||e.key==='ArrowRight'){e.preventDefault();qzKnow();}
+});
 /* ===== EKSPORT NOTATKI DO PDF ===== */
 function pdfExportDialog(){
   return new Promise(res=>{

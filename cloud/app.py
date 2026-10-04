@@ -465,7 +465,7 @@ def admin_reset_password(uid: int, a=Depends(admin_user)):
 
 
 # ---------- synchronizacja urządzeń (dane z aplikacji jednego konta) ----------
-SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes"}
+SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes", "quiz_cards"}
 MAX_SYNC_ITEM = 2_000_000       # jedna notatka (JSON bloków)
 MAX_SYNC_USER = 200_000_000     # łączny rozmiar danych konta
 

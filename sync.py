@@ -30,11 +30,12 @@ TABLES = {
     "todo_lists": {},
     "todo_items": {"list_id": "todo_lists", "note_id": "notes", "notebook_id": "notebooks", "anchor_id": "tasks", "task_id": "tasks"},
     "todo_checks": {"item_id": "todo_items"},
+    "quiz_cards": {"note_id": "notes"},
     "costs": {},
     "cost_entries": {"cost_id": "costs"},
     "incomes": {},
 }
-REQUIRED_FK = {("note_groups", "notebook_id"), ("notes", "notebook_id"), ("todo_items", "list_id"), ("todo_checks", "item_id")}
+REQUIRED_FK = {("note_groups", "notebook_id"), ("notes", "notebook_id"), ("todo_items", "list_id"), ("todo_checks", "item_id"), ("quiz_cards", "note_id")}
 NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Asystent-sync"
 
