@@ -317,6 +317,11 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wl-now.brk .live{animation:none}
 .wl-now:not(:has(.wn-then)){padding-bottom:14px}
 .wl-main{min-width:0}
+/* szeroki ekran: karta „Teraz” w prawej kolumnie pod zegarem — lewa kolumna niższa, kafelki Zeszytów itd. widać od razu */
+.wl-clock .wl-now{width:min(430px,100%);margin:16px 0 0 auto}
+.wl-clock:has(.wl-now:not([hidden])){flex:0 1 430px;min-width:340px}
+.welcome:has(.wl-clock .wl-now:not([hidden])){flex-wrap:nowrap}
+.welcome:has(.wl-clock .wl-now:not([hidden])) .wl-main{flex:1 1 300px}
 @media(max-width:600px){.wl-now .wn-left b{font-size:20px}.wl-now .wn-title{font-size:16px}.wl-now .wn-then em{display:none}}
 @media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px 6px 12px;line-height:1.35;vertical-align:middle;min-height:34px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(255,255,255,.1);
@@ -2748,6 +2753,10 @@ setInterval(()=>{ if($('#view-pulpit').classList.contains('active'))paintTime();
 const evSpan=t=>{const a=toMin(t.start_time);let b=t.end_time?toMin(t.end_time):a+60;return [a,b>a?b:a+60];};
 const inTxt=m=>m<60?`za ${m} min`:`za ${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
 /* jedno zdanie zamiast tablicy danych: co teraz / co dalej */
+// karta „Teraz”: obok zegara na szerokim ekranie, pod powitaniem na wąskim
+(()=>{const mq=matchMedia('(min-width: 980px)');const place=()=>{const c=$('#wl-now');if(!c)return;
+  if(mq.matches)$('.wl-clock').appendChild(c); else $('.wl-main').insertBefore(c,$('#wl-next'));};
+  place(); mq.addEventListener?mq.addEventListener('change',place):mq.addListener(place);})();
 function renderWelcome(tasks){
   const n=nowMin(), timed=tasks.filter(t=>t.start_time&&!t.done).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
   const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
