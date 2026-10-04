@@ -1439,6 +1439,10 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
 .b-text:focus{background:rgba(255,255,255,.03)}
 .b-text:empty:before{content:attr(data-ph);color:var(--ink-dim)}
 .b-text b{color:var(--ink)} .b-text ul{padding-left:20px}
+/* kolejne poziomy listy: pełna kropka → pusta → kwadrat; 1. → a. → i. */
+.b-text ul{list-style-type:disc} .b-text ul ul,.b-text ol ul{list-style-type:circle} .b-text ul ul ul,.b-text ol ul ul,.b-text ul ol ul{list-style-type:square}
+.b-text ol ol,.b-text ul ol{list-style-type:lower-alpha} .b-text ol ol ol,.b-text ul ol ol{list-style-type:lower-roman}
+.b-text li>ul,.b-text li>ol{margin:2px 0}
 .mini-tb{display:flex;gap:4px;margin-bottom:4px}
 .mini-tb button{width:28px;height:26px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;font-size:13px}
 .mini-tb button:hover{background:var(--glass-2);color:var(--ink)}
