@@ -288,17 +288,36 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .ck-ico{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .wl-lead{margin-top:12px;font-size:clamp(17px,1.6vw,20px);line-height:1.45;color:#ece7df;max-width:640px;letter-spacing:-.003em;text-shadow:0 1px 14px rgba(0,0,0,.4)}
 .wl-next[hidden],.wl-now[hidden]{display:none}
-/* trwa teraz: kolor rodzaju wpisu + pasek postępu */
-.wl-now{display:inline-flex;align-items:center;gap:10px;margin:14px 10px 0 0;padding:6px 14px 6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px;line-height:1.35;color:var(--ink);vertical-align:middle;min-height:34px;box-sizing:border-box;
-  border:1px solid color-mix(in srgb,var(--kc) 45%,transparent);background:color-mix(in srgb,var(--kc) 16%,rgba(20,20,30,.35));
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out}
+/* karta „teraz / przerwa”: co trwa, ile zostało, gdzie, a pod spodem co dalej */
+.wl-now{display:block;width:min(560px,100%);margin:16px 0 0;padding:14px 16px 0;border-radius:18px;cursor:pointer;font:inherit;text-align:left;color:var(--ink);box-sizing:border-box;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--kc) 40%,rgba(255,255,255,.12));background:linear-gradient(135deg,color-mix(in srgb,var(--kc) 20%,rgba(18,18,30,.5)),rgba(18,18,30,.42));
+  backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);box-shadow:0 14px 34px -18px rgba(0,0,0,.6);transition:transform .1s ease-out,border-color .15s}
+.wl-now:hover{border-color:color-mix(in srgb,var(--kc) 60%,rgba(255,255,255,.2))}
 .wl-now:active{transform:var(--press)}
-.wl-now .live{width:8px;height:8px;border-radius:50%;background:var(--kc);box-shadow:0 0 0 0 color-mix(in srgb,var(--kc) 60%,transparent);animation:live 2s ease-out infinite}
+.wl-now .wn-top{display:flex;align-items:flex-start;gap:14px}
+.wl-now .wn-main{flex:1;min-width:0}
+.wl-now .wn-lbl{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--kc) 70%,#fff)}
+.wl-now .live{width:8px;height:8px;border-radius:50%;background:var(--kc);box-shadow:0 0 0 0 color-mix(in srgb,var(--kc) 60%,transparent);animation:live 2s ease-out infinite;flex:none}
 @keyframes live{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
-.wl-now small{color:var(--ink-soft);font-size:13.5px}
-.wl-now .pg{width:64px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
-.wl-now .pg i{display:block;height:100%;background:var(--kc)}
-.wl-now.brk{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)} .wl-now.brk .live{animation:none;background:rgba(255,255,255,.55)}
+.wl-now .wn-title{display:block;margin-top:5px;font-size:18px;font-weight:650;line-height:1.3;letter-spacing:-.01em;color:#fff;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wl-now .wn-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-size:13px;color:var(--ink-soft)}
+.wl-now .wn-meta span{display:inline-flex;align-items:center;gap:5px}
+.wl-now .wn-meta svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.wl-now .wn-left{flex:none;text-align:right}
+.wl-now .wn-left b{display:block;font-size:24px;font-weight:300;letter-spacing:-.02em;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wl-now .wn-left small{font-size:12px;color:var(--ink-dim)}
+.wl-now .pg{display:block;height:4px;margin:12px 0 0;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
+.wl-now .pg i{display:block;height:100%;border-radius:2px;background:var(--kc)}
+.wl-now .wn-then{display:flex;align-items:center;gap:10px;margin:12px -16px 0;padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12);font-size:13px;color:var(--ink-soft)}
+.wl-now .wn-then .t{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.wl-now .wn-then .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.wl-now .wn-then .d{width:7px;height:7px;border-radius:50%;background:var(--nc);flex:none}
+.wl-now .wn-then em{font-style:normal;color:var(--ink-dim);white-space:nowrap}
+.wl-now.brk{--kc:#a8b3c7}
+.wl-now.brk .live{animation:none}
+.wl-now:not(:has(.wn-then)){padding-bottom:14px}
+.wl-main{min-width:0}
+@media(max-width:600px){.wl-now .wn-left b{font-size:20px}.wl-now .wn-title{font-size:16px}.wl-now .wn-then em{display:none}}
 @media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px 6px 12px;line-height:1.35;vertical-align:middle;min-height:34px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.06);color:var(--ink-soft);font:inherit;font-size:13.5px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .1s ease-out,background .15s}
@@ -2113,7 +2132,7 @@ body.win-max .wrz{display:none}
           <div class="wl-date" id="pulpit-date"></div>
           <h1 class="wl-title" id="greet">Dzień dobry</h1>
           <p class="wl-lead" id="wl-lead"></p>
-          <button class="wl-now" id="wl-now" hidden></button>
+          <div class="wl-now" id="wl-now" role="button" tabindex="0" hidden></div>
           <button class="wl-next" id="wl-next" hidden></button>
         </div>
         <div class="wl-clock">
@@ -2734,27 +2753,40 @@ function renderWelcome(tasks){
   const cur=timed.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), nxt=timed.find(t=>toMin(t.start_time)>n);
   const chip=t=>{const k=kindOf(t.kind);return `<span class="wl-chip" style="--kc:${k[2]}" onclick="viewTask(${t.id})">${kico(k)}${esc(t.title)}</span>`;};
   const at=t=>t.room?` w sali <b>${esc(t.room)}</b>${t.building?' ('+esc(t.building.split(' - ')[0])+')':''}`:'';
-  $('#wl-lead').innerHTML=cur?`Teraz ${chip(cur)}${at(cur)}.${nxt?` Potem <b>${esc(nxt.title)}</b> o ${nxt.start_time}.`:''}`
-    :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
-    :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
-    :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
-  // pigułka: co trwa teraz (ile do końca) albo przerwa do następnego wpisu dziś
   const hm=t=>String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
   const dur=m=>m<60?`${m} min`:`${Math.floor(m/60)} h${m%60?' '+m%60+' min':''}`;
   const all=tasks.filter(t=>t.start_time).sort((a,b)=>toMin(a.start_time)-toMin(b.start_time));
   const now=all.find(t=>{const [a,b]=evSpan(t);return a<=n&&n<b;}), next=all.find(t=>toMin(t.start_time)>n);
+  const brk=!now&&next&&all.some(t=>evSpan(t)[1]<=n);
+  // zdanie: tylko podsumowanie dnia — szczegóły „teraz / dalej” są w karcie pod spodem (bez powtórzeń)
+  const left=timed.filter(t=>evSpan(t)[1]>n), last=left.length?evSpan(left[left.length-1])[1]:null;
+  $('#wl-lead').innerHTML=(now||brk)
+    ?(left.length>1?`Dziś jeszcze <b>${left.length}</b> ${plural(left.length,'zajęcie','zajęcia','zajęć')} — koniec o <b>${hm(last)}</b>.`:`To ostatnie zajęcia dziś — koniec o <b>${hm(last)}</b>.`)
+    :nxt?`Następne: ${chip(nxt)} o <b>${nxt.start_time}</b>${at(nxt)}, ${inTxt(toMin(nxt.start_time)-n)}.`
+    :tasks.length?'Na dziś wszystko za Tobą. Dobry moment, żeby powtórzyć notatki.'
+    :'Dziś masz wolne. Zaplanuj coś albo wróć do notatek.';
+  const I={pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>',
+    clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'};
+  const place=t=>t.room||t.building?`<span>${I.pin}${t.room?'sala '+esc(t.room):''}${t.room&&t.building?' · ':''}${t.building?esc(t.building.split(' - ')[0]):''}</span>`:'';
+  const then=(t,gap)=>t?`<div class="wn-then" style="--nc:${kindOf(t.kind)[2]}"><span>Potem</span><span class="t">${t.start_time}</span><i class="d"></i><span class="n">${esc(t.title)}</span>${gap>0?`<em>${dur(gap)} przerwy</em>`:''}</div>`:'';
   const el=$('#wl-now');
   if(now){
     const k=kindOf(now.kind),[a,b]=evSpan(now), gap=next?toMin(next.start_time)-b:null;
     el.style.setProperty('--kc',k[2]); el.classList.remove('brk');
-    el.innerHTML=`<span class="live"></span><span><b>Trwa:</b> ${esc(now.title)} <small>· jeszcze ${dur(b-n)}, do ${now.end_time||hm(b)}${now.room?' · s. '+esc(now.room):''}${gap>0?` · potem ${dur(gap)} przerwy`:''}</small></span>
-      <span class="pg"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></span>`;
+    el.innerHTML=`<div class="wn-top"><div class="wn-main"><span class="wn-lbl"><span class="live"></span>Teraz${now.kind?' · '+esc(now.kind):''}</span>
+        <span class="wn-title">${esc(now.title)}</span>
+        <div class="wn-meta"><span>${I.clock}${hm(a)}–${now.end_time||hm(b)}</span>${place(now)}</div></div>
+      <div class="wn-left"><b>${dur(b-n)}</b><small>do końca</small></div></div>
+      <span class="pg"><i style="width:${Math.round((n-a)/(b-a)*100)}%"></i></span>${then(next,gap)}`;
     el.onclick=()=>viewTask(now.id); el.hidden=false;
-  }else if(next&&all.some(t=>evSpan(t)[1]<=n)){
-    const prev=all.filter(t=>evSpan(t)[1]<=n).pop(), from=prev?evSpan(prev)[1]:null, to=toMin(next.start_time), k=kindOf(next.kind);
-    el.style.setProperty('--kc',k[2]); el.classList.add('brk');
-    el.innerHTML=`<span class="live"></span><span><b>Przerwa:</b> jeszcze ${dur(to-n)} <small>· potem ${esc(next.title)} o ${next.start_time}</small></span>
-      ${from!=null?`<span class="pg"><i style="width:${Math.round((n-from)/(to-from)*100)}%"></i></span>`:''}`;
+  }else if(brk){
+    const prev=all.filter(t=>evSpan(t)[1]<=n).pop(), from=prev?evSpan(prev)[1]:null, to=toMin(next.start_time);
+    el.style.removeProperty('--kc'); el.classList.add('brk');
+    el.innerHTML=`<div class="wn-top"><div class="wn-main"><span class="wn-lbl"><span class="live"></span>Przerwa</span>
+        <span class="wn-title">${esc(next.title)}</span>
+        <div class="wn-meta"><span>${I.clock}start o ${next.start_time}</span>${place(next)}</div></div>
+      <div class="wn-left"><b>${dur(to-n)}</b><small>do zajęć</small></div></div>
+      ${from!=null?`<span class="pg"><i style="width:${Math.round((n-from)/(to-from)*100)}%"></i></span>`:''}${then(all.find(t=>toMin(t.start_time)>to),0)}`;
     el.onclick=()=>viewTask(next.id); el.hidden=false;
   }else el.hidden=true;
 }
