@@ -292,6 +292,11 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .wl-now.brk .live{animation:none}
 .wl-now:not(:has(.wn-then)){padding-bottom:14px}
 .wl-main{min-width:0}
+/* szeroki ekran: karta „Teraz” w prawej kolumnie pod zegarem — lewa kolumna niższa, kafelki Zeszytów itd. widać od razu */
+.wl-clock .wl-now{width:min(430px,100%);margin:16px 0 0 auto}
+.wl-clock:has(.wl-now:not([hidden])){flex:0 1 430px;min-width:340px}
+.welcome:has(.wl-clock .wl-now:not([hidden])){flex-wrap:nowrap}
+.welcome:has(.wl-clock .wl-now:not([hidden])) .wl-main{flex:1 1 300px}
 @media(max-width:600px){.wl-now .wn-left b{font-size:20px}.wl-now .wn-title{font-size:16px}.wl-now .wn-then em{display:none}}
 @media(prefers-reduced-motion:reduce){.wl-now .live{animation:none}}
 .wl-next{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px 6px 12px;line-height:1.35;vertical-align:middle;min-height:34px;box-sizing:border-box;border-radius:999px;border:1px solid rgba(255,255,255,.1);
