@@ -1464,6 +1464,10 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
 .b-text:focus{background:rgba(255,255,255,.03)}
 .b-text:empty:before{content:attr(data-ph);color:var(--ink-dim)}
 .b-text b{color:var(--ink)} .b-text ul{padding-left:20px}
+/* kolejne poziomy listy: pełna kropka → pusta → kwadrat; 1. → a. → i. */
+.b-text ul{list-style-type:disc} .b-text ul ul,.b-text ol ul{list-style-type:circle} .b-text ul ul ul,.b-text ol ul ul,.b-text ul ol ul{list-style-type:square}
+.b-text ol ol,.b-text ul ol{list-style-type:lower-alpha} .b-text ol ol ol,.b-text ul ol ol{list-style-type:lower-roman}
+.b-text li>ul,.b-text li>ol{margin:2px 0}
 .mini-tb{display:flex;gap:4px;margin-bottom:4px}
 .mini-tb button{width:28px;height:26px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;font-size:13px}
 .mini-tb button:hover{background:var(--glass-2);color:var(--ink)}
@@ -5222,32 +5226,73 @@ function buildTextBlock(d,b){
     const nr=document.createRange(); nr.selectNodeContents(m);
     const s=window.getSelection(); s.removeAllRanges(); s.addRange(nr); m.removeAttribute('id'); remember();
   }
-  function fmtInline(kind){
-    ed.focus();
-    const f=FMT[kind]; const sel=window.getSelection(); if(!sel.rangeCount)return;
-    let range=sel.getRangeAt(0);
-    if(range.collapsed){ const w=wordRange(range); if(w){sel.removeAllRanges();sel.addRange(w);range=w;} else return; }
-    const active=fmtActive(kind);
-    const div=document.createElement('div'); div.appendChild(range.cloneContents());
-    div.querySelectorAll(f.sel).forEach(el=>{const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);p.remove();});
-    div.querySelectorAll('[style]').forEach(el=>{el.style[f.css]='';if(!el.getAttribute('style'))el.removeAttribute('style');});
-    const inner=div.innerHTML; const mid='_f'+Math.random().toString(36).slice(2,8);
-    const html=active?('<span id="'+mid+'">'+inner+'</span>'):('<'+f.tag+' id="'+mid+'">'+inner+'</'+f.tag+'>');
-    document.execCommand('insertHTML',false,html);
-    reselect(mid); save(); updateActive();
+  // ===== formatowanie na DOM (bez insertHTML): przeglądarka nie zjada spacji na granicach i wyłączanie działa zawsze =====
+  const FMT_EL={
+    bold:el=>/^(B|STRONG)$/.test(el.tagName)||(el.tagName==='SPAN'&&/bold|[6-9]00/.test(el.style.fontWeight)),
+    italic:el=>/^(I|EM)$/.test(el.tagName)||(el.tagName==='SPAN'&&el.style.fontStyle==='italic'),
+    underline:el=>el.tagName==='U', strike:el=>/^(S|STRIKE|DEL)$/.test(el.tagName),
+    superscript:el=>el.tagName==='SUP', subscript:el=>el.tagName==='SUB', mark:el=>el.tagName==='MARK'};
+  const SPAN_CSS={bold:'fontWeight',italic:'fontStyle'};
+  function fmtAnc(n,test){let el=n.nodeType===3?n.parentElement:n;while(el&&el!==ed){if(test(el))return el;el=el.parentElement;}return null;}
+  function textNodesIn(r){const out=[];const w=document.createTreeWalker(r.commonAncestorContainer.nodeType===3?r.commonAncestorContainer.parentNode:r.commonAncestorContainer,NodeFilter.SHOW_TEXT);
+    let n;while(n=w.nextNode()){if(!r.intersectsNode(n)||!n.textContent.length)continue;
+      if(n===r.startContainer&&r.startOffset>=n.length)continue; if(n===r.endContainer&&r.endOffset===0)continue;   // tylko dotyka granicy
+      out.push(n);}return out;}
+  // rozetnij wszystkie elementy formatu nad znacznikiem tak, by żaden nie przechodził przez granicę zaznaczenia
+  function splitAt(m,test){
+    for(let guard=0;guard<20;guard++){
+      const ancs=[];let el=m.parentElement;while(el&&el!==ed){if(test(el))ancs.unshift(el);el=el.parentElement;}
+      const A=ancs.find(x=>{const pr=document.createRange();pr.setStart(x,0);pr.setEndBefore(m);return pr.toString().length>0||pr.cloneContents().querySelector('img,br,.itex');});
+      if(!A)return;
+      const r=document.createRange();r.setStartBefore(m);r.setEnd(A,A.childNodes.length);
+      const frag=r.extractContents(), c=A.cloneNode(false);c.removeAttribute('id');c.appendChild(frag);A.after(c);
+    }
   }
-  // ZAKREŚLACZ jako <mark> z ciemnym tekstem (czytelny) — toggle
+  function unwrapEl(el,kind){
+    if(el.tagName==='SPAN'&&SPAN_CSS[kind]){el.style[SPAN_CSS[kind]]='';if(el.getAttribute('style'))return;if(!el.getAttribute('style'))el.removeAttribute('style');}
+    const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);el.remove();
+  }
+  // kind: rodzaj; make: () => nowy element (null = tylko zdejmij); allOn: czy całe zaznaczenie już ma ten format
+  function applyFmt(kind,make,mode){
+    ed.focus(); const s=getSelection(); if(!s.rangeCount)return;
+    let r=s.getRangeAt(0); if(!ed.contains(r.commonAncestorContainer))return;
+    if(r.collapsed){const w=wordRange(r);if(!w)return;r=w;}
+    const test=FMT_EL[kind];
+    const nodes=textNodesIn(r), nt=nodes.filter(t=>t.textContent.trim()), chk=nt.length?nt:nodes;
+    const allOn=chk.length>0&&chk.every(t=>fmtAnc(t,test));
+    const off=mode==='off'||(mode==='toggle'&&allOn);
+    const m1=document.createElement('span'),m2=document.createElement('span'); m1.dataset.fm='1'; m2.dataset.fm='2';
+    const re=r.cloneRange(); re.collapse(false); re.insertNode(m2); const rs=r.cloneRange(); rs.collapse(true); rs.insertNode(m1);
+    splitAt(m1,test); splitAt(m2,test);
+    const inR=()=>{const x=document.createRange();x.setStartAfter(m1);x.setEndBefore(m2);return x;};
+    // zdejmij format ze wszystkiego w zaznaczeniu (także przy nakładaniu — bez zagnieżdżeń)
+    let x=inR(); const host=x.commonAncestorContainer.nodeType===3?x.commonAncestorContainer.parentNode:x.commonAncestorContainer;
+    const els=[...(host.querySelectorAll?host.querySelectorAll('*'):[])].filter(e=>test(e)&&x.intersectsNode(e));
+    let a=fmtAnc(m1,test); while(a){els.push(a); a=fmtAnc(a.parentElement,test);}   // przodek zaczynający się na znaczniku
+    [...new Set(els)].reverse().forEach(e=>{if(e.isConnected)unwrapEl(e,kind);});
+    if(!off&&make){
+      x=inR(); textNodesIn(x).forEach(t=>{if(!x.intersectsNode(t))return; if(!t.textContent.trim()&&(/\n/.test(t.textContent)||/^(UL|OL|TABLE|TBODY|TR)$/.test(t.parentNode.tagName)))return;
+        const el=make();t.before(el);el.appendChild(t);});
+    }
+    // zaznaczenie po zmianie: od pierwszego do ostatniego węzła tekstu (te same obiekty przetrwają scalanie)
+    const tn=textNodesIn(inR()); const fin=document.createRange();
+    if(tn.length){fin.setStart(tn[0],0);fin.setEnd(tn[tn.length-1],tn[tn.length-1].length);}else{fin.setStartAfter(m1);fin.collapse(true);}
+    m1.remove(); m2.remove();
+    // scal sąsiednie takie same znaczniki (po nałożeniu i po zdjęciu formatu), pomijając puste węzły tekstu
+    ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark').forEach(e=>{if(!e.isConnected)return;let n=e.nextSibling;
+      for(;;){while(n&&n.nodeType===3&&!n.length){const nx=n.nextSibling;n.remove();n=nx;}
+        if(!(n&&n.nodeType===1&&n.tagName===e.tagName&&n.getAttribute('style')===e.getAttribute('style')&&n.className===e.className))break;
+        while(n.firstChild)e.appendChild(n.firstChild);const nx=n.nextSibling;n.remove();n=nx;}});
+    ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark').forEach(e=>{if(!e.textContent&&!e.querySelector('img,br'))e.remove();});
+    s.removeAllRanges(); s.addRange(fin); remember(); save(); updateActive();
+  }
+  function fmtInline(kind){const f=FMT[kind]; applyFmt(kind,()=>document.createElement(f.tag),'toggle');}
+  // ZAKREŚLACZ jako <mark> z ciemnym tekstem (czytelny): ten sam kolor = zdejmij, inny = przemaluj, ⌀ = usuń
   function highlight(color){
-    ed.focus(); const sel=window.getSelection(); if(!sel.rangeCount)return;
-    let range=sel.getRangeAt(0);
-    if(range.collapsed){ const w=wordRange(range); if(w){sel.removeAllRanges();sel.addRange(w);range=w;} else return; }
-    const inMark=(()=>{let el=sel.anchorNode;el=el&&el.nodeType===3?el.parentElement:el;while(el&&el!==ed){if(el.tagName==='MARK')return true;el=el.parentElement;}return false;})();
-    const div=document.createElement('div'); div.appendChild(range.cloneContents());
-    div.querySelectorAll('mark').forEach(el=>{const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);p.remove();});
-    const inner=div.innerHTML; const mid='_h'+Math.random().toString(36).slice(2,8);
-    const html=(inMark||color==='none')?('<span id="'+mid+'">'+inner+'</span>'):('<mark id="'+mid+'" class="hl" style="--hlc:'+color+'">'+inner+'</mark>');
-    document.execCommand('insertHTML',false,html);
-    reselect(mid); save();
+    const s=getSelection(); let same=false;
+    if(s.rangeCount&&color!=='none'){const r=s.getRangeAt(0);const ns=textNodesIn(r.collapsed?(wordRange(r)||r):r);
+      same=ns.length>0&&ns.every(t=>{const m=fmtAnc(t,FMT_EL.mark);return m&&m.style.getPropertyValue('--hlc').trim()===color;});}
+    applyFmt('mark',()=>{const m=document.createElement('mark');m.className='hl';m.style.setProperty('--hlc',color);return m;},(color==='none'||same)?'off':'on');
   }
   function wordRange(range){
     let n=range.startContainer; if(n.nodeType!==3)return null; const t=n.textContent; let a=range.startOffset,b2=range.startOffset;
@@ -5438,6 +5483,23 @@ function buildTextBlock(d,b){
   function atLineStart(n){let p=n.previousSibling;while(p&&p.nodeType===3&&!p.textContent.trim())p=p.previousSibling;
     if(p&&p.tagName!=='BR'&&!/^(DIV|P|UL|OL|H[1-4]|BLOCKQUOTE|HR)$/.test(p.tagName||''))return false;
     const par=n.parentElement;return par===ed||/^(DIV|P|BLOCKQUOTE)$/.test(par.tagName);}
+  function keepCaret(fn){const s=getSelection();const r=s.rangeCount?s.getRangeAt(0).cloneRange():null;
+    const st=r&&[r.startContainer,r.startOffset,r.endContainer,r.endOffset]; fn();
+    if(st){try{const n=document.createRange();n.setStart(st[0],st[1]);n.setEnd(st[2],st[3]);s.removeAllRanges();s.addRange(n);}catch(_){}}
+    remember();save();updateActive();}
+  function indentLi(li){
+    const prev=li.previousElementSibling; if(!prev||prev.tagName!=='LI')return;   // pierwszy punkt nie ma rodzica
+    keepCaret(()=>{const list=li.parentElement; let sub=prev.lastElementChild;
+      if(!sub||sub.tagName!==list.tagName){sub=document.createElement(list.tagName);prev.appendChild(sub);}
+      sub.appendChild(li);
+      const own=[...li.children].find(c=>c.tagName===list.tagName); if(own){while(own.firstChild)sub.appendChild(own.firstChild);own.remove();}});
+  }
+  function outdentLi(li){
+    const list=li.parentElement, pli=list.parentElement; if(!pli||pli.tagName!=='LI')return;
+    keepCaret(()=>{const rest=[];let n=li.nextElementSibling;while(n){rest.push(n);n=n.nextElementSibling;}
+      if(rest.length){let own=[...li.children].find(c=>c.tagName===list.tagName);if(!own){own=document.createElement(list.tagName);li.appendChild(own);}rest.forEach(x=>own.appendChild(x));}
+      pli.after(li); if(!list.children.length)list.remove();});
+  }
   function exitList(li){
     const list=li.parentElement;
     if(list.parentElement&&list.parentElement.tagName==='LI'){document.execCommand('outdent');remember();save();updateActive();return;}
@@ -5469,6 +5531,8 @@ function buildTextBlock(d,b){
   ed.addEventListener('keydown',e=>{
     mentionKeydown(e);
     if(mentionEl.style.display!=='none')return;
+    // listy: Tab = wcięcie (punkt podrzędny, inna kropka), Shift+Tab = poziom wyżej
+    if(e.key==='Tab'&&!e.ctrlKey&&!e.altKey){const li=curLi(); if(li){e.preventDefault(); e.shiftKey?outdentLi(li):indentLi(li); return;}}
     // listy: Enter (albo Backspace) w PUSTYM punkcie → wyjście z listy (zagnieżdżona → poziom wyżej)
     if((e.key==='Enter'&&!e.shiftKey)||e.key==='Backspace'){
       const li=curLi();
