@@ -10,6 +10,7 @@ import os
 import platform
 import socket
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from datetime import datetime, timezone
@@ -260,7 +261,77 @@ def run(p: SyncRun):
     with get_conn() as c:
         c.executemany("INSERT OR IGNORE INTO sync_seen(uid) VALUES(?)", [(i["uid"],) for i in items])
         _set(c, last_push=started, cursor=cursor, last_sync=_now())
-    return {"pushed": pushed, "pulled": pulled, **stats, "last_sync": _state_get("last_sync")}
+    files = sync_files(p.cloud, p.token)
+    return {"pushed": pushed, "pulled": pulled, **stats, **files, "last_sync": _state_get("last_sync")}
+
+
+# ---------- pliki (PDF i inne załączniki z uploads/): kopia na koncie w serwerze kont ----------
+MAX_FILE = 60 * 1024 * 1024
+
+
+def _cloud_raw(base: str, token: str, method: str, path: str, data: bytes | None = None, timeout: int = 120) -> bytes:
+    base = os.getenv("ASYSTENT_SYNC_URL") or base
+    req = urllib.request.Request(base.rstrip("/") + path, method=method, data=data,
+                                 headers={"Authorization": "Bearer " + token, "User-Agent": UA,
+                                          **({"Content-Type": "application/octet-stream"} if data is not None else {})})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def _uploads():
+    from db import DATA_DIR
+    d = DATA_DIR / "uploads"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def sync_files(cloud: str, token: str, pull: bool = True) -> dict:
+    """Wyślij brakujące pliki na konto i pobierz te, których tu nie ma. Błędy plików nie psują synchronizacji danych."""
+    out = {"files_up": 0, "files_down": 0}
+    try:
+        remote = {f["name"]: f["size"] for f in json.loads(_cloud_raw(cloud, token, "GET", "/files", timeout=30))}
+    except Exception:
+        return out          # starszy serwer kont bez plików albo brak połączenia
+    up = _uploads()
+    local = {f.name: f for f in up.iterdir() if f.is_file() and not f.name.startswith(".")}
+    for name, f in local.items():
+        if name not in remote and f.stat().st_size <= MAX_FILE:
+            try:
+                _cloud_raw(cloud, token, "PUT", "/files/" + urllib.parse.quote(name), f.read_bytes())
+                out["files_up"] += 1
+            except Exception:
+                pass
+    if pull:
+        for name in remote:
+            if name not in local:
+                if fetch_file(name, cloud, token):
+                    out["files_down"] += 1
+    return out
+
+
+def fetch_file(name: str, cloud: str | None = None, token: str | None = None) -> bool:
+    """Pobierz jeden plik z konta (np. PDF z notatki zsynchronizowanej z innego urządzenia)."""
+    if not (cloud and token):
+        with get_conn() as c:
+            st = _state(c)
+        cloud, token = st.get("cloud"), st.get("token")
+    if not (cloud and token):
+        return False
+    name = os.path.basename(name)
+    try:
+        b = _cloud_raw(cloud, token, "GET", "/files/" + urllib.parse.quote(name))
+    except Exception:
+        return False
+    tmp = _uploads() / ("." + name + ".part")
+    tmp.write_bytes(b)
+    tmp.replace(_uploads() / name)
+    return True
+
+
+@router.post("/api/sync/files")
+def push_files(p: SyncRun):
+    """Przed udostępnieniem: pliki z notatek muszą być na koncie, żeby odbiorca mógł je pobrać."""
+    return sync_files(p.cloud, p.token, pull=False)
 
 
 def _state_get(k: str):

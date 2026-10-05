@@ -108,8 +108,26 @@ def db() -> sqlite3.Connection:
     return c
 
 
+SCHEMA += """
+CREATE TABLE IF NOT EXISTS groups (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name       TEXT NOT NULL,
+    color      TEXT DEFAULT '#8b7cff',
+    created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS group_members (
+    group_id INTEGER NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+    user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    added_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (group_id, user_id)
+);
+"""
+
 with db() as _c:
     _c.executescript(SCHEMA)
+    if "group_id" not in {r[1] for r in _c.execute("PRAGMA table_info(shares)")}:
+        _c.execute("ALTER TABLE shares ADD COLUMN group_id INTEGER")
     # migracje: kolumny dodane później (istniejące konta zostają)
     _have = {r[1] for r in _c.execute("PRAGMA table_info(users)")}
     for _col in ("university", "field", "study_year", "last_login"):
@@ -379,7 +397,8 @@ def friend_remove(fid: int, u=Depends(current_user)):
 
 # ---------- udostępnianie ----------
 class Share(BaseModel):
-    to: list[int]                 # id znajomych
+    to: list[int] = []            # id znajomych
+    group_id: int | None = None   # albo cała grupa (każdy członek dostaje kopię)
     kind: str                     # note | notebook
     title: str
     payload: dict
@@ -394,19 +413,24 @@ def share(p: Share, u=Depends(current_user)):
         raise HTTPException(413, "Za duże do udostępnienia (limit ok. 3 MB).")
     with db() as c:
         ok = _friend_ids(c, u["id"])
-        targets = [t for t in set(p.to) if t in ok]
+        targets = {t for t in set(p.to) if t in ok}
+        if p.group_id:
+            if not _is_member(c, p.group_id, u["id"]):
+                raise HTTPException(403, "Nie należysz do tej grupy.")
+            targets |= {r[0] for r in c.execute("SELECT user_id FROM group_members WHERE group_id=?", (p.group_id,))}
+            targets.discard(u["id"])
         if not targets:
-            raise HTTPException(400, "Wybierz co najmniej jednego znajomego.")
+            raise HTTPException(400, "Wybierz co najmniej jednego znajomego." if not p.group_id else "W tej grupie nie ma jeszcze nikogo poza Tobą.")
         for t in targets:
-            c.execute("INSERT INTO shares(sender,recipient,kind,title,payload) VALUES(?,?,?,?,?)",
-                      (u["id"], t, p.kind, p.title.strip()[:120] or "Bez tytułu", data))
+            c.execute("INSERT INTO shares(sender,recipient,kind,title,payload,group_id) VALUES(?,?,?,?,?,?)",
+                      (u["id"], t, p.kind, p.title.strip()[:120] or "Bez tytułu", data, p.group_id))
     return {"sent": len(targets)}
 
 
 @app.get("/shares")
 def shares(from_user: int | None = None, u=Depends(current_user)):
     """Udostępnione MNIE (opcjonalnie tylko od jednego znajomego) — bez treści, sama lista."""
-    q = ("SELECT s.id, s.kind, s.title, s.created_at, s.sender, length(s.payload) size FROM shares s "
+    q = ("SELECT s.id, s.kind, s.title, s.created_at, s.sender, s.group_id, length(s.payload) size FROM shares s "
          "WHERE s.recipient=?" + (" AND s.sender=?" if from_user else "") + " ORDER BY s.id DESC")
     with db() as c:
         return [dict(r) for r in c.execute(q, (u["id"], from_user) if from_user else (u["id"],))]
@@ -571,3 +595,169 @@ try:
     app.mount("/app", _web.make_app(_web_user))
 except ImportError:   # obraz bez plików aplikacji — sam serwer kont
     pass
+
+
+# ---------- GRUPY: znajomi w grupach, udostępnienie do grupy trafia do każdego członka ----------
+def _is_member(c, gid: int, uid: int) -> bool:
+    return bool(c.execute("SELECT 1 FROM group_members WHERE group_id=? AND user_id=?", (gid, uid)).fetchone())
+
+
+def _group_out(c, g, uid) -> dict:
+    members = [public(r) for r in c.execute(
+        "SELECT u.* FROM group_members m JOIN users u ON u.id=m.user_id WHERE m.group_id=? ORDER BY u.display_name", (g["id"],))]
+    n = c.execute("SELECT COUNT(*) FROM shares WHERE group_id=? AND recipient=?", (g["id"], uid)).fetchone()[0]
+    return {"id": g["id"], "name": g["name"], "color": g["color"], "owner": g["owner"], "is_owner": g["owner"] == uid,
+            "created_at": g["created_at"], "members": members, "received": n}
+
+
+@app.get("/groups")
+def groups(u=Depends(current_user)):
+    with db() as c:
+        rows = c.execute("SELECT g.* FROM groups g JOIN group_members m ON m.group_id=g.id WHERE m.user_id=? ORDER BY g.name",
+                         (u["id"],)).fetchall()
+        return [_group_out(c, g, u["id"]) for g in rows]
+
+
+class GroupIn(BaseModel):
+    name: str | None = None
+    color: str | None = None
+    add: list[int] = []
+    remove: list[int] = []
+
+
+@app.post("/groups")
+def group_create(p: GroupIn, u=Depends(current_user)):
+    name = (p.name or "").strip()[:60]
+    if not name:
+        raise HTTPException(400, "Podaj nazwę grupy.")
+    color = p.color if p.color and re.fullmatch(r"#[0-9a-fA-F]{6}", p.color) else "#8b7cff"
+    with db() as c:
+        gid = c.execute("INSERT INTO groups(owner,name,color) VALUES(?,?,?)", (u["id"], name, color)).lastrowid
+        ok = _friend_ids(c, u["id"]) | {u["id"]}
+        for m in {u["id"], *p.add}:
+            if m in ok:
+                c.execute("INSERT OR IGNORE INTO group_members(group_id,user_id) VALUES(?,?)", (gid, m))
+        return _group_out(c, c.execute("SELECT * FROM groups WHERE id=?", (gid,)).fetchone(), u["id"])
+
+
+@app.patch("/groups/{gid}")
+def group_edit(gid: int, p: GroupIn, u=Depends(current_user)):
+    with db() as c:
+        g = c.execute("SELECT * FROM groups WHERE id=?", (gid,)).fetchone()
+        if not g or not _is_member(c, gid, u["id"]):
+            raise HTTPException(404, "Nie ma takiej grupy.")
+        if p.name is not None or p.color is not None or p.remove:
+            if g["owner"] != u["id"]:
+                raise HTTPException(403, "Nazwę i skład grupy zmienia jej założyciel.")
+        if p.name is not None and p.name.strip():
+            c.execute("UPDATE groups SET name=? WHERE id=?", (p.name.strip()[:60], gid))
+        if p.color and re.fullmatch(r"#[0-9a-fA-F]{6}", p.color):
+            c.execute("UPDATE groups SET color=? WHERE id=?", (p.color, gid))
+        ok = _friend_ids(c, u["id"])          # każdy członek może dodać swoich znajomych
+        for m in p.add:
+            if m in ok:
+                c.execute("INSERT OR IGNORE INTO group_members(group_id,user_id) VALUES(?,?)", (gid, m))
+        for m in p.remove:
+            if m != g["owner"]:
+                c.execute("DELETE FROM group_members WHERE group_id=? AND user_id=?", (gid, m))
+        return _group_out(c, c.execute("SELECT * FROM groups WHERE id=?", (gid,)).fetchone(), u["id"])
+
+
+@app.delete("/groups/{gid}")
+def group_delete(gid: int, u=Depends(current_user)):
+    """Założyciel usuwa grupę; pozostali członkowie z niej wychodzą."""
+    with db() as c:
+        g = c.execute("SELECT * FROM groups WHERE id=?", (gid,)).fetchone()
+        if not g or not _is_member(c, gid, u["id"]):
+            raise HTTPException(404, "Nie ma takiej grupy.")
+        if g["owner"] == u["id"]:
+            c.execute("DELETE FROM groups WHERE id=?", (gid,))
+            c.execute("UPDATE shares SET group_id=NULL WHERE group_id=?", (gid,))
+        else:
+            c.execute("DELETE FROM group_members WHERE group_id=? AND user_id=?", (gid, u["id"]))
+    return {"ok": True}
+
+
+@app.get("/groups/{gid}/shares")
+def group_shares(gid: int, u=Depends(current_user)):
+    """Co trafiło do grupy: otrzymane przeze mnie + wysłane przeze mnie (jedna pozycja na wysyłkę)."""
+    with db() as c:
+        if not _is_member(c, gid, u["id"]):
+            raise HTTPException(404, "Nie ma takiej grupy.")
+        rows = c.execute("""SELECT s.id, s.kind, s.title, s.created_at, s.sender, s.recipient, us.display_name sender_name
+            FROM shares s JOIN users us ON us.id=s.sender
+            WHERE s.group_id=? AND (s.recipient=? OR s.sender=?) ORDER BY s.id DESC""", (gid, u["id"], u["id"])).fetchall()
+    out, seen = [], set()
+    for r in rows:
+        if r["sender"] == u["id"]:
+            k = (r["title"], r["created_at"], r["kind"])
+            if k in seen:
+                continue
+            seen.add(k)
+        out.append({k: r[k] for k in ("id", "kind", "title", "created_at", "sender", "sender_name")} | {"mine": r["sender"] == u["id"]})
+    return out
+
+
+# ---------- PLIKI (PDF i inne załączniki): kopia na koncie, dostępna na każdym urządzeniu i w udostępnieniach ----------
+FILES_DIR = Path(os.getenv("CLOUD_FILES") or DB_PATH.parent / "files")
+MAX_FILE = 60 * 1024 * 1024
+QUOTA = int(os.getenv("FILES_QUOTA_MB", "2048")) * 1024 * 1024
+_FNAME = re.compile(r"^[^/\\\x00]{1,200}$")
+
+
+def _udir(uid: int) -> Path:
+    d = FILES_DIR / f"u{uid}"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _fname(name: str) -> str:
+    name = os.path.basename(name or "")
+    if not _FNAME.match(name) or name in (".", ".."):
+        raise HTTPException(400, "Zła nazwa pliku.")
+    return name
+
+
+@app.get("/files")
+def files_list(u=Depends(current_user)):
+    d = _udir(u["id"])
+    return [{"name": f.name, "size": f.stat().st_size} for f in d.iterdir() if f.is_file()]
+
+
+@app.put("/files/{name}")
+async def files_put(name: str, request: Request, u=Depends(current_user)):
+    name = _fname(name)
+    body = await request.body()
+    if not body:
+        raise HTTPException(400, "Pusty plik.")
+    if len(body) > MAX_FILE:
+        raise HTTPException(413, "Plik za duży (limit 60 MB).")
+    d = _udir(u["id"])
+    used = sum(f.stat().st_size for f in d.iterdir() if f.is_file() and f.name != name)
+    if used + len(body) > QUOTA:
+        raise HTTPException(413, "Brak miejsca na koncie na kolejne pliki.")
+    (d / name).write_bytes(body)
+    return {"ok": True, "size": len(body)}
+
+
+def _send_file(f: Path):
+    from fastapi.responses import FileResponse
+    if not f.is_file():
+        raise HTTPException(404, "Nie ma takiego pliku na serwerze.")
+    return FileResponse(f, filename=f.name.split("_", 1)[-1] if re.match(r"^[0-9a-f]{10}_", f.name) else f.name)
+
+
+@app.get("/files/{name}")
+def files_get(name: str, u=Depends(current_user)):
+    return _send_file(_udir(u["id"]) / _fname(name))
+
+
+@app.get("/shares/{sid}/files/{name}")
+def share_file(sid: int, name: str, u=Depends(current_user)):
+    """Plik z udostępnionej notatki — tylko gdy jest w jej treści; pochodzi z konta nadawcy."""
+    name = _fname(name)
+    with db() as c:
+        r = c.execute("SELECT sender, payload FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"])).fetchone()
+    if not r or ("uploads/" + name) not in r["payload"]:
+        raise HTTPException(404, "Nie znaleziono.")
+    return _send_file(_udir(r["sender"]) / name)

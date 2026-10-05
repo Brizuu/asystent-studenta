@@ -37,7 +37,7 @@ UPLOAD_DIR = DATA_DIR / "uploads"   # względem bieżącego katalogu danych (w w
 @app.get("/uploads/{name}")
 def serve_upload(name: str):
     f = UPLOAD_DIR / os.path.basename(name)
-    if not f.exists():
+    if not f.exists() and not sync.fetch_file(name):   # plik z innego urządzenia: dociągnij z konta
         raise HTTPException(404, "Nie ma takiego pliku.")
     return FileResponse(f.path())
 
