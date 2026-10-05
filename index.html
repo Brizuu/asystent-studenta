@@ -2119,12 +2119,12 @@ body.win-max .wrz{display:none}
 .pomo{position:fixed;top:16px;right:72px;z-index:151}
 body.has-tbar .pomo{top:calc(var(--tb) + 12px)}
 body.on-start .pomo{display:none}
-.pomo-btn{position:relative;height:46px;min-width:46px;padding:0;border-radius:23px;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 32% 24%,#2c2430,#141218 70%);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+.pomo-btn{position:relative;height:46px;min-width:46px;padding:0;border-radius:23px;border:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 32% 24%,#2a2840,#14131c 70%);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
   box-shadow:0 8px 22px -6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.05) inset;transition:.2s cubic-bezier(.2,.8,.3,1);color:#fff;font:inherit}
 .pomo-btn:hover{transform:translateY(-1px)}
 .pomo-ring{position:absolute;left:0;top:0;width:46px;height:46px;transform:rotate(-90deg);pointer-events:none}
 .pomo-ring circle{fill:none;stroke-width:2.6} .pomo-ring .bg{stroke:transparent} .pomo-ring .fg{stroke:var(--pc,#ff6b5e);stroke-linecap:round;stroke-dasharray:132;stroke-dashoffset:132;transition:stroke-dashoffset .9s linear}
-.pomo-ico{width:24px;height:24px;margin-left:11px;margin-right:11px;flex:none}
+.pomo-ico{width:22px;height:22px;margin-left:12px;margin-right:12px;flex:none;color:#ece8ff}
 .pomo-time{display:none;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;padding-right:14px;margin-left:-6px}
 .pomo.run .pomo-btn{padding-left:0} .pomo.run .pomo-time,.pomo.pause .pomo-time{display:block} .pomo.run .pomo-ring .bg,.pomo.pause .pomo-ring .bg{stroke:rgba(255,255,255,.08)}
 .pomo.run .pomo-ring,.pomo.pause .pomo-ring{width:46px} .pomo.pause .pomo-time{opacity:.6}
@@ -2621,7 +2621,7 @@ body.on-start .pomo{display:none}
 <div id="pomo" class="pomo">
   <button class="pomo-btn" id="pomo-btn" onclick="pomoToggle()" title="Tryb nauki — Pomodoro">
     <svg class="pomo-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" class="bg"/><circle cx="24" cy="24" r="21" class="fg" id="pomo-ring"/></svg>
-    <svg class="pomo-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.2c4.3 0 7.6 3 7.6 6.8S16.3 21 12 21s-7.6-3.2-7.6-7 3.3-6.8 7.6-6.8z" fill="#ff6b5e"/><path d="M12 7.6c-1.2-1.9-3.2-2.6-4.8-2.4 1 .9 1.6 1.7 2 2.6M12 7.6c1.2-1.9 3.2-2.6 4.8-2.4-1 .9-1.6 1.7-2 2.6M12 7.6V3.6" stroke="#4ade80" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M8.2 11.4c.6-.9 1.6-1.5 2.7-1.7" stroke="#fff" stroke-opacity=".55" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+    <svg class="pomo-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 2.8h4M12 2.8v3.2M18.6 6.6l1.3-1.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 13.5V9.6" fill="none" stroke="var(--pc,#ff8a7a)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13.5" r="1.4" fill="var(--pc,#ff8a7a)"/></svg>
     <span class="pomo-time" id="pomo-mini"></span>
   </button>
   <div class="pomo-panel glass" id="pomo-panel"></div>
