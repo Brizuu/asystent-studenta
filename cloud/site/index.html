@@ -2138,23 +2138,23 @@ body.on-start .pomo{display:none}
 .ft:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 30px 60px -28px color-mix(in srgb,var(--c) 70%,rgba(20,16,60,.8))}
 .st::before{background:linear-gradient(135deg,#fff,#e6e0ff);color:#4b3fb5}
 .lp-steps .st:not(:last-child)::after{content:"";position:absolute;top:44px;right:-14px;width:12px;height:2px;border-radius:1px;background:rgba(255,255,255,.45)}
-.sy{padding:30px;border-radius:30px}
-.sy-map{display:grid;grid-template-columns:1fr 70px 1.1fr 70px 1fr;align-items:center}
-.sy-dev,.sy-hub{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
-.sy-dev svg{width:54px;height:54px;padding:12px;border-radius:18px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+.lps{padding:30px;border-radius:30px}
+.lps-map{display:grid;grid-template-columns:1fr 70px 1.1fr 70px 1fr;align-items:center}
+.lps-dev,.lps-hub{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.lps-dev svg{width:54px;height:54px;padding:12px;border-radius:18px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
   background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#1c1838));box-shadow:0 14px 30px -12px var(--c)}
-.sy-dev b,.sy-hub b{font-size:15px} .sy-dev small,.sy-hub small{font-size:12.5px;color:rgba(255,255,255,.75)}
-.sy-hub span{display:grid;place-items:center;width:78px;height:78px;border-radius:24px;background:linear-gradient(135deg,#fff,#ece7ff);box-shadow:0 18px 40px -14px rgba(160,140,255,.9)}
-.sy-hub svg{width:40px;height:40px;fill:none;stroke:#6f5cf0;stroke-width:1.8;stroke-linejoin:round}
-.sy-line{position:relative;height:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}
-.sy-line em{position:absolute;top:-4px;left:0;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff;animation:sy-run 2.6s ease-in-out infinite}
-.sy-line:last-of-type em{animation-direction:reverse;animation-delay:-1.3s}
-@keyframes sy-run{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 10px);opacity:0}}
-.sy-pts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.16)}
-.sy-pts>div{display:flex;gap:12px;align-items:flex-start}
-.sy-pts i{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 30%,rgba(255,255,255,.08))}
-.sy-pts svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.sy-pts span{font-size:14px;line-height:1.5;color:rgba(255,255,255,.82)} .sy-pts b{display:block;color:#fff;font-size:15px;margin-bottom:2px}
+.lps-dev b,.lps-hub b{font-size:15px} .lps-dev small,.lps-hub small{font-size:12.5px;color:rgba(255,255,255,.75)}
+.lps-hub span{display:grid;place-items:center;width:78px;height:78px;border-radius:24px;background:linear-gradient(135deg,#fff,#ece7ff);box-shadow:0 18px 40px -14px rgba(160,140,255,.9)}
+.lps-hub svg{width:40px;height:40px;fill:none;stroke:#6f5cf0;stroke-width:1.8;stroke-linejoin:round}
+.lps-line{position:relative;height:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}
+.lps-line em{position:absolute;top:-4px;left:0;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff;animation:lps-run 2.6s ease-in-out infinite}
+.lps-line:last-of-type em{animation-direction:reverse;animation-delay:-1.3s}
+@keyframes lps-run{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 10px);opacity:0}}
+.lps-pts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.16)}
+.lps-pts>div{display:flex;gap:12px;align-items:flex-start}
+.lps-pts i{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 30%,rgba(255,255,255,.08))}
+.lps-pts svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.lps-pts span{font-size:14px;line-height:1.5;color:rgba(255,255,255,.82)} .lps-pts b{display:block;color:#fff;font-size:15px;margin-bottom:2px}
 .faq{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .faq details{border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden}
 .faq summary{list-style:none;cursor:pointer;padding:17px 22px;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -2164,9 +2164,9 @@ body.on-start .pomo{display:none}
 .faq details p{padding:0 22px 18px;color:rgba(255,255,255,.82);font-size:15px;line-height:1.55}
 .lp-end{position:relative}
 .lp-end::before{content:"";position:absolute;left:50%;top:60px;width:min(560px,90vw);height:320px;translate:-50% 0;border-radius:50%;background:radial-gradient(closest-side,rgba(185,168,255,.45),transparent);z-index:-1;filter:blur(20px)}
-@media(max-width:960px){.sy-pts{grid-template-columns:1fr}}
-@media(max-width:720px){.sy-map{grid-template-columns:1fr;gap:6px}.sy-line{width:2px;height:34px;margin:4px auto;background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}.sy-line em{display:none}.lp-steps .st::after{display:none}.sy{padding:22px}}
-@media(prefers-reduced-motion:reduce){.sy-line em{animation:none;display:none}}
+@media(max-width:960px){.lps-pts{grid-template-columns:1fr}}
+@media(max-width:720px){.lps-map{grid-template-columns:1fr;gap:6px}.lps-line{width:2px;height:34px;margin:4px auto;background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}.lps-line em{display:none}.lp-steps .st::after{display:none}.lps{padding:22px}}
+@media(prefers-reduced-motion:reduce){.lps-line em{animation:none;display:none}}
 </style>
 <style>a.lp-go,a.dl{text-decoration:none} body.on-start .main{padding:0}</style>
 </head>
@@ -2242,15 +2242,15 @@ body.on-start .pomo{display:none}
 
         <div class="lp-sec" id="lp-sync">
           <div class="lp-h lp-reveal"><div class="eyebrow">Synchronizacja</div><h2>Twoje notatki i PDF&#8209;y na każdym urządzeniu.</h2><p>Dodajesz PDF na laptopie — po chwili otwierasz go w przeglądarce na uczelni albo na telefonie.</p></div>
-          <div class="sy glassy lp-reveal">
-            <div class="sy-map" aria-hidden="true">
-              <div class="sy-dev" style="--c:#8f7cff"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M2 19.5h20"/></svg><b>Aplikacja na Windows</b><small>nagrania, praca offline</small></div>
-              <i class="sy-line"><em></em></i>
-              <div class="sy-hub"><span><svg viewBox="0 0 24 24"><path d="M7 18.5h10.5a4 4 0 00.6-7.95A6 6 0 006.4 9.1 4.7 4.7 0 007 18.5z"/></svg></span><b>Twoje konto</b><small>notatki · plan · zadania · pliki</small></div>
-              <i class="sy-line"><em></em></i>
-              <div class="sy-dev" style="--c:#5eafff"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg><b>Przeglądarka i telefon</b><small>bez instalowania</small></div>
+          <div class="lps glassy lp-reveal">
+            <div class="lps-map" aria-hidden="true">
+              <div class="lps-dev" style="--c:#8f7cff"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M2 19.5h20"/></svg><b>Aplikacja na Windows</b><small>nagrania, praca offline</small></div>
+              <i class="lps-line"><em></em></i>
+              <div class="lps-hub"><span><svg viewBox="0 0 24 24"><path d="M7 18.5h10.5a4 4 0 00.6-7.95A6 6 0 006.4 9.1 4.7 4.7 0 007 18.5z"/></svg></span><b>Twoje konto</b><small>notatki · plan · zadania · pliki</small></div>
+              <i class="lps-line"><em></em></i>
+              <div class="lps-dev" style="--c:#5eafff"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg><b>Przeglądarka i telefon</b><small>bez instalowania</small></div>
             </div>
-            <div class="sy-pts">
+            <div class="lps-pts">
               <div><i style="--c:#8f7cff"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></i><span><b>PDF-y i załączniki też</b>Pliki z notatek lądują na Twoim koncie i są dostępne wszędzie, gdzie się zalogujesz.</span></div>
               <div><i style="--c:#ff9fb1"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0111 0"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14a4.5 4.5 0 015 4.5"/></svg></i><span><b>Udostępniasz z plikiem</b>Wysyłasz notatkę z PDF-em znajomemu albo grupie — dostają notatkę razem z plikiem.</span></div>
               <div><i style="--c:#62d6b4"><svg viewBox="0 0 24 24"><path d="M12 3.5l7 2.8v5.2c0 4.3-3 7.8-7 9-4-1.2-7-4.7-7-9V6.3z"/><path d="M9 12l2.1 2.1L15.2 10"/></svg></i><span><b>Tylko dla Ciebie</b>Dane na koncie widzisz Ty i osoby, którym coś udostępnisz. Pełną kopię zrobisz w każdej chwili.</span></div>
