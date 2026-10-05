@@ -3404,8 +3404,9 @@ const FIN_CAT=[
 const FIN_MODE=[
   {k:'samochod',l:'Samochód',ic:'car'},{k:'komunikacja',l:'Tramwaj / bus',ic:'tram'},{k:'pociag',l:'Pociąg',ic:'train'},
   {k:'rower',l:'Rower',ic:'bike'},{k:'hulajnoga',l:'Hulajnoga',ic:'scooter'},{k:'pieszo',l:'Pieszo',ic:'walk'}];
-const FIN_PER=[{v:'day',label:'za dzień zajęć'},{v:'week',label:'tygodniowo'},{v:'month',label:'miesięcznie'},{v:'semester',label:'za semestr'},{v:'year',label:'rocznie'},{v:'once',label:'jednorazowo'}];
-const PER_SHORT={day:'dzień zajęć',week:'tydz.',month:'mies.',semester:'semestr',year:'rok',once:'jednorazowo'};
+const FIN_PER=[{v:'daily',label:'codziennie'},{v:'day',label:'kilka razy w tygodniu'},{v:'week',label:'tygodniowo'},{v:'month',label:'miesięcznie'},{v:'semester',label:'za semestr'},{v:'year',label:'rocznie'},{v:'once',label:'jednorazowo'}];
+const PER_SHORT={daily:'dzień',day:'dzień zajęć',week:'tydz.',month:'mies.',semester:'semestr',year:'rok',once:'jednorazowo'};
+const perShort=x=>x.period==='day'&&x.category&&x.category!=='dojazd'?'raz':PER_SHORT[x.period];
 const finCat=k=>FIN_CAT.find(c=>c.k===k)||FIN_CAT[FIN_CAT.length-1];
 const finIcon=(ic,c,sz)=>`<span class="fin-ic" style="--c:${c}${sz?';--sz:'+sz+'px':''}"><svg viewBox="0 0 24 24">${FIN_IC[ic]||FIN_IC.dots}</svg></span>`;
 const costIcon=(x,sz)=>{const cat=finCat(x.category);const m=x.category==='dojazd'&&FIN_MODE.find(m=>m.k===x.mode);return finIcon(m?m.ic:cat.ic,cat.c,sz);};
@@ -3420,7 +3421,9 @@ function costLine(x){
   if(x.category==='dojazd'){const m=FIN_MODE.find(m=>m.k===x.mode); if(m)bits.push(m.l);
     if(x.mode==='samochod'&&p.km)bits.push(`${String(p.km).replace('.',',')} km w jedną stronę`,`${String(p.l100||'').replace('.',',')} l/100 km`);
     if(x.period==='day')bits.push(`${String(x.days).replace('.',',')} ${plural(x.days,'dzień','dni','dni')} w tyg.`);}
-  if(x.per_period&&x.period!=='month')bits.push(`${zl(x.per_period)} / ${PER_SHORT[x.period]}`);
+  else if(x.period==='day')bits.push(`${String(x.days).replace('.',',')}× w tygodniu`);
+  else if(x.period==='daily')bits.push('codziennie');
+  if(x.per_period&&x.period!=='month')bits.push(`${zl(x.per_period)} / ${perShort(x)}`);
   if(x.due_date&&!x.paid)bits.push('termin '+dShort(x.due_date));
   if(x.note)bits.push(x.note);
   return bits.join(' · ')||(x.amount==null&&!(x.mode==='samochod')?'Kwota nie podana — dopisuj wydatki na bieżąco':'');
@@ -3476,7 +3479,7 @@ function renderFin(){
     </div>
     ${due.length?`<div class="fin-h"><h3>Najbliższe płatności</h3></div>
     <div class="fin-due">${due.map(x=>`<div class="due glass">
-      <div class="due-top">${costIcon(x,38)}<div><b>${esc(x.name)}</b><small>${dShort(x.due_date)} · ${PER_SHORT[x.period]}</small></div></div>
+      <div class="due-top">${costIcon(x,38)}<div><b>${esc(x.name)}</b><small>${dShort(x.due_date)} · ${perShort(x)}</small></div></div>
       <div class="due-row"><span class="due-amt">${x.per_period?zl(x.per_period):'—'}</span>
         <span class="when ${whenCls(x.days_left,x.remind_days)}"><svg viewBox="0 0 24 24">${FIN_IC.clock}</svg>${whenTxt(x.days_left)}</span></div>
       <button class="btn ghost sm" onclick="payCost(${x.id})">✓ Opłacone</button></div>`).join('')}</div>`:''}
@@ -3623,9 +3626,9 @@ function cfBody(){
       <div class="frow"><label class="field"><span id="cf-amt-l">Cena biletu (zł)</span><input id="cf-amt" type="number" min="0" step="0.01" placeholder="np. 55"></label>
         ${p.ticket==='single'?`<label class="field"><span>Dni dojazdu w tygodniu</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label>`:''}</div>`;
   }else{
-    h+=`<div class="frow"><label class="field"><span>Kwota (zł) · opcjonalnie</span><input id="cf-amt" type="number" min="0" step="0.01" placeholder="np. 400"></label>
+    h+=`<div class="frow"><label class="field"><span>${(c.period==='daily'||c.period==='day')&&!dj?'Kwota za raz (zł)':'Kwota (zł) · opcjonalnie'}</span><input id="cf-amt" type="number" min="0" step="0.01" placeholder="${(c.period==='daily'||c.period==='day')&&!dj?'np. 12':'np. 400'}"></label>
         <div class="field"><span>Jak często</span><div id="cf-per"></div></div></div>
-      ${dj||c.period==='day'?`<label class="field"><span>Dni w tygodniu</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label>`:''}
+      ${dj||c.period==='day'?`<label class="field"><span>${dj?'Dni w tygodniu':'Ile razy w tygodniu'}</span><input id="cf-days" type="number" min="1" max="7" placeholder="${FIN.settings.study_days}"></label>`:''}
       <div class="fin-sw"><div>Kwota się waha (szacunek)<small>Np. jedzenie czy wyjścia — liczona jako przybliżenie.</small></div>
         <label class="switch"><input type="checkbox" id="cf-var"><i></i></label></div>`;
   }
@@ -3643,7 +3646,7 @@ function cfBody(){
   $$('#cf-ticket button').forEach(x=>x.classList.toggle('on',x.dataset.k===p.ticket));
   $('#cf-ticket')&&($('#cf-ticket').onclick=e=>{const t=e.target.closest('button');if(!t)return;cfRead();p.ticket=t.dataset.k;cfBody();});
   if($('#cf-amt-l'))$('#cf-amt-l').textContent=p.ticket==='single'?'Cena jednego biletu (zł)':'Cena biletu (zł)';
-  if($('#cf-per'))window._cbPer=combo($('#cf-per'),{items:FIN_PER,value:c.period==='day'&&!dj?'day':c.period,readonly:true,onChange:v=>{cfRead();c.period=v;c._perTouched=true;cfBody();}});
+  if($('#cf-per'))window._cbPer=combo($('#cf-per'),{items:dj?FIN_PER.filter(p=>p.v!=='daily').map(p=>p.v==='day'?{...p,label:'za dzień zajęć'}:p):FIN_PER,value:c.period,readonly:true,onChange:v=>{cfRead();c.period=v;c._perTouched=true;cfBody();}});
   $$('#cf-body input').forEach(i=>i.addEventListener('input',()=>{cfRead();cfPrev();}));
   cfPrev();
 }
@@ -3665,7 +3668,7 @@ function cfPrev(){
   let per=c.amount, lbl='Miesięcznie';
   if(c.category==='dojazd'&&c.mode==='samochod'){per=(p.km&&p.l100&&p.price)?p.km*2*p.l100/100*p.price:null;}
   let m=null;
-  if(per){m=c.period==='day'?per*days*W:per*({week:W,month:1,semester:1/6,year:1/12,once:0}[c.period]??1);}
+  if(per){m=c.period==='day'?per*days*W:per*({daily:365/12,week:W,month:1,semester:1/6,year:1/12,once:0}[c.period]??1);}
   if(c.period==='once'){lbl='Jednorazowo';m=per;}
   $('#cf-prev-l').textContent=lbl+(c.category==='dojazd'&&c.mode==='samochod'&&per?` · ${zl(per)} za dzień zajęć`:'');
   $('#cf-prev').textContent=m?((c.variable?'~':'')+zl(m)):'—';
