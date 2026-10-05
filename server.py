@@ -535,9 +535,47 @@ def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit
         USAGE.write_text(json.dumps(u), encoding="utf-8")
 
 
+_models_cache: dict = {"at": 0.0, "list": []}
+_last_model = {"name": ""}
+
+
+def _discover_models(key: str, base: str) -> list[str]:
+    """Modele „flash” dostępne dla klucza (z listy Google, odświeżanej co 6 h) — od najnowszego, „lite” na końcu."""
+    if time.time() - _models_cache["at"] < 6 * 3600:
+        return _models_cache["list"]
+    names = []
+    try:
+        req = urllib.request.Request(base + "/v1beta/models?pageSize=200", headers={"x-goog-api-key": key})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            for m in json.loads(r.read().decode("utf-8")).get("models", []):
+                n = m.get("name", "").removeprefix("models/")
+                if ("generateContent" in m.get("supportedGenerationMethods", []) and re.match(r"gemini-[\d.]+-flash", n)
+                        and not re.search(r"image|tts|live|audio|embed|exp|thinking", n)):
+                    names.append(n)
+    except Exception:
+        pass
+    ver = lambda n: tuple(int(x) for x in re.findall(r"\d+", n.split("-")[1]))
+    names.sort(key=lambda n: ("lite" in n, "preview" in n, tuple(-v for v in ver(n)), len(n)))
+    _models_cache.update(at=time.time(), list=names)
+    return names
+
+
+def _model_chain(key: str, base: str) -> list[str]:
+    """Model główny + zapasowe: GEMINI_FALLBACK (lista po przecinku) albo automatycznie wykryte modele flash."""
+    main = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    env = os.getenv("GEMINI_FALLBACK")
+    extra = [m.strip() for m in env.split(",") if m.strip()] if env is not None else _discover_models(key, base)
+    chain = [main]
+    for m in extra:
+        if m not in chain:
+            chain.append(m)
+    return chain[:4]
+
+
 def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeout: int = 90, tries: int = 3,
            kind: str = "other", json_mode: bool = False) -> str:
-    """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu."""
+    """Jedno zapytanie generateContent (tekst/audio). Ponawia przy 503/429/zerwanym połączeniu, a gdy model
+    nie odpowiada, jest przeciążony albo wyczerpał limit — przechodzi na kolejny model z łańcucha."""
     key = _gemini_key()
     if not key:
         raise GeminiError(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
@@ -546,40 +584,54 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
         "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens,
                              **({"responseMimeType": "application/json"} if json_mode else {})},
     }).encode("utf-8")
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
     base = os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com")
-    url = base + "/v1beta/models/" + model + ":generateContent"
-    data = None
-    for attempt in range(tries):
-        # klucz w nagłówku (nie w adresie): dowolne znaki, nie trafia do logów z adresami
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                data = json.loads(r.read().decode("utf-8"))
-            break
-        except urllib.error.HTTPError as e:
-            detail = e.read().decode("utf-8", "replace")
-            if e.code in (503, 429) and attempt < tries - 1 and "PerDay" not in detail:
-                time.sleep(1.5 * (attempt + 1))
-                continue
-            if e.code == 429:   # odrzucone przez limit — liczy się do dziennego wykorzystania
-                _usage_add(kind, ok=False, daily_limit="PerDay" in detail or "per day" in detail.lower())
-            raise GeminiError(e.code, f"Gemini API błąd {e.code}: {detail[:300]}")
-        except Exception as e:
-            if attempt < tries - 1:
-                time.sleep(1)
-                continue
-            raise GeminiError(502, f"Nie udało się połączyć z Gemini: {e}")
-    _usage_add(kind, (data or {}).get("usageMetadata"))
-    cand = ((data or {}).get("candidates") or [{}])[0]
-    # modele 3.x mogą zwrócić kilka części (w tym „myśli”) — sklejamy sam tekst odpowiedzi
-    text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts") or [] if not p.get("thought"))
-    if text:
-        return text
-    if cand.get("finishReason") == "MAX_TOKENS":   # myślenie modelu zjadło cały limit tokenów odpowiedzi
-        raise GeminiError(502, "Gemini nie zdążył odpowiedzieć — za mały limit tokenów odpowiedzi.")
-    fb = ((data or {}).get("promptFeedback") or {}).get("blockReason") or cand.get("finishReason")
-    raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
+    chain = _model_chain(key, base)
+    err = None
+    for mi, model in enumerate(chain):
+        last = mi == len(chain) - 1
+        url = base + "/v1beta/models/" + model + ":generateContent"
+        data = None
+        # przy zapasowym modelu pod ręką nie czekamy długo na przeciążony — jedna powtórka i dalej
+        n = tries if last else min(tries, 2)
+        for attempt in range(n):
+            # klucz w nagłówku (nie w adresie): dowolne znaki, nie trafia do logów z adresami
+            req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    data = json.loads(r.read().decode("utf-8"))
+                break
+            except urllib.error.HTTPError as e:
+                detail = e.read().decode("utf-8", "replace")
+                daily = "PerDay" in detail or "per day" in detail.lower()
+                if e.code in (503, 429, 500) and attempt < n - 1 and not daily:
+                    time.sleep(1.5 * (attempt + 1))
+                    continue
+                if e.code == 429:   # odrzucone przez limit — liczy się do dziennego wykorzystania
+                    _usage_add(kind, ok=False, daily_limit=daily and mi == 0)
+                err = GeminiError(e.code, f"Gemini API błąd {e.code}: {detail[:300]}")
+                break
+            except Exception as e:
+                if attempt < n - 1:
+                    time.sleep(1)
+                    continue
+                err = GeminiError(502, f"Nie udało się połączyć z Gemini: {e}")
+        if data is None:
+            # zły klucz / złe zapytanie — inny model nic nie zmieni; 404 = model niedostępny → następny
+            if err and err.status in (400, 401, 403) and "not found" not in err.msg.lower():
+                raise err
+            continue
+        _usage_add(kind, data.get("usageMetadata"))
+        cand = (data.get("candidates") or [{}])[0]
+        # modele 3.x mogą zwrócić kilka części (w tym „myśli”) — sklejamy sam tekst odpowiedzi
+        text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts") or [] if not p.get("thought"))
+        if text:
+            _last_model["name"] = model
+            return text
+        if cand.get("finishReason") == "MAX_TOKENS":   # myślenie modelu zjadło cały limit tokenów odpowiedzi
+            raise GeminiError(502, "Gemini nie zdążył odpowiedzieć — za mały limit tokenów odpowiedzi.")
+        fb = (data.get("promptFeedback") or {}).get("blockReason") or cand.get("finishReason")
+        raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
+    raise err or GeminiError(502, "Gemini nie odpowiada.")
 
 
 def _instr_line(instructions: str) -> str:
@@ -683,7 +735,8 @@ def set_ai_settings(p: AiSettings):
 def test_ai():
     try:
         out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=512, temperature=0, timeout=30, tries=1, kind="test")   # zapas na „myślenie” modeli 3.x
-        return {"ok": True, "reply": out.strip()[:40]}
+        return {"ok": True, "reply": out.strip()[:40], "model": _last_model["name"],
+                "fallback": _last_model["name"] != os.getenv("GEMINI_MODEL", "gemini-3.6-flash")}
     except GeminiError as e:
         msg = e.msg
         if e.status in (400, 403) and "API key" in msg:
