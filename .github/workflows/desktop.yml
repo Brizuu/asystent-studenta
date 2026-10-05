@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Zależności
-        run: pip install -r requirements.txt pywebview pyinstaller pillow sounddevice soundfile
+        run: pip install -r requirements.txt pywebview pyinstaller pillow sounddevice soundfile tzdata
       - name: Test serwera (start, eksport, import)
         shell: python
         run: |
