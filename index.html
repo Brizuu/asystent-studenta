@@ -4894,7 +4894,7 @@ async function stSaveKey(){
 }
 async function stTest(fresh){
   const r=await api('/settings/ai/test',{method:'POST'}); loadUsage();
-  if(r.ok)popout({icon:'ok',title:fresh?'Połączono z Gemini':'Połączenie działa',text:r.reply?'':(r.error||''),hint:'Notatki AI i zamiana nagrań na tekst są gotowe.'});
+  if(r.ok)popout({icon:'ok',title:fresh?'Połączono z Gemini':'Połączenie działa',text:r.reply?'':(r.error||''),hint:r.fallback?`Główny model nie odpowiadał — zastąpił go ${r.model}. Aplikacja przełącza się tak automatycznie.`:'Notatki AI i zamiana nagrań na tekst są gotowe.'});
   else popout({icon:'warn',title:'Połączenie nie działa',text:r.error||'Spróbuj ponownie.'});
 }
 async function stDelKey(){ if(!await confirmPop('Usunąć zapisany klucz Gemini?','Notatki AI i zamiana nagrań przestaną działać do czasu dodania nowego.'))return; await stSave({key:''}); }
