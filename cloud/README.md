@@ -20,7 +20,7 @@ python cloud/demo.py twoj@email.pl
 Zakłada konto „Anna Testowa”, wysyła Ci zaproszenie, po jego akceptacji w aplikacji udostępnia
 Ci przykładową notatkę i zeszyt, a na koniec wypisuje jej dane logowania (do testu w drugą stronę).
 
-## Produkcja: https://bte-poland.pl/asystent (za nginx)
+## Produkcja: https://zenfix.pl/asystent (za nginx)
 
 API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HTTPS obsługuje istniejący nginx.
 
@@ -29,16 +29,16 @@ API działa w Dockerze i słucha tylko lokalnie (`127.0.0.1:8100`); domenę i HT
    curl -fsSL https://raw.githubusercontent.com/Brizuu/asystent-studenta/main/cloud/install.sh | bash
    ```
    albo z wgranego folderu: `bash deploy.sh` (opcjonalnie: `bash deploy.sh admin1@mail.pl,admin2@mail.pl 8100`).
-2. **nginx** — wklej zawartość `nginx-asystent.conf` do bloku `server { … }` domeny bte-poland.pl (tego z SSL), potem
-   `sudo nginx -t && sudo systemctl reload nginx`. Sprawdzenie: `curl https://bte-poland.pl/asystent/health` → `{"ok":true}`.
-3. **Aplikacja** łączy się z `https://bte-poland.pl/asystent` domyślnie (od wersji 1.1.2). Do testów lokalnych:
+2. **nginx** — wklej zawartość `nginx-asystent.conf` do bloku `server { … }` domeny zenfix.pl (tego z SSL), potem
+   `sudo nginx -t && sudo systemctl reload nginx`. Sprawdzenie: `curl https://zenfix.pl/asystent/health` → `{"ok":true}`.
+3. **Aplikacja** łączy się z `https://zenfix.pl/asystent` domyślnie (od wersji 1.1.2). Do testów lokalnych:
    zmienna `ASYSTENT_CLOUD_URL=http://127.0.0.1:8100` albo link „zmień” pod logowaniem.
 
-**Wersja webowa:** `https://bte-poland.pl/asystent/app/` — ta sama aplikacja w przeglądarce (też na telefonie: „Dodaj do ekranu
+**Wersja webowa:** `https://zenfix.pl/asystent/app/` — ta sama aplikacja w przeglądarce (też na telefonie: „Dodaj do ekranu
 głównego”). Bez zalogowania pokazuje tylko stronę logowania; każde konto ma osobną bazę w wolumenie (`/data/web/u<id>`),
 a dane synchronizują się z aplikacją na Windows przez ten sam serwer. Nagrywanie wykładów jest tylko w aplikacji na Windows.
 
-**Strona pobierania:** ten sam serwer pod `https://bte-poland.pl/asystent/` pokazuje stronę z przyciskiem „Pobierz na Windows”
+**Strona pobierania:** ten sam serwer pod `https://zenfix.pl/asystent/` pokazuje stronę z przyciskiem „Pobierz na Windows”
 (zawsze najnowszy instalator z GitHuba). Generuje ją `python cloud/build_site.py` ze strony startowej aplikacji (`site/index.html`).
 
 **Aktualizacja:** ta sama komenda co przy instalacji (dane zostają w wolumenie `cloud-data`).

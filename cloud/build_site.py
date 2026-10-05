@@ -1,5 +1,5 @@
 """Buduje cloud/site/index.html — samodzielną stronę pobierania Asystenta (serwowaną przez serwer kont
-pod https://bte-poland.pl/asystent/). Wygląd, logo i sekcje są brane wprost ze strony startowej aplikacji
+pod https://zenfix.pl/asystent/). Wygląd, logo i sekcje są brane wprost ze strony startowej aplikacji
 (index.html), więc po zmianach w aplikacji wystarczy uruchomić:  python cloud/build_site.py"""
 import re
 from pathlib import Path

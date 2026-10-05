@@ -1,4 +1,4 @@
-"""Wersja webowa Asystenta (https://bte-poland.pl/asystent/app/) — ta sama aplikacja co na komputerze,
+"""Wersja webowa Asystenta (https://zenfix.pl/asystent/app/) — ta sama aplikacja co na komputerze,
 podpięta pod serwer kont w tym samym kontenerze.
 
 - Bez ważnej sesji serwer zwraca tylko stronę logowania (aplikacja i dane są niedostępne).
