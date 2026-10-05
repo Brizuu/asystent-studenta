@@ -14,8 +14,9 @@ from db import get_conn
 router = APIRouter()
 
 WEEKS_PER_MONTH = 52 / 12
+DAYS_PER_MONTH = 365 / 12
 CATEGORIES = {"dojazd", "jedzenie", "mieszkanie", "oplaty", "materialy", "abonamenty", "zdrowie", "rozrywka", "inne"}
-PERIODS = {"day", "week", "month", "semester", "year", "once"}
+PERIODS = {"daily", "day", "week", "month", "semester", "year", "once"}
 MODES = {"samochod", "komunikacja", "pociag", "rower", "hulajnoga", "pieszo"}
 
 def init():
@@ -27,7 +28,7 @@ def init():
             name        TEXT NOT NULL,
             category    TEXT DEFAULT 'inne',
             amount      REAL,                  -- kwota za okres (NULL = nie podano)
-            period      TEXT DEFAULT 'month',  -- day (dzień zajęć) | week | month | semester | year | once
+            period      TEXT DEFAULT 'month',  -- daily (codziennie) | day (dzień zajęć / X razy w tygodniu) | week | month | semester | year | once
             variable    INTEGER DEFAULT 0,     -- 1 = szacunek, kwota się waha
             mode        TEXT DEFAULT '',       -- dojazd: samochod | komunikacja | pociag | rower | hulajnoga | pieszo
             params      TEXT DEFAULT '{}',     -- dojazd samochodem: km, l100, price, days
@@ -51,7 +52,7 @@ def init():
             name      TEXT NOT NULL,
             kind      TEXT DEFAULT 'inne',     -- praca | stypendium | rodzice | freelance | inne
             amount    REAL,
-            period    TEXT DEFAULT 'month',    -- week | month | semester | year | once
+            period    TEXT DEFAULT 'month',    -- daily | week | month | semester | year | once
             variable  INTEGER DEFAULT 0,
             pay_day   INTEGER,                 -- dzień miesiąca wypłaty (1–31), opcjonalnie
             note      TEXT DEFAULT ''
@@ -110,7 +111,7 @@ def _monthly(row, st) -> float:
     per = row["period"]
     if per == "day":
         return a * _days(row, st) * WEEKS_PER_MONTH
-    return a * {"week": WEEKS_PER_MONTH, "month": 1, "semester": 1 / 6, "year": 1 / 12, "once": 0}.get(per, 1)
+    return a * {"daily": DAYS_PER_MONTH, "week": WEEKS_PER_MONTH, "month": 1, "semester": 1 / 6, "year": 1 / 12, "once": 0}.get(per, 1)
 
 
 def _shape(row, st, spent: dict) -> dict:
@@ -168,7 +169,7 @@ def _income(row) -> dict:
     d = dict(row)
     d["variable"] = bool(d["variable"])
     a = d["amount"] or 0
-    d["monthly"] = round(a * {"week": WEEKS_PER_MONTH, "month": 1, "semester": 1 / 6, "year": 1 / 12, "once": 0}.get(d["period"], 1), 2)
+    d["monthly"] = round(a * {"daily": DAYS_PER_MONTH, "week": WEEKS_PER_MONTH, "month": 1, "semester": 1 / 6, "year": 1 / 12, "once": 0}.get(d["period"], 1), 2)
     d["days_to_pay"] = None
     if d["pay_day"]:
         t = date.today()
