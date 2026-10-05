@@ -899,7 +899,8 @@ body.on-dojazd .dj-bg{opacity:1}
 .dj-bg .rt{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.2}
 .dj-bg .glow{fill:none;stroke-width:16;stroke-linecap:round;opacity:.05}
 .dj-bg .stn{fill:#0c1020;stroke-width:3;opacity:.55}
-.dj-bg .veh{opacity:.9}
+.dj-bg svg{filter:blur(1.5px)}
+.dj-bg .veh{opacity:.32;filter:blur(7px)}   /* rozmyte i przygaszone — tło ma żyć, nie rozpraszać */
 .dj-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 30%,transparent 50%,rgba(5,7,14,.65))}
 @media(prefers-reduced-motion:reduce){.dj-bg .veh{display:none}}
 @media(max-width:620px){.dj-lg{display:none}.dj-tabs{width:100%}.dj-tabs button{flex:1;justify-content:center}.dj-card{padding:18px 16px}.dj-tabs button{padding:8px 10px;font-size:13px}.dj-cd{min-width:62px}.dj-cd b{font-size:19px}.dj-line{min-width:42px;height:36px;font-size:16px}}
@@ -2347,12 +2348,12 @@ body.on-start .pomo{display:none}
     <circle cx="520" cy="380" r="9" stroke="#ffb547"/><circle cx="820" cy="700" r="12" stroke="#fff"/><circle cx="1050" cy="420" r="9" stroke="#a77bff"/><circle cx="760" cy="800" r="9" stroke="#a77bff"/>
   </g>
   <g class="veh">
-    <circle r="14" fill="url(#djg-r)"><animateMotion dur="26s" repeatCount="indefinite"><mpath href="#djp1"/></animateMotion></circle>
-    <circle r="14" fill="url(#djg-r)"><animateMotion dur="26s" begin="-13s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp1"/></animateMotion></circle>
-    <circle r="14" fill="url(#djg-b)"><animateMotion dur="34s" repeatCount="indefinite"><mpath href="#djp2"/></animateMotion></circle>
-    <circle r="16" fill="url(#djg-g)"><animateMotion dur="18s" begin="-6s" repeatCount="indefinite"><mpath href="#djp3"/></animateMotion></circle>
-    <circle r="13" fill="url(#djg-y)"><animateMotion dur="30s" begin="-10s" repeatCount="indefinite"><mpath href="#djp4"/></animateMotion></circle>
-    <circle r="13" fill="url(#djg-v)"><animateMotion dur="28s" begin="-20s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp5"/></animateMotion></circle>
+    <circle r="14" fill="url(#djg-r)"><animateMotion dur="52s" repeatCount="indefinite"><mpath href="#djp1"/></animateMotion></circle>
+    <circle r="14" fill="url(#djg-r)"><animateMotion dur="52s" begin="-26s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp1"/></animateMotion></circle>
+    <circle r="14" fill="url(#djg-b)"><animateMotion dur="68s" repeatCount="indefinite"><mpath href="#djp2"/></animateMotion></circle>
+    <circle r="16" fill="url(#djg-g)"><animateMotion dur="36s" begin="-12s" repeatCount="indefinite"><mpath href="#djp3"/></animateMotion></circle>
+    <circle r="13" fill="url(#djg-y)"><animateMotion dur="60s" begin="-20s" repeatCount="indefinite"><mpath href="#djp4"/></animateMotion></circle>
+    <circle r="13" fill="url(#djg-v)"><animateMotion dur="56s" begin="-40s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp5"/></animateMotion></circle>
   </g>
 </svg></div>
 <div class="soft-bg" aria-hidden="true"></div>
@@ -2687,7 +2688,7 @@ body.on-start .pomo{display:none}
         <div class="dj-card glass">
           <div class="dj-tabs" id="dj-tabs">
             <button class="on" data-m="route" onclick="djMode('route')"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 000-6H9a3 3 0 010-6h6.5"/></svg>Trasa</button>
-            <button data-m="board" onclick="djMode('board')"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="2"/><path d="M7 8h6M7 12h10M12 16v4M8 20h8"/></svg>Odjazdy<span class="dj-lg">&nbsp;z przystanku</span></button>
+            <button data-m="board" onclick="djMode('board')"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="2"/><path d="M7 8h6M7 12h10M12 16v4M8 20h8"/></svg>Odjazdy<span class="dj-lg" style="margin-left:-3px">z przystanku</span></button>
             <button data-m="pkp" onclick="djMode('pkp')"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3.5"/><path d="M5 11h14M9 20.5l-1.5-3.5M15 20.5l1.5-3.5"/></svg>Pociągi</button>
           </div>
           <div id="dj-pane-route">

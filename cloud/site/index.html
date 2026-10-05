@@ -874,7 +874,8 @@ body.on-dojazd .dj-bg{opacity:1}
 .dj-bg .rt{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.2}
 .dj-bg .glow{fill:none;stroke-width:16;stroke-linecap:round;opacity:.05}
 .dj-bg .stn{fill:#0c1020;stroke-width:3;opacity:.55}
-.dj-bg .veh{opacity:.9}
+.dj-bg svg{filter:blur(1.5px)}
+.dj-bg .veh{opacity:.32;filter:blur(7px)}   /* rozmyte i przygaszone — tło ma żyć, nie rozpraszać */
 .dj-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 30%,transparent 50%,rgba(5,7,14,.65))}
 @media(prefers-reduced-motion:reduce){.dj-bg .veh{display:none}}
 @media(max-width:620px){.dj-lg{display:none}.dj-tabs{width:100%}.dj-tabs button{flex:1;justify-content:center}.dj-card{padding:18px 16px}.dj-tabs button{padding:8px 10px;font-size:13px}.dj-cd{min-width:62px}.dj-cd b{font-size:19px}.dj-line{min-width:42px;height:36px;font-size:16px}}
