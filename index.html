@@ -791,40 +791,118 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .sy-empty{margin-top:12px;padding:14px;border-radius:14px;border:1px dashed var(--line);color:var(--ink-dim);font-size:13.5px;line-height:1.5}
 .sy-pend{align-self:center;font-size:12.5px;color:var(--ink-dim)}
 /* ---------- ADMINISTRATOR ---------- */
-.dj{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-.dj-form{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
-.dj-form .field{display:flex;flex-direction:column;gap:7px;margin:0} .dj-form .field>span{font-size:12.5px;color:var(--ink-dim)} .dj-form input{width:100%}
-.dj-swap{width:40px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--glass);color:var(--ink);cursor:pointer;font-size:17px}
-.dj-swap:hover{background:var(--glass-2)}
-.dj-chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-soft);cursor:pointer}
+/* ---------- DOJAZD (styl „jakdojade”: odliczanie na żywo, przejrzyste karty, tematyczne tło z mapą linii) ---------- */
+#view-dojazd .head,#view-sugestie .head{text-align:center;max-width:860px;margin-inline:auto}
+.dj{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.dj-live{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:5px 12px;border-radius:99px;font-size:12.5px;font-weight:600;color:#bff5d8;background:rgba(63,210,155,.12);border:1px solid rgba(63,210,155,.28)}
+.dj-live i,.dj-pulse{width:7px;height:7px;border-radius:50%;background:#3fd29b;box-shadow:0 0 0 0 rgba(63,210,155,.6);animation:djpulse 1.8s ease-out infinite;flex:none;display:inline-block}
+@keyframes djpulse{0%{box-shadow:0 0 0 0 rgba(63,210,155,.55)}100%{box-shadow:0 0 0 9px rgba(63,210,155,0)}}
+.dj-card{padding:22px 24px;border-radius:26px;position:relative}
+.dj-card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(140deg,rgba(255,110,130,.35),rgba(255,255,255,.06) 35%,rgba(90,170,255,.3));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.dj-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);margin-bottom:18px;width:max-content;max-width:100%}
+.dj-tabs button{border:0;background:none;color:var(--ink-dim);font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.dj-tabs button.on{background:rgba(255,255,255,.1);color:#fff;box-shadow:0 4px 14px -6px rgba(0,0,0,.5)}
+.dj-tabs svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dj-route{display:grid;grid-template-columns:22px 1fr 44px;gap:0 12px;align-items:center}
+.dj-rail{grid-row:1/3;align-self:stretch;display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.dj-rail i{width:12px;height:12px;border-radius:50%;border:3px solid #ff6b81;flex:none}
+.dj-rail i.to{border-color:#5aaaff;background:#5aaaff;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
+.dj-rail span{flex:1;width:2px;margin:5px 0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.4) 0 4px,transparent 4px 8px)}
+.dj-ac{position:relative}
+.dj-ac input{width:100%;padding:14px 16px;font-size:16px;border-radius:14px}
+.dj-ac+.dj-ac{margin-top:8px} .dj-ac:focus-within{z-index:40}
+.dj-ac label{position:absolute;left:16px;top:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);pointer-events:none}
+.dj-ac.lbl input{padding-top:21px;padding-bottom:9px}
+.dj-swap{grid-row:1/3;grid-column:3;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .35s var(--spring,ease)}
+.dj-swap:hover{background:rgba(255,255,255,.12);transform:rotate(180deg)}
+.dj-swap svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dj-sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;padding:6px;border-radius:16px;background:rgba(22,24,38,.97);border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 60px -12px rgba(0,0,0,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);max-height:360px;overflow:auto}
+.dj-sug[hidden]{display:none}
+.dj-sug h6{margin:6px 10px 4px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim)}
+.dj-opt{display:flex;align-items:center;gap:12px;padding:10px 10px;border-radius:12px;cursor:pointer}
+.dj-opt.on,.dj-opt:hover{background:rgba(255,255,255,.08)}
+.dj-opt .pin{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(255,107,129,.14);color:#ff8fa0}
+.dj-opt .pin.recent{background:rgba(255,255,255,.07);color:var(--ink-dim)}
+.dj-opt .pin.addr{background:rgba(255,181,71,.14);color:#ffcf85} .dj-opt .pin.geo{background:rgba(90,170,255,.16);color:#9fcbff} .dj-opt .pin.near{background:rgba(63,210,155,.14);color:#8fe8bd}
+.dj-dist{display:block;font-size:12.5px;color:var(--ink-dim);margin-top:2px}
+.dj-opt .pin svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dj-opt .m{flex:1;min-width:0} .dj-opt b{display:block;font-size:15px;font-weight:600} .dj-opt b mark{background:none;color:#ffb3bf}
+.dj-opt .ls{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.dj-mini{min-width:24px;height:19px;padding:0 5px;border-radius:6px;display:inline-grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:#3576d6}
+.dj-mini.tram{background:#d23a55} .dj-mini.more{background:rgba(255,255,255,.12);color:var(--ink-soft)}
+.dj-bar{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap} .dj-bar .sp{flex:1}
+.dj-tg{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;user-select:none}
+.dj-tg input{display:none} .dj-tg:has(input:checked){background:rgba(255,107,129,.16);border-color:rgba(255,107,129,.45);color:#ffd0d7}
 .dj-st{font-size:12.5px;color:var(--ink-dim)}
-.dj-list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
-.dj-dep{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--line)}
-.dj-line{flex:none;min-width:44px;height:34px;padding:0 8px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff;background:#3f86e0}
-.dj-line.tram{background:linear-gradient(135deg,#e2484c,#c22f6b)} .dj-line.train{background:linear-gradient(135deg,#2fa37c,#1f7fa8);font-size:12.5px}
-.dj-dep .m{flex:1;min-width:0} .dj-dep b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dj-dep small{display:block;font-size:12.5px;color:var(--ink-dim);margin-top:2px}
-.dj-in{flex:none;text-align:right;font-variant-numeric:tabular-nums} .dj-in b{font-size:19px} .dj-in small{font-size:12px}
-.dj-late{color:#ffb0a8} .dj-ok{color:#9cebbc}
-.dj-fav{padding:14px 16px;border-radius:16px;background:var(--glass);border:1px solid var(--line)} .dj-fav+.dj-fav{margin-top:10px}
-.dj-fav-h{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap} .dj-fav-h b{flex:1 1 200px;min-width:0;font-size:15px}
-.dj-fav-h small{display:block;font-weight:400;font-size:12.5px;color:var(--ink-dim)}
-.dj-fav-h .x{border:0;background:none;color:var(--ink-dim);cursor:pointer;padding:6px;border-radius:8px} .dj-fav-h .x:hover{color:var(--ink);background:var(--glass-2)}
-.dj-chips{display:flex;gap:8px;flex-wrap:wrap}
-.dj-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;border-radius:12px;background:var(--glass-2);font-size:13.5px}
-.dj-chip .dj-line{min-width:32px;height:26px;font-size:13.5px;border-radius:8px}
-.dj-chip.first{background:rgba(159,171,255,.14);border:1px solid rgba(159,171,255,.3)} .dj-chip.first b{font-size:15px}
-.dj-load{display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--ink-dim);font-size:14px}
-.dj-load i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#c3cbff;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.dj-res{margin-top:18px}
+.dj-res:empty{display:none}
+.dj-list{display:flex;flex-direction:column;gap:8px}
+.dj-dep{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);transition:background .2s,transform .2s;animation:djin .35s ease both}
+.dj-dep:hover{background:rgba(255,255,255,.075)}
+.dj-dep.first{background:linear-gradient(120deg,rgba(255,107,129,.12),rgba(90,170,255,.08));border-color:rgba(255,255,255,.14)}
+@keyframes djin{from{opacity:0;transform:translateY(6px)}}
+.dj-line{flex:none;min-width:48px;height:40px;padding:0 9px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;letter-spacing:-.01em;
+  background:linear-gradient(140deg,#4b8ff0,#2d63c8);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px -8px rgba(45,99,200,.9)}
+.dj-line.tram{background:linear-gradient(140deg,#ff5a6e,#c92f62);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px -8px rgba(201,47,98,.9)}
+.dj-line.night{background:linear-gradient(140deg,#3a3f6b,#20233f)}
+.dj-line.train{background:linear-gradient(140deg,#35c495,#1d84a8);font-size:13px}
+.dj-dep .m{flex:1;min-width:0}
+.dj-dep .hd{display:block;font-size:15.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dj-tl{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.dj-tl .ln{flex:0 1 70px;min-width:24px;height:2px;border-radius:2px;background:linear-gradient(90deg,#ff6b81,#5aaaff);opacity:.7}
+.dj-tl s{color:var(--ink-dim);text-decoration:line-through;font-size:12px}
+.dj-cd{flex:none;min-width:74px;text-align:center;padding:8px 10px;border-radius:14px;background:rgba(0,0,0,.22);font-variant-numeric:tabular-nums}
+.dj-cd b{display:block;font-size:22px;font-weight:750;line-height:1.05;letter-spacing:-.02em}
+.dj-cd small{display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--ink-dim);margin-top:3px;white-space:nowrap}
+.dj-cd.now b{color:#ffd166}
+.dj-cd [data-ts] b{display:inline} .dj-cd [data-ts] small{display:inline;font-size:12px;color:var(--ink-soft);margin:0}
+.dj>.dj-card:first-child{z-index:5}
+.dj-late{color:#ff9b9b} .dj-ok{color:#8fe8bd}
+.dj-empty{padding:26px 10px;text-align:center;color:var(--ink-dim);font-size:14px}
+.dj-favs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.dj-fav{padding:16px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);cursor:pointer;transition:background .2s,transform .2s;position:relative}
+.dj-fav:hover{background:rgba(255,255,255,.075);transform:translateY(-2px)}
+.dj-fav .x{position:absolute;top:10px;right:10px;border:0;background:none;color:var(--ink-dim);cursor:pointer;padding:5px 7px;border-radius:8px;opacity:0;transition:opacity .2s}
+.dj-fav:hover .x{opacity:1} .dj-fav .x:hover{color:var(--ink);background:rgba(255,255,255,.1)}
+.dj-fav-r{font-size:13.5px;color:var(--ink-soft);padding-right:24px;line-height:1.35} .dj-fav-r b{color:var(--ink);font-weight:650}
+.dj-fav-main{display:flex;align-items:center;gap:12px;margin-top:12px}
+.dj-fav-main .cd{font-size:30px;font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.dj-fav-main .cd small{font-size:14px;font-weight:600;color:var(--ink-soft);margin-left:3px}
+.dj-fav-main .sub{font-size:12.5px;color:var(--ink-dim);margin-top:3px}
+.dj-next{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.dj-next span{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 4px;border-radius:9px;background:rgba(255,255,255,.06);font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.dj-fav .dj-line{min-width:44px;height:38px;font-size:17px}
+.dj-load{display:flex;align-items:center;justify-content:center;gap:10px;padding:22px;color:var(--ink-dim);font-size:14px}
+.dj-load i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#ff8fa0;animation:spin .8s linear infinite}
+.dj-skel{height:66px;border-radius:18px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));background-size:200% 100%;animation:skel 1.2s linear infinite}
+.dj-skel+.dj-skel{margin-top:8px}
+@keyframes skel{to{background-position:-200% 0}}
+.dj-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap} .dj-h h3{font-size:17px;margin:0}
+.dj-foot{margin:16px 0 0;font-size:12px;color:var(--ink-dim);text-align:center}
 .wl-tr{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;max-width:640px}
 .wl-tr[hidden]{display:none}
 .wl-tr button{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:16px;cursor:pointer;font:inherit;color:#fff;text-align:left;
   background:rgba(20,18,40,.38);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .wl-tr button:hover{background:rgba(20,18,40,.5)}
 .wl-tr .dj-line{min-width:38px;height:34px;font-size:15px}
-.wl-tr b{display:block;font-size:15px;font-variant-numeric:tabular-nums} .wl-tr small{display:block;font-size:12px;color:rgba(255,255,255,.75);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:620px){.dj-form{grid-template-columns:1fr}.dj-swap{justify-self:center;transform:rotate(0)}}
+.wl-tr b{display:flex;align-items:center;gap:6px;font-size:15px;font-variant-numeric:tabular-nums} .wl-tr small{display:block;font-size:12px;color:rgba(255,255,255,.75);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* tło: nocna mapa linii z jadącymi pojazdami */
+.dj-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .5s ease;overflow:hidden;
+  background:radial-gradient(55% 45% at 12% 5%,rgba(255,90,110,.2),transparent 70%),radial-gradient(50% 45% at 92% 18%,rgba(70,140,255,.2),transparent 70%),
+    radial-gradient(60% 50% at 60% 105%,rgba(53,196,149,.14),transparent 70%),linear-gradient(165deg,#0f1424,#0a0e1a 55%,#0d0f1d)}
+body.on-dojazd .dj-bg{opacity:1}
+.dj-bg::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.2px);background-size:26px 26px;
+  -webkit-mask:radial-gradient(80% 70% at 50% 40%,#000 30%,transparent 80%);mask:radial-gradient(80% 70% at 50% 40%,#000 30%,transparent 80%)}
+.dj-bg svg{position:absolute;inset:0;width:100%;height:100%}
+.dj-bg .rt{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.2}
+.dj-bg .glow{fill:none;stroke-width:16;stroke-linecap:round;opacity:.05}
+.dj-bg .stn{fill:#0c1020;stroke-width:3;opacity:.55}
+.dj-bg .veh{opacity:.9}
+.dj-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 30%,transparent 50%,rgba(5,7,14,.65))}
+@media(prefers-reduced-motion:reduce){.dj-bg .veh{display:none}}
+@media(max-width:620px){.dj-lg{display:none}.dj-tabs{width:100%}.dj-tabs button{flex:1;justify-content:center}.dj-card{padding:18px 16px}.dj-tabs button{padding:8px 10px;font-size:13px}.dj-cd{min-width:62px}.dj-cd b{font-size:19px}.dj-line{min-width:42px;height:36px;font-size:16px}}
 .sg{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .sg textarea{width:100%;min-height:130px;resize:vertical;padding:14px 16px;border-radius:16px;font:inherit;font-size:15px;line-height:1.5}
 .sg-row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap} .sg-row .sp{flex:1}
@@ -2248,6 +2326,35 @@ body.on-start .pomo{display:none}
 <body class="on-pulpit">
 <div class="aurora"><span class="a"></span><span class="b"></span><span class="c"></span></div>
 <div class="fin-bg" aria-hidden="true"></div>
+<div class="dj-bg" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="djg-r"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#ff7d90"/><stop offset="1" stop-color="#ff5a6e" stop-opacity="0"/></radialGradient>
+    <radialGradient id="djg-b"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#7ab8ff"/><stop offset="1" stop-color="#4b8ff0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="djg-g"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#6fe0b8"/><stop offset="1" stop-color="#35c495" stop-opacity="0"/></radialGradient>
+    <radialGradient id="djg-y"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
+    <path id="djp1" d="M-60 770C240 770 300 530 560 530S900 300 1150 300 1450 170 1700 150"/>
+    <path id="djp2" d="M-60 250C260 250 380 420 640 430S1000 650 1260 650 1500 730 1700 770"/>
+    <path id="djp3" d="M-60 890H380C520 890 600 820 720 770L1700 380"/>
+    <path id="djp4" d="M300-60C300 200 420 300 520 380S760 560 820 700 900 950 900 1100"/>
+    <path id="djp5" d="M1250-60C1240 200 1150 330 1050 420S860 640 760 800 640 1000 600 1100"/>
+    <radialGradient id="djg-v"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#c9a8ff"/><stop offset="1" stop-color="#a77bff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g class="glow"><use href="#djp1" stroke="#ff5a6e"/><use href="#djp2" stroke="#4b8ff0"/><use href="#djp3" stroke="#35c495"/><use href="#djp4" stroke="#ffb547"/><use href="#djp5" stroke="#a77bff"/></g>
+  <g class="rt"><use href="#djp1" stroke="#ff5a6e"/><use href="#djp2" stroke="#4b8ff0"/><use href="#djp3" stroke="#35c495" stroke-dasharray="1 0"/><use href="#djp4" stroke="#ffb547"/><use href="#djp5" stroke="#a77bff"/></g>
+  <g class="stn">
+    <circle cx="560" cy="530" r="9" stroke="#ff5a6e"/><circle cx="1150" cy="300" r="9" stroke="#ff5a6e"/><circle cx="640" cy="430" r="9" stroke="#4b8ff0"/>
+    <circle cx="1260" cy="650" r="9" stroke="#4b8ff0"/><circle cx="380" cy="890" r="9" stroke="#35c495"/><circle cx="1210" cy="575" r="9" stroke="#35c495"/>
+    <circle cx="520" cy="380" r="9" stroke="#ffb547"/><circle cx="820" cy="700" r="12" stroke="#fff"/><circle cx="1050" cy="420" r="9" stroke="#a77bff"/><circle cx="760" cy="800" r="9" stroke="#a77bff"/>
+  </g>
+  <g class="veh">
+    <circle r="14" fill="url(#djg-r)"><animateMotion dur="26s" repeatCount="indefinite"><mpath href="#djp1"/></animateMotion></circle>
+    <circle r="14" fill="url(#djg-r)"><animateMotion dur="26s" begin="-13s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp1"/></animateMotion></circle>
+    <circle r="14" fill="url(#djg-b)"><animateMotion dur="34s" repeatCount="indefinite"><mpath href="#djp2"/></animateMotion></circle>
+    <circle r="16" fill="url(#djg-g)"><animateMotion dur="18s" begin="-6s" repeatCount="indefinite"><mpath href="#djp3"/></animateMotion></circle>
+    <circle r="13" fill="url(#djg-y)"><animateMotion dur="30s" begin="-10s" repeatCount="indefinite"><mpath href="#djp4"/></animateMotion></circle>
+    <circle r="13" fill="url(#djg-v)"><animateMotion dur="28s" begin="-20s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#djp5"/></animateMotion></circle>
+  </g>
+</svg></div>
 <div class="soft-bg" aria-hidden="true"></div>
 <div class="aura" aria-hidden="true">
   <div class="au-ribbon"></div><div class="au-ribbon r2"></div><div class="au-grid"></div>
@@ -2574,29 +2681,37 @@ body.on-start .pomo{display:none}
     </section>
 
     <section class="view" id="view-dojazd">
-      <div class="head"><div class="eyebrow">Komunikacja</div><h1>Dojazd</h1><div class="date">Tramwaje i autobusy w Poznaniu (rozkład ZTM z opóźnieniami na żywo) oraz pociągi</div></div>
+      <div class="head"><div class="eyebrow">Komunikacja</div><h1>Dojazd</h1><div class="date">Tramwaje i autobusy w Poznaniu z opóźnieniami na żywo · pociągi</div>
+        <div class="dj-live" id="dj-live"><i></i><span>Na żywo · odświeżanie co 20 s</span></div></div>
       <div class="dj">
-        <div class="st-card glass">
-          <div class="adm-h"><h3>Ulubione trasy</h3><button class="btn ghost sm" onclick="djFavs()">Odśwież</button></div>
-          <div id="dj-favs"><div class="empty">Wczytuję…</div></div>
-        </div>
-        <div class="st-card glass">
-          <div class="adm-h"><h3>Tramwaje i autobusy · Poznań</h3><span class="dj-st" id="dj-ztm-st"></span></div>
-          <div class="dj-form">
-            <label class="field"><span>Skąd</span><input id="dj-from" list="dj-dl-ztm" placeholder="np. Rondo Kaponiera" autocomplete="off"></label>
-            <button class="dj-swap" title="Zamień" onclick="djSwap('dj')">⇅</button>
-            <label class="field"><span>Dokąd</span><input id="dj-to" list="dj-dl-ztm" placeholder="np. Os. Sobieskiego" autocomplete="off"></label>
+        <div class="dj-card glass">
+          <div class="dj-tabs" id="dj-tabs">
+            <button class="on" data-m="route" onclick="djMode('route')"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 000-6H9a3 3 0 010-6h6.5"/></svg>Trasa</button>
+            <button data-m="board" onclick="djMode('board')"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="2"/><path d="M7 8h6M7 12h10M12 16v4M8 20h8"/></svg>Odjazdy<span class="dj-lg">&nbsp;z przystanku</span></button>
+            <button data-m="pkp" onclick="djMode('pkp')"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3.5"/><path d="M5 11h14M9 20.5l-1.5-3.5M15 20.5l1.5-3.5"/></svg>Pociągi</button>
           </div>
-          <datalist id="dj-dl-ztm"></datalist>
-          <div class="sg-row"><label class="dj-chk"><input type="checkbox" id="dj-tram"> Tylko tramwaje</label><span class="sp"></span>
-            <button class="btn ghost" onclick="djSave('ztm')">☆ Zapisz trasę</button><button class="btn" onclick="djSearch()">Pokaż odjazdy</button></div>
-          <div id="dj-res"></div>
-          <p class="st-note" style="margin:14px 0 0">Pokazuje połączenia bez przesiadki. Dane: ZTM Poznań (otwarte dane GTFS), rozkład odświeżany raz na dobę.</p>
+          <div id="dj-pane-route">
+            <div class="dj-route">
+              <div class="dj-rail"><i></i><span></span><i class="to"></i></div>
+              <div class="dj-ac lbl"><label>Skąd</label><input id="dj-from" placeholder="Przystanek początkowy" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
+              <button class="dj-swap" title="Zamień kierunek" onclick="djSwap('dj')"><svg viewBox="0 0 24 24"><path d="M7 4v16M7 4L3.5 7.5M7 4l3.5 3.5M17 20V4M17 20l-3.5-3.5M17 20l3.5-3.5"/></svg></button>
+              <div class="dj-ac lbl"><label>Dokąd</label><input id="dj-to" placeholder="Przystanek docelowy" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
+            </div>
+            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-tram" onchange="djSearch()">🚋 Tylko tramwaje</label><span class="dj-st" id="dj-ztm-st"></span><span class="sp"></span>
+              <button class="btn ghost" onclick="djSave('ztm')">☆ Zapisz trasę</button><button class="btn" onclick="djSearch()">Szukaj</button></div>
+          </div>
+          <div id="dj-pane-board" hidden>
+            <div class="dj-ac lbl"><label>Przystanek</label><input id="dj-stop" placeholder="Np. Rondo Kaponiera" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
+            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-btram" onchange="djBoard()">🚋 Tylko tramwaje</label><span class="sp"></span><button class="btn" onclick="djBoard()">Pokaż odjazdy</button></div>
+          </div>
+          <div id="dj-pane-pkp" hidden><div id="dj-pkp"></div></div>
+          <div class="dj-res" id="dj-res"></div>
         </div>
-        <div class="st-card glass">
-          <div class="adm-h"><h3>Pociągi · PKP <span class="adm-badge">wersja próbna</span></h3><span class="dj-st" id="dj-pkp-st"></span></div>
-          <div id="dj-pkp"></div>
+        <div class="dj-card glass">
+          <div class="dj-h"><h3>Ulubione trasy</h3><span class="dj-st">kliknij trasę, żeby zobaczyć więcej odjazdów</span></div>
+          <div id="dj-favs"><div class="dj-skel"></div></div>
         </div>
+        <p class="dj-foot">Połączenia bez przesiadek · dane: ZTM Poznań (otwarte dane GTFS i GTFS-RT), PKP PLK (Otwarte Dane Kolejowe)</p>
       </div>
     </section>
 
@@ -2885,6 +3000,7 @@ function go(v){
   document.body.classList.toggle('in-nauka', v==='nauka');
   document.body.classList.toggle('on-pulpit', v==='pulpit');
   document.body.classList.toggle('on-fin', v==='finanse');
+  document.body.classList.toggle('on-dojazd', v==='dojazd');
   document.body.classList.toggle('on-plan', v==='plan');
   document.body.classList.toggle('on-todo', v==='zadania');
   if(v==='start'&&!document.body.classList.contains('on-start'))lpBack.from=navState();
@@ -4548,98 +4664,195 @@ async function startAutoSync(){
 addEventListener('focus',()=>{if(ME&&SYNC.last&&!SYNC.busy)syncNow();});   // powrót do okna = świeże dane z innych urządzeń
 /* ---------- ADMINISTRATOR: serwer kont + lista kont ---------- */
 let ADM=[];
-/* ---------- DOJAZD: ZTM Poznań (GTFS + opóźnienia na żywo) i PKP (Otwarte Dane Kolejowe) ---------- */
+/* ---------- DOJAZD: ZTM Poznań (GTFS + opóźnienia na żywo) i PKP (Otwarte Dane Kolejowe) ----------
+   Jak w jakdojade: wyniki odliczają się co sekundę (znaczniki czasu z serwera), a co 20 s dociągamy świeże opóźnienia. */
 async function apiT(u,o){const r=await fetch('api'+u,o&&{...o,headers:{'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));
   if(!r.ok){const e=new Error(d.detail||('Błąd '+r.status));e.status=r.status;throw e;} return d;}
 const djQ=o=>Object.entries(o).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-const djIn=(m,dl)=>m<=0?'<b>teraz</b>':`<small>za</small> <b>${m}</b> <small>min</small>`;
-const djDelay=d=>d==null?'':d>=1?`<span class="dj-late">+${d} min</span>`:d<=-1?`<span class="dj-ok">${d} min</span>`:'<span class="dj-ok">o czasie</span>';
-const djBadge=x=>x.carrier!==undefined?`<span class="dj-line train">${esc((x.cat||'').split('/')[0]||'PKP')}</span>`:`<span class="dj-line${x.tram?' tram':''}">${esc(x.line)}</span>`;
-let DJ_T=null, DJ_POLL=null;
-function djDepRow(x){
-  const train=x.carrier!==undefined;
-  const t=train?`${esc(x.carrier)} ${esc(x.number)}${x.name?' „'+esc(x.name)+'”':''}`:`→ ${esc(x.headsign)}`;
-  const sub=train?`odjazd ${x.dep}${x.platform?' · peron '+esc(x.platform):''} · przyjazd ${x.arr} (${x.travel_min} min)`:`odjazd ${x.dep} · na miejscu ${x.arr} (${x.travel_min} min) ${djDelay(x.delay_min)}`;
-  return `<div class="dj-dep">${djBadge(x)}<div class="m"><b>${t}</b><small>${sub}</small></div><div class="dj-in">${djIn(x.in_min)}</div></div>`;
+const DJ={mode:'route',last:null,poll:null,refresh:null};
+const DJ_IC={pin:'<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  home:'<path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V19h12V9.5"/><path d="M10 19v-5h4v5"/>',
+  loc:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7"/>'};
+const djNight=l=>/^2\d\d$/.test(l);
+const djBadge=x=>x.carrier!==undefined?`<span class="dj-line train">${esc((x.cat||'').split('/')[0]||'PKP')}</span>`
+  :`<span class="dj-line${x.tram?' tram':djNight(x.line)?' night':''}">${esc(x.line)}</span>`;
+const djDelay=x=>x.delay_min==null?'':x.delay_min>=1?`<span class="dj-late">+${x.delay_min} min</span>`:x.delay_min<=-1?`<span class="dj-ok">${x.delay_min} min</span>`:'<span class="dj-ok">o czasie</span>';
+/* „za ile” liczone w przeglądarce z czasu uniksowego — aktualizowane co sekundę */
+function djLeft(ts){const s=ts-Date.now()/1000; if(s<=45)return {n:'teraz',u:'',now:true}; const m=Math.round(s/60);
+  if(m<60)return {n:String(m),u:'min'}; const d=new Date(ts*1000); return {n:d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}),u:''};}
+function djTick(){
+  $$('[data-ts]').forEach(el=>{const ts=+el.dataset.ts, L=djLeft(ts), row=el.closest('.dj-dep');
+    if(row&&ts<Date.now()/1000-60){row.remove();return;}
+    const t=el.dataset.fmt==='inline'?(L.now?'teraz':L.u?`za ${L.n} ${L.u}`:L.n):null;
+    if(t!==null){if(el.textContent!==t)el.textContent=t;return;}
+    const html=`<b>${L.n}</b>${L.u?` <small>${L.u}</small>`:''}`; if(el.dataset.h!==html){el.dataset.h=html;el.innerHTML=html;el.closest('.dj-cd')?.classList.toggle('now',!!L.now);}});
 }
-function djLoading(box,msg,src){box.innerHTML=`<div class="dj-load"><i></i>${esc(msg)}</div>`;
-  clearTimeout(DJ_POLL); DJ_POLL=setTimeout(async()=>{const st=await api('/transit/status');if(st[src].ready&&!st[src].importing){djStatus(st);src==='ztm'?djSearch(true):djPkpSearch(true);djFavs();}else if(st[src].error){box.innerHTML=`<div class="empty">${esc(st[src].error)}</div>`;djStatus(st);}else djLoading(box,msg,src);},3000);}
+setInterval(djTick,1000);
+function djRow(x,i,board){
+  const train=x.carrier!==undefined;
+  const hd=train?`${esc(x.carrier)} ${esc(x.number)}${x.name?' „'+esc(x.name)+'”':''}`:`${esc(x.headsign)}`;
+  const dep=train?x.dep:(x.live&&x.dep_real!==x.dep?`<b>${x.dep_real}</b> <s>${x.dep}</s>`:`<b>${x.dep}</b>`);
+  const tl=board?`${dep} ${djDelay(x)}`
+    :`${dep}<span class="ln"></span>${x.travel_min} min<span class="ln"></span><b>${train?x.arr:(x.arr_real||x.arr)}</b>${train&&x.platform?` · peron ${esc(x.platform)}`:''} ${train?'':djDelay(x)}`;
+  const L=djLeft(x.ts);
+  return `<div class="dj-dep${i?'':' first'}">${djBadge(x)}<div class="m"><span class="hd">${train?'':'→ '}${hd}</span><div class="dj-tl">${tl}</div></div>
+    <div class="dj-cd${L.now?' now':''}"><span data-ts="${x.ts}"><b>${L.n}</b>${L.u?` <small>${L.u}</small>`:''}</span><small>${x.live?'<i class="dj-pulse"></i>na żywo':'rozkład'}</small></div></div>`;
+}
+function djSkel(box){box.innerHTML='<div class="dj-skel"></div><div class="dj-skel"></div><div class="dj-skel"></div>';}
+function djWait(box,msg,src,again){box.innerHTML=`<div class="dj-load"><i></i>${esc(msg)}</div>`;
+  clearTimeout(DJ.poll); DJ.poll=setTimeout(async()=>{const st=await api('/transit/status');djStatus(st);
+    if(st[src].ready&&!st[src].importing){again(true);djFavs();}else if(st[src].error)box.innerHTML=`<div class="dj-empty">${esc(st[src].error)}</div>`;else djWait(box,msg,src,again);},3000);}
 async function loadDojazd(){
   const st=await api('/transit/status'); djStatus(st); djPkpRender(st);
-  try{const last=JSON.parse(LS.get('dj_last')||'null'); if(last&&!$('#dj-from').value){$('#dj-from').value=last.f;$('#dj-to').value=last.t;$('#dj-tram').checked=!!last.tram;}}catch(_){}
-  ['dj-from','dj-to'].forEach(id=>{const i=$('#'+id); i.oninput=()=>djSuggest(i.value,'ztm'); i.onkeydown=e=>{if(e.key==='Enter')djSearch();};});
+  try{const last=JSON.parse(LS.get('dj_last')||'null'); if(last&&!$('#dj-from').value){$('#dj-from').value=last.f;$('#dj-to').value=last.t;$('#dj-tram').checked=!!last.tram;}
+    const bs=LS.get('dj_stop'); if(bs&&!$('#dj-stop').value)$('#dj-stop').value=bs;}catch(_){}
+  djAuto($('#dj-from'),'ztm',()=>{$('#dj-to').value?djSearch():$('#dj-to').focus();});
+  djAuto($('#dj-to'),'ztm',()=>djSearch());
+  djAuto($('#dj-stop'),'ztm',()=>djBoard());
   if(!st.ztm.ready&&!st.ztm.importing)api('/transit/ztm/refresh',{method:'POST'}).then(djStatus);
-  djFavs();
-  clearInterval(DJ_T); DJ_T=setInterval(()=>{if($('#view-dojazd').classList.contains('active')&&!$('#modal-bd').classList.contains('open'))djFavs();else clearInterval(DJ_T);},30000);
+  djFavs(); djRun(true);
+  clearInterval(DJ.refresh); DJ.refresh=setInterval(()=>{
+    if(!$('#view-dojazd').classList.contains('active')){clearInterval(DJ.refresh);return;}
+    if(document.hidden||$('#modal-bd').classList.contains('open')||$('.dj-sug:not([hidden])'))return;
+    djFavs(); djRun(true);},20000);
 }
+function djRun(silent){DJ.mode==='board'?djBoard(silent):DJ.mode==='pkp'?djPkpSearch(true):djSearch(silent);}
+function djMode(m){DJ.mode=m; $$('#dj-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  ['route','board','pkp'].forEach(k=>$('#dj-pane-'+k).hidden=k!==m); $('#dj-res').innerHTML=''; djRun(true);}
 function djStatus(st){
-  const f=(x,lbl)=>x.importing?'Pobieram rozkład…':x.error?'⚠ '+x.error:x.ready?`${lbl} z ${new Date(x.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';
-  $('#dj-ztm-st').textContent=f(st.ztm,'Rozkład'); if($('#dj-pkp-st'))$('#dj-pkp-st').textContent=st.pkp.key?f(st.pkp,'Rozkład'):'';
+  const f=x=>x.importing?'Pobieram rozkład…':x.error?'⚠ '+x.error:x.ready?`rozkład z ${new Date(x.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';
+  $('#dj-ztm-st').textContent=f(st.ztm); const p=$('#dj-pkp-st'); if(p)p.textContent=st.pkp.key?f(st.pkp):'';
 }
-let djSugT=null;
-function djSuggest(q,src){clearTimeout(djSugT); if(q.trim().length<2)return;
-  djSugT=setTimeout(async()=>{try{const L=await apiT(`/transit/${src}/${src==='ztm'?'stops':'stations'}?`+djQ({q}));$('#dj-dl-'+src).innerHTML=L.map(n=>`<option value="${esc(n)}">`).join('');}catch(_){}} ,200);}
-function djSwap(p){const a=$('#'+p+'-from'),b=$('#'+p+'-to');[a.value,b.value]=[b.value,a.value];}
+/* podpowiedzi przystanków: własna lista (linie przy przystanku, ostatnio wyszukiwane, klawiatura ↑↓ Enter Esc) */
+const djRecent=()=>{try{return JSON.parse(LS.get('dj_recent')||'[]');}catch(_){return [];}};
+function djRemember(n){if(!n)return; LS.set('dj_recent',JSON.stringify([n,...djRecent().filter(x=>x!==n)].slice(0,6)));}
+function djAuto(inp,src,onPick){
+  if(inp._dj)return; inp._dj=1;
+  const box=inp.parentElement.querySelector('.dj-sug'); let items=[], sel=-1, t=null, tg=null, seq=0, head='';
+  const ztm=src==='ztm';
+  const close=()=>{box.hidden=true;sel=-1;};
+  const mark=(name,q)=>{const n=norm(name),i=q?n.indexOf(norm(q)):-1; return i<0?esc(name):esc(name.slice(0,i))+'<mark>'+esc(name.slice(i,i+q.length))+'</mark>'+esc(name.slice(i+q.length));};
+  const H={recent:'Ostatnio wyszukiwane',stop:'Przystanki',addr:'Adresy — pokażę najbliższy przystanek',near:''};
+  const IC={recent:DJ_IC.clock,stop:DJ_IC.pin,addr:DJ_IC.home,near:DJ_IC.pin,geo:DJ_IC.loc};
+  const lines=ls=>ls&&ls.length?`<div class="ls">${ls.slice(0,9).map(l=>`<span class="dj-mini${l.tram?' tram':''}">${esc(l.l)}</span>`).join('')}${ls.length>9?`<span class="dj-mini more">+${ls.length-9}</span>`:''}</div>`:'';
+  const paint=q=>{
+    if(!items.length){box.innerHTML=q?'<div class="dj-empty" style="padding:14px">Brak takiego przystanku ani adresu</div>':'';box.hidden=!q;return;}
+    let last='', h=head?`<h6>${esc(head)}</h6>`:'';
+    items.forEach((x,i)=>{
+      if(!head&&H[x.kind]&&x.kind!==last)h+=`<h6>${H[x.kind]}</h6>`; last=x.kind;
+      const sub=x.kind==='near'?`<small class="dj-dist">${x.dist_m<1000?x.dist_m+' m':(x.dist_m/1000).toFixed(1).replace('.',',')+' km'} · ok. ${x.walk_min} min pieszo</small>`:x.kind==='geo'?'<small class="dj-dist">Najbliższe przystanki od miejsca, w którym jesteś</small>':'';
+      h+=`<div class="dj-opt${i===sel?' on':''}" data-i="${i}"><span class="pin ${x.kind}"><svg viewBox="0 0 24 24">${IC[x.kind]}</svg></span>
+        <div class="m"><b>${x.kind==='stop'||x.kind==='addr'?mark(x.name,q):esc(x.name)}</b>${sub}${lines(x.lines)}</div></div>`;});
+    box.innerHTML=h; box.hidden=false;};
+  const near=async(lat,lon,label)=>{
+    head='Najbliższe przystanki: '+label; items=[]; box.innerHTML=`<h6>${esc(head)}</h6><div class="dj-load" style="padding:14px"><i></i>Szukam przystanków…</div>`; box.hidden=false;
+    try{const L=await apiT('/transit/ztm/near?'+djQ({lat,lon,n:6})); items=L.map(x=>({...x,kind:'near'})); sel=0; paint('');}
+    catch(e){box.innerHTML=`<div class="dj-empty" style="padding:14px">${esc(e.message)}</div>`;}
+  };
+  const pick=i=>{const x=items[i]; if(!x)return;
+    if(x.kind==='addr'){inp.value=x.name; near(x.lat,x.lon,x.name); return;}
+    if(x.kind==='geo'){
+      if(!navigator.geolocation){popout({icon:'warn',title:'Brak lokalizacji',text:'Ta przeglądarka nie udostępnia położenia — wpisz adres.'});return;}
+      box.innerHTML='<div class="dj-load" style="padding:14px"><i></i>Ustalam położenie…</div>';
+      navigator.geolocation.getCurrentPosition(p=>near(p.coords.latitude,p.coords.longitude,'Twoja lokalizacja'),
+        ()=>{box.innerHTML='<div class="dj-empty" style="padding:14px">Nie udało się ustalić położenia — wpisz adres, np. „Półwiejska 2”.</div>';},{enableHighAccuracy:true,timeout:10000});
+      return;}
+    inp.value=x.name; djRemember(x.name); close(); head=''; onPick&&onPick();};
+  const load=()=>{const q=inp.value.trim(); head='';
+    if(q.length<2){items=[...(ztm?[{kind:'geo',name:'Moja lokalizacja'}]:[]),...djRecent().map(n=>({kind:'recent',name:n}))]; sel=-1; paint(''); return;}
+    clearTimeout(t); clearTimeout(tg); const my=++seq;
+    t=setTimeout(async()=>{
+      try{const L=await apiT(`/transit/${src}/${ztm?'stops':'stations'}?`+djQ({q})); if(my!==seq)return;
+        items=[...L.map(x=>typeof x==='string'?{kind:'stop',name:x}:{kind:'stop',...x}),...items.filter(x=>x.kind==='addr')]; sel=items.length?0:-1; paint(q);}
+      catch(e){if(my===seq){box.innerHTML=`<div class="dj-empty" style="padding:14px">${esc(e.message)}</div>`;box.hidden=false;}}},140);
+    // adresy (OpenStreetMap) — wolniej i rzadziej: limit wyszukiwarki to 1 zapytanie na sekundę
+    if(ztm&&q.length>=4)tg=setTimeout(async()=>{
+      try{const A=await apiT('/transit/geocode?'+djQ({q})); if(my!==seq)return;
+        items=[...items.filter(x=>x.kind==='stop'),...A.map(x=>({kind:'addr',name:x.label,lat:x.lat,lon:x.lon}))]; if(sel<0&&items.length)sel=0; paint(q);}catch(_){}} ,550);
+    else items=items.filter(x=>x.kind==='stop');};
+  inp.addEventListener('input',load); inp.addEventListener('focus',()=>{inp.select();load();});
+  inp.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement!==inp)close();},180));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){if(box.hidden)return load(); if(!items.length)return; e.preventDefault(); sel=(sel+(e.key==='ArrowDown'?1:-1)+items.length)%items.length; paint(inp.value.trim().length<2||head?'':inp.value.trim());}
+    else if(e.key==='Enter'){e.preventDefault(); if(!box.hidden&&sel>=0)pick(sel); else{close();onPick&&onPick();}}
+    else if(e.key==='Escape')close();});
+  box.addEventListener('mousedown',e=>{e.preventDefault(); const o=e.target.closest('.dj-opt'); if(o)pick(+o.dataset.i);});
+}
+function djSwap(p){const a=$('#'+p+'-from'),b=$('#'+p+'-to');[a.value,b.value]=[b.value,a.value]; p==='dj'?djSearch(true):djPkpSearch(true);}
 async function djSearch(silent){
   const f=$('#dj-from').value.trim(), t=$('#dj-to').value.trim(), tram=$('#dj-tram').checked, box=$('#dj-res');
-  if(!f||!t){if(!silent)popout({icon:'warn',title:'Podaj oba przystanki',text:'Wpisz, skąd i dokąd jedziesz — podpowiedzi pojawią się po 2 literach.'});return;}
-  LS.set('dj_last',JSON.stringify({f,t,tram}));
-  box.innerHTML='<div class="dj-load"><i></i>Szukam…</div>';
-  try{const L=await apiT('/transit/ztm/next?'+djQ({frm:f,to:t,tram,n:6}));
-    box.innerHTML=L.length?`<div class="dj-list">${L.map(djDepRow).join('')}</div>`:'<div class="empty">Brak bezpośrednich kursów w najbliższych godzinach.</div>';}
-  catch(e){e.status===503?djLoading(box,e.message,'ztm'):box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+  if(!f||!t){if(silent!==true)popout({icon:'warn',title:'Podaj oba przystanki',text:'Wpisz, skąd i dokąd jedziesz — podpowiedzi pojawią się po 2 literach.'});return;}
+  LS.set('dj_last',JSON.stringify({f,t,tram})); djRemember(f); djRemember(t);
+  if(silent!==true||!box.innerHTML)djSkel(box);
+  try{const L=await apiT('/transit/ztm/next?'+djQ({frm:f,to:t,tram,n:8}));
+    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i)).join('')}</div>`:'<div class="dj-empty">Brak bezpośrednich kursów w najbliższych godzinach.</div>';}
+  catch(e){e.status===503?djWait(box,e.message,'ztm',djSearch):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
+}
+async function djBoard(silent){
+  const s=$('#dj-stop').value.trim(), box=$('#dj-res'); if(!s){if(silent!==true)popout({icon:'warn',title:'Wpisz przystanek'});return;}
+  LS.set('dj_stop',s); djRemember(s);
+  if(silent!==true||!box.innerHTML)djSkel(box);
+  try{const L=await apiT('/transit/ztm/board?'+djQ({stop:s,n:14,tram:$('#dj-btram').checked}));
+    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i,true)).join('')}</div>`:'<div class="dj-empty">W najbliższych godzinach nic stąd nie odjeżdża.</div>';}
+  catch(e){e.status===503?djWait(box,e.message,'ztm',djBoard):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
 }
 async function djSave(kind){
   const p=kind==='pkp'?'pk':'dj', f=$('#'+p+'-from').value.trim(), t=$('#'+p+'-to').value.trim();
-  if(!f||!t){popout({icon:'warn',title:'Podaj oba '+(kind==='pkp'?'stacje':'przystanki')});return;}
+  if(!f||!t){popout({icon:'warn',title:kind==='pkp'?'Podaj obie stacje':'Podaj oba przystanki'});return;}
   const r=await api('/transit/favs',{method:'POST',body:JSON.stringify({kind,from_name:f,to_name:t,tram_only:kind==='ztm'&&$('#dj-tram').checked})});
   if(r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
   popout({icon:'ok',title:'Zapisano trasę',text:'Najbliższe odjazdy zobaczysz na Pulpicie i w ulubionych.'}); djFavs();
 }
-async function djFavDel(id){await api('/transit/favs/'+id,{method:'DELETE'}); djFavs(); }
-function djUse(f){if(f.kind==='pkp'){$('#pk-from')&&($('#pk-from').value=f.from_name,$('#pk-to').value=f.to_name,djPkpSearch());}
-  else{$('#dj-from').value=f.from_name;$('#dj-to').value=f.to_name;$('#dj-tram').checked=!!f.tram_only;djSearch();} }
+async function djFavDel(e,id){e.stopPropagation(); if(!await confirmPop('Usunąć trasę z ulubionych?'))return; await api('/transit/favs/'+id,{method:'DELETE'}); djFavs();}
+function djUse(i){const f=(DJ_FAV||[])[i]; if(!f)return;
+  if(f.kind==='pkp'){djMode('pkp'); setTimeout(()=>{if($('#pk-from')){$('#pk-from').value=f.from_name;$('#pk-to').value=f.to_name;djPkpSearch();}},50);}
+  else{if(DJ.mode!=='route')djMode('route'); $('#dj-from').value=f.from_name;$('#dj-to').value=f.to_name;$('#dj-tram').checked=!!f.tram_only;djSearch();}
+  $('#view-dojazd').scrollIntoView({behavior:'smooth'});}
+let DJ_FAV=null;
 async function djFavs(){
   const box=$('#dj-favs'); if(!box)return;
-  let L; try{L=await apiT('/transit/favs/next?n=4');}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return;}
+  let L; try{L=await apiT('/transit/favs/next?n=4');}catch(e){box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;return;}
   DJ_FAV=L; paintPulpitTransit(L);
-  box.innerHTML=L.length?L.map(f=>`<div class="dj-fav"><div class="dj-fav-h"><b>${esc(f.from_name)} → ${esc(f.to_name)}<small>${f.kind==='pkp'?'Pociąg':f.tram_only?'Tylko tramwaje':'Tramwaje i autobusy'}</small></b>
-      <button class="btn ghost sm" onclick='djUse(${JSON.stringify(f).replace(/'/g,"&#39;")})'>Szczegóły</button><button class="x" title="Usuń z ulubionych" onclick="djFavDel(${f.id})">✕</button></div>
-      ${f.error?`<div class="dj-st">${esc(f.error)}</div>`:f.deps.length?`<div class="dj-chips">${f.deps.map((x,i)=>`<span class="dj-chip${i?'':' first'}">${djBadge(x)}${x.in_min<=0?'<b>teraz</b>':`za <b>${x.in_min}</b> min`} <small style="color:var(--ink-dim)">${x.dep}</small>${i?'':' '+djDelay(x.delay_min)}</span>`).join('')}</div>`
-        :'<div class="dj-st">Brak bezpośrednich kursów w najbliższych godzinach.</div>'}</div>`).join('')
-    :'<div class="empty">Wyszukaj trasę poniżej i kliknij „☆ Zapisz trasę” — najbliższe odjazdy będą tutaj i na Pulpicie.</div>';
+  box.innerHTML=L.length?`<div class="dj-favs">${L.map((f,i)=>{const x=f.deps[0], Lf=x&&djLeft(x.ts);
+    return `<div class="dj-fav" onclick="djUse(${i})"><button class="x" title="Usuń z ulubionych" onclick="djFavDel(event,${f.id})">✕</button>
+      <div class="dj-fav-r"><b>${esc(f.from_name)}</b> → <b>${esc(f.to_name)}</b>${f.kind==='pkp'?' · pociąg':f.tram_only?' · tramwaje':''}</div>
+      ${f.error?`<div class="dj-st" style="margin-top:10px">${esc(f.error)}</div>`:x?`<div class="dj-fav-main">${djBadge(x)}<div><div class="cd" data-ts="${x.ts}"><b>${Lf.n}</b>${Lf.u?` <small>${Lf.u}</small>`:''}</div>
+        <div class="sub">${x.carrier!==undefined?`odjazd ${x.dep}`:`→ ${esc(x.headsign)} · ${x.dep_real||x.dep}`} ${x.live?djDelay(x):''}</div></div></div>
+        ${f.deps.length>1?`<div class="dj-next">${f.deps.slice(1).map(y=>`<span>${djBadge(y).replace('dj-line','dj-mini')} ${y.dep_real||y.dep}</span>`).join('')}</div>`:''}`
+      :'<div class="dj-st" style="margin-top:10px">Brak bezpośrednich kursów w najbliższych godzinach.</div>'}</div>`;}).join('')}</div>`
+    :'<div class="dj-empty">Wyszukaj trasę i kliknij „☆ Zapisz trasę” — najbliższe odjazdy będą tutaj i na Pulpicie.</div>';
 }
-/* pulpit: najbliższy odjazd każdej ulubionej trasy (maks. 3), odświeżany z pulpitem co minutę */
-let DJ_FAV=null;
+/* pulpit: najbliższy odjazd każdej ulubionej trasy (maks. 3); odliczanie co sekundę, dane z serwera co minutę */
 async function loadPulpitTransit(){try{paintPulpitTransit(await apiT('/transit/favs/next?n=1'));}catch(_){}}
 function paintPulpitTransit(L){
   const box=$('#wl-tr'); if(!box)return; const items=(L||[]).filter(f=>f.deps&&f.deps.length).slice(0,3);
   box.hidden=!items.length;
-  box.innerHTML=items.map(f=>{const x=f.deps[0];return `<button onclick="go('dojazd')" title="${esc(f.from_name)} → ${esc(f.to_name)}">${djBadge(x)}<span><b>${x.in_min<=0?'teraz':'za '+x.in_min+' min'}${x.delay_min>=1?` <span class="dj-late" style="font-size:12px">+${x.delay_min}</span>`:''}</b><small>${esc(f.from_name)} → ${esc(f.to_name)}</small></span></button>`;}).join('');
+  box.innerHTML=items.map(f=>{const x=f.deps[0], Lf=djLeft(x.ts);
+    return `<button onclick="go('dojazd')" title="${esc(f.from_name)} → ${esc(f.to_name)}">${djBadge(x)}<span><b><span data-ts="${x.ts}" data-fmt="inline">${Lf.now?'teraz':Lf.u?'za '+Lf.n+' '+Lf.u:Lf.n}</span>${x.live?'<i class="dj-pulse"></i>':''}${x.delay_min>=1?` <span class="dj-late" style="font-size:12px">+${x.delay_min}</span>`:''}</b><small>${esc(f.from_name)} → ${esc(f.to_name)}</small></span></button>`;}).join('');
 }
 /* PKP: klucz z formularza PLK → rozkład na dziś i jutro, połączenia A → B */
 function djPkpRender(st){
   const box=$('#dj-pkp');
   if(!st.pkp.key){box.innerHTML=`<p class="st-note" style="margin:0 0 12px">Pociągi (Koleje Wielkopolskie, Polregio, Intercity i inne) pochodzą z darmowego API PKP PLK. Potrzebny jest klucz: wypełnij formularz na <a href="https://pdp-api.plk-sa.pl/" target="_blank" rel="noopener">pdp-api.plk-sa.pl</a> — klucz przychodzi od razu, a aktywacja trwa 3–5 dni roboczych.</p>
       <div class="st-key"><input id="pk-key" placeholder="Wklej klucz API PKP" spellcheck="false" autocomplete="off"><button class="btn" onclick="djPkpKey()">Zapisz klucz</button></div>`;return;}
-  box.innerHTML=`<div class="dj-form">
-      <label class="field"><span>Ze stacji</span><input id="pk-from" list="dj-dl-pkp" placeholder="np. Poznań Główny" autocomplete="off"></label>
-      <button class="dj-swap" title="Zamień" onclick="djSwap('pk')">⇅</button>
-      <label class="field"><span>Do stacji</span><input id="pk-to" list="dj-dl-pkp" placeholder="np. Gniezno" autocomplete="off"></label></div>
-    <datalist id="dj-dl-pkp"></datalist>
-    <div class="sg-row"><button class="btn ghost sm" onclick="djPkpKeyClear()">Usuń klucz</button><span class="sp"></span><button class="btn ghost" onclick="djSave('pkp')">☆ Zapisz trasę</button><button class="btn" onclick="djPkpSearch()">Pokaż pociągi</button></div>
-    <div id="pk-res"></div>`;
-  ['pk-from','pk-to'].forEach(id=>{const i=$('#'+id); i.oninput=()=>djSuggest(i.value,'pkp'); i.onkeydown=e=>{if(e.key==='Enter')djPkpSearch();};});
+  box.innerHTML=`<div class="dj-route">
+      <div class="dj-rail"><i></i><span></span><i class="to"></i></div>
+      <div class="dj-ac lbl"><label>Ze stacji</label><input id="pk-from" placeholder="Np. Poznań Główny" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
+      <button class="dj-swap" title="Zamień kierunek" onclick="djSwap('pk')"><svg viewBox="0 0 24 24"><path d="M7 4v16M7 4L3.5 7.5M7 4l3.5 3.5M17 20V4M17 20l-3.5-3.5M17 20l3.5-3.5"/></svg></button>
+      <div class="dj-ac lbl"><label>Do stacji</label><input id="pk-to" placeholder="Np. Gniezno" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div></div>
+    <div class="dj-bar"><button class="btn ghost sm" onclick="djPkpKeyClear()">Usuń klucz</button><span class="dj-st" id="dj-pkp-st"></span><span class="sp"></span><button class="btn ghost" onclick="djSave('pkp')">☆ Zapisz trasę</button><button class="btn" onclick="djPkpSearch()">Szukaj</button></div>`;
+  djAuto($('#pk-from'),'pkp',()=>{$('#pk-to').value?djPkpSearch():$('#pk-to').focus();}); djAuto($('#pk-to'),'pkp',()=>djPkpSearch());
 }
-async function djPkpKey(){const k=$('#pk-key').value.trim(); if(!k)return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:k})}); djStatus(st); djPkpRender(st);}
-async function djPkpKeyClear(){if(!await confirmPop('Usunąć klucz PKP?','Pociągi przestaną się wyświetlać do czasu wpisania nowego.'))return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:''})}); djStatus(st); djPkpRender(st);}
+async function djPkpKey(){const k=$('#pk-key').value.trim(); if(!k)return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:k})}); djPkpRender(st); djStatus(st);}
+async function djPkpKeyClear(){if(!await confirmPop('Usunąć klucz PKP?','Pociągi przestaną się wyświetlać do czasu wpisania nowego.'))return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:''})}); djPkpRender(st); djStatus(st);}
 async function djPkpSearch(silent){
-  const f=$('#pk-from')?.value.trim(), t=$('#pk-to')?.value.trim(), box=$('#pk-res'); if(!box)return;
-  if(!f||!t){if(!silent)popout({icon:'warn',title:'Podaj obie stacje'});return;}
-  box.innerHTML='<div class="dj-load"><i></i>Szukam…</div>';
+  const f=$('#pk-from')?.value.trim(), t=$('#pk-to')?.value.trim(), box=$('#dj-res'); if(DJ.mode!=='pkp')return;
+  if(!f||!t){if(silent!==true)popout({icon:'warn',title:'Podaj obie stacje'});return;}
+  if(silent!==true||!box.innerHTML)djSkel(box);
   try{const L=await apiT('/transit/pkp/next?'+djQ({frm:f,to:t,n:6}));
-    box.innerHTML=L.length?`<div class="dj-list">${L.map(djDepRow).join('')}</div>`:'<div class="empty">Brak bezpośrednich pociągów dziś i jutro.</div>';}
-  catch(e){e.status===503?djLoading(box,e.message,'pkp'):box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i)).join('')}</div>`:'<div class="dj-empty">Brak bezpośrednich pociągów dziś i jutro.</div>';}
+  catch(e){e.status===503?djWait(box,e.message,'pkp',djPkpSearch):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
 }
 
 /* ---------- SUGESTIE (serwer kont: użytkownik wysyła, administrator przegląda) ---------- */
