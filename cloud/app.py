@@ -124,6 +124,18 @@ CREATE TABLE IF NOT EXISTS group_members (
 );
 """
 
+SCHEMA += """
+CREATE TABLE IF NOT EXISTS suggestions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    text       TEXT NOT NULL,
+    image      TEXT DEFAULT '',          -- data URL zdjęcia/zrzutu (zmniejszony w aplikacji)
+    status     TEXT DEFAULT 'new',       -- new | seen | done
+    reply      TEXT DEFAULT '',          -- odpowiedź administratora (widzi ją autor)
+    created_at TEXT DEFAULT (datetime('now'))
+);
+"""
+
 with db() as _c:
     _c.executescript(SCHEMA)
     if "group_id" not in {r[1] for r in _c.execute("PRAGMA table_info(shares)")}:
@@ -488,8 +500,76 @@ def admin_reset_password(uid: int, a=Depends(admin_user)):
     return {"password": pw, "email": u["email"], "display_name": u["display_name"]}
 
 
+# ---------- sugestie: użytkownicy zgłaszają pomysły / błędy (opcjonalnie ze zdjęciem), administrator je przegląda ----------
+MAX_SUGG_IMAGE = 4_000_000   # data URL (ok. 3 MB obrazka) — aplikacja i tak zmniejsza zdjęcie przed wysłaniem
+
+
+class Suggestion(BaseModel):
+    text: str
+    image: str = ""
+
+
+@app.post("/suggestions")
+def suggestion_add(p: Suggestion, request: Request, u=Depends(current_user)):
+    rate_limit(request, limit=20, window=3600)
+    text = p.text.strip()[:5000]
+    if len(text) < 3:
+        raise HTTPException(400, "Opisz sugestię choć jednym zdaniem.")
+    img = p.image or ""
+    if img and (not re.match(r"^data:image/(png|jpe?g|webp|gif);base64,", img) or len(img) > MAX_SUGG_IMAGE):
+        raise HTTPException(400, "Zdjęcie musi być obrazkiem (PNG/JPG/WebP) do ok. 3 MB.")
+    with db() as c:
+        sid = c.execute("INSERT INTO suggestions(user_id, text, image) VALUES(?,?,?)", (u["id"], text, img)).lastrowid
+    return {"id": sid}
+
+
+def _sugg(r, with_image=True) -> dict:
+    d = {k: r[k] for k in r.keys() if k != "image"}
+    d["has_image"] = bool(r["image"])
+    if with_image:
+        d["image"] = r["image"]
+    return d
+
+
+@app.get("/suggestions/mine")
+def suggestion_mine(u=Depends(current_user)):
+    with db() as c:
+        rows = c.execute("SELECT * FROM suggestions WHERE user_id=? ORDER BY id DESC LIMIT 100", (u["id"],)).fetchall()
+    return [_sugg(r) for r in rows]
+
+
+@app.get("/admin/suggestions")
+def admin_suggestions(a=Depends(admin_user)):
+    with db() as c:
+        rows = c.execute("""SELECT s.*, u.display_name, u.email, u.avatar FROM suggestions s
+                            LEFT JOIN users u ON u.id=s.user_id ORDER BY s.status='done', s.id DESC LIMIT 500""").fetchall()
+    return [_sugg(r) for r in rows]
+
+
+class SuggestionPatch(BaseModel):
+    status: str | None = None
+    reply: str | None = None
+
+
+@app.patch("/admin/suggestions/{sid}")
+def admin_suggestion_patch(sid: int, p: SuggestionPatch, a=Depends(admin_user)):
+    with db() as c:
+        if p.status in ("new", "seen", "done"):
+            c.execute("UPDATE suggestions SET status=? WHERE id=?", (p.status, sid))
+        if p.reply is not None:
+            c.execute("UPDATE suggestions SET reply=? WHERE id=?", (p.reply.strip()[:3000], sid))
+    return {"ok": True}
+
+
+@app.delete("/admin/suggestions/{sid}")
+def admin_suggestion_delete(sid: int, a=Depends(admin_user)):
+    with db() as c:
+        c.execute("DELETE FROM suggestions WHERE id=?", (sid,))
+    return {"ok": True}
+
+
 # ---------- synchronizacja urządzeń (dane z aplikacji jednego konta) ----------
-SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes", "quiz_cards"}
+SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes", "quiz_cards", "transit_favs"}
 MAX_SYNC_ITEM = 2_000_000       # jedna notatka (JSON bloków)
 MAX_SYNC_USER = 200_000_000     # łączny rozmiar danych konta
 

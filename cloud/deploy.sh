@@ -29,7 +29,7 @@ PORT=$PORT
 CONF
 
 # Pliki aplikacji dla wersji webowej (/asystent/app/): w paczce są już w app/, w repo — katalog wyżej
-APPFILES="server.py db.py finanse.py zadania.py quiz.py sync.py aktualizacje.py nagrania.py usos.py web.py index.html logo.png icon-192.png icon-512.png VERSION"
+APPFILES="server.py db.py finanse.py zadania.py quiz.py komunikacja.py sync.py aktualizacje.py nagrania.py usos.py web.py index.html logo.png icon-192.png icon-512.png VERSION"
 if [ -f ../server.py ]; then
   mkdir -p app && for f in $APPFILES; do cp "../$f" app/; done
 fi

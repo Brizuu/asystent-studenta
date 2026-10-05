@@ -1100,6 +1100,7 @@ import usos   # noqa: E402
 import finanse   # noqa: E402
 import zadania   # noqa: E402
 import quiz   # noqa: E402
+import komunikacja   # noqa: E402
 import aktualizacje   # noqa: E402
 import sync   # noqa: E402
 
@@ -1111,6 +1112,7 @@ def init_all():
     finanse.init()
     zadania.init()
     quiz.init()
+    komunikacja.init()
     sync.setup()
 
 
@@ -1120,5 +1122,6 @@ app.include_router(usos.router)
 app.include_router(finanse.router)
 app.include_router(zadania.router)
 app.include_router(quiz.router)
+app.include_router(komunikacja.router)
 app.include_router(aktualizacje.router)
 app.include_router(sync.router)

@@ -35,6 +35,7 @@ TABLES = {
     "costs": {},
     "cost_entries": {"cost_id": "costs"},
     "incomes": {},
+    "transit_favs": {},
 }
 REQUIRED_FK = {("note_groups", "notebook_id"), ("notes", "notebook_id"), ("todo_items", "list_id"), ("todo_checks", "item_id"), ("quiz_cards", "note_id")}
 NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
