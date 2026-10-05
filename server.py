@@ -571,11 +571,15 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
                 continue
             raise GeminiError(502, f"Nie udało się połączyć z Gemini: {e}")
     _usage_add(kind, (data or {}).get("usageMetadata"))
-    try:
-        return data["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, TypeError):
-        fb = (data.get("promptFeedback") or {}).get("blockReason")
-        raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
+    cand = ((data or {}).get("candidates") or [{}])[0]
+    # modele 3.x mogą zwrócić kilka części (w tym „myśli”) — sklejamy sam tekst odpowiedzi
+    text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts") or [] if not p.get("thought"))
+    if text:
+        return text
+    if cand.get("finishReason") == "MAX_TOKENS":   # myślenie modelu zjadło cały limit tokenów odpowiedzi
+        raise GeminiError(502, "Gemini nie zdążył odpowiedzieć — za mały limit tokenów odpowiedzi.")
+    fb = ((data or {}).get("promptFeedback") or {}).get("blockReason") or cand.get("finishReason")
+    raise GeminiError(502, f"Gemini nie zwrócił odpowiedzi{(' (' + fb + ')') if fb else ''}.")
 
 
 def _instr_line(instructions: str) -> str:
@@ -678,7 +682,7 @@ def set_ai_settings(p: AiSettings):
 @app.post("/api/settings/ai/test")
 def test_ai():
     try:
-        out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=10, temperature=0, timeout=30, tries=1, kind="test")
+        out = gemini([{"text": "Odpowiedz jednym słowem: OK"}], max_tokens=512, temperature=0, timeout=30, tries=1, kind="test")   # zapas na „myślenie” modeli 3.x
         return {"ok": True, "reply": out.strip()[:40]}
     except GeminiError as e:
         msg = e.msg
