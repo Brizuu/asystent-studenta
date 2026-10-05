@@ -227,7 +227,7 @@ SITE = Path(__file__).parent / "site" / "index.html"
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def site():
-    """Strona pobierania aplikacji (https://bte-poland.pl/asystent/) — generowana przez build_site.py."""
+    """Strona pobierania aplikacji (https://zenfix.pl/asystent/) — generowana przez build_site.py."""
     if not SITE.exists():
         return HTMLResponse("<h1>Asystent — serwer kont</h1><p>Strona pobierania nie jest zbudowana.</p>")
     return HTMLResponse(SITE.read_text(encoding="utf-8"), headers={"Cache-Control": "public, max-age=300"})

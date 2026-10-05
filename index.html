@@ -2456,7 +2456,7 @@ body.on-start .pomo{display:none}
       <div class="head"><div class="eyebrow">Zarządzanie</div><h1>Administrator</h1><div class="date">Serwer kont i zarejestrowani użytkownicy</div></div>
       <div class="adm">
         <div class="st-card glass">
-          <div class="st-h"><h3>Serwer kont <span class="adm-health" id="adm-health"></span></h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, na serwerze: <code>https://bte-poland.pl/asystent</code> (domyślny).</p></div>
+          <div class="st-h"><h3>Serwer kont <span class="adm-health" id="adm-health"></span></h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, na serwerze: <code>https://zenfix.pl/asystent</code> (domyślny).</p></div>
           <div class="st-key"><input id="adm-cloud" placeholder="https://konta.twojadomena.pl" spellcheck="false"><button class="btn" onclick="saveCloudUrl()">Zapisz</button></div>
         </div>
         <div class="st-card glass">
@@ -3818,7 +3818,7 @@ window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
 /* ===== KONTA: logowanie, profil, znajomi, udostępnianie (serwer kont: cloud/) ===== */
 const LS={get:k=>{try{return localStorage.getItem(k);}catch(_){return null;}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(_){}}};
 let ME=null, FR=null, authTab='login';
-const cloudUrl=()=>APP.web?location.origin+location.pathname.replace(/\/app\/.*$/,''):(APP.cloud_url||'https://bte-poland.pl/asystent');   // wersja webowa: serwer kont pod tym samym adresem
+const cloudUrl=()=>APP.web?location.origin+location.pathname.replace(/\/app\/.*$/,''):(APP.cloud_url||'https://zenfix.pl/asystent');   // wersja webowa: serwer kont pod tym samym adresem
 async function cloud(path,{method='GET',body}={}){
   let r; const tok=LS.get('asys_token');
   try{ r=await fetch(cloudUrl()+path,{method,headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},body:body?JSON.stringify(body):undefined}); }
@@ -4424,7 +4424,7 @@ async function adminReset(id){
 /* zmiana serwera kont z ekranu logowania (karta w Ustawieniach przeniesiona do panelu admina) */
 function openCloudServer(){
   const m=$('#modal'); m.style.maxWidth='440px';
-  m.innerHTML=`<h3>Serwer kont</h3><div class="msub">Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, na serwerze: <code>https://bte-poland.pl/asystent</code> (domyślny).</div>
+  m.innerHTML=`<h3>Serwer kont</h3><div class="msub">Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, na serwerze: <code>https://zenfix.pl/asystent</code> (domyślny).</div>
     <label class="field"><span>Adres</span><input id="cs-cloud" spellcheck="false" placeholder="https://konta.twojadomena.pl"></label>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" onclick="closeModal();saveCloudUrl($('#cs-cloud').value).then(renderAccount)">Zapisz</button></div>`;
   $('#cs-cloud').value=APP.cloud_url||''; openModal();

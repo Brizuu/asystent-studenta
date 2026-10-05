@@ -11,7 +11,7 @@ cd "$(dirname "$0")"
 
 ADMINS="${1:-fabian26012006@gmail.com}"
 PORT="${2:-8100}"
-PUBLIC_URL="${PUBLIC_URL:-https://bte-poland.pl/asystent}"
+PUBLIC_URL="${PUBLIC_URL:-https://zenfix.pl/asystent}"
 SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 say() { printf '\n\033[1;35m▸ %s\033[0m\n' "$*"; }
 
@@ -50,7 +50,7 @@ if curl -fsS --max-time 5 "$PUBLIC_URL/health" >/dev/null 2>&1; then
   printf '  Strona pobierania: %s/   ·   Wersja webowa (po zalogowaniu): %s/app/\n' "$PUBLIC_URL" "$PUBLIC_URL"
 else
   echo
-  echo "Jeszcze nie widać go pod $PUBLIC_URL — dodaj do nginx (blok server dla bte-poland.pl, z SSL):"
+  echo "Jeszcze nie widać go pod $PUBLIC_URL — dodaj do nginx (gotowy plik: nginx-zenfix.conf):"
   echo "------------------------------------------------------------------"
   sed "s/127.0.0.1:8100/127.0.0.1:$PORT/" nginx-asystent.conf
   echo "------------------------------------------------------------------"

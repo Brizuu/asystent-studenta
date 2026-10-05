@@ -1015,7 +1015,9 @@ def summary():
 # ---------- NAGRANIA WYKŁADÓW (tylko aplikacja desktop) ----------
 @app.get("/api/config")
 def config():
-    cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "https://bte-poland.pl/asystent")
+    cloud = _settings().get("cloud_url") or os.getenv("ASYSTENT_CLOUD_URL", "https://zenfix.pl/asystent")
+    if "bte-poland.pl" in cloud:   # serwer przeniesiony na zenfix.pl (to samo konto i dane)
+        cloud = cloud.replace("bte-poland.pl", "zenfix.pl")
     return {"desktop": bool(os.getenv("ASYSTENT_DESKTOP")), "gemini": bool(_gemini_key()), "cloud_url": cloud.rstrip("/"),
             "version": aktualizacje.app_version(), "windows": os.name == "nt", "web": bool(os.getenv("ASYSTENT_WEB")),
             "frameless": bool(os.getenv("ASYSTENT_FRAMELESS"))}

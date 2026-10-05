@@ -217,7 +217,7 @@ def _cloud(base: str, token: str, method: str, path: str, body=None) -> dict:
 def _device(c) -> dict:
     st = _state(c)
     return {"uid": st["device_uid"], "name": st.get("device_name") or "Urządzenie",
-            "platform": "Przeglądarka · bte-poland.pl" if os.getenv("ASYSTENT_WEB") else
+            "platform": "Przeglądarka · zenfix.pl" if os.getenv("ASYSTENT_WEB") else
                 ("Windows" if os.name == "nt" else platform.system()) + (" · aplikacja" if os.getenv("ASYSTENT_DESKTOP") else " · przeglądarka"),
             "summary": summary(c)}
 
