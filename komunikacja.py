@@ -15,6 +15,7 @@ import threading
 import time
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from datetime import date, datetime, timedelta, timezone
@@ -31,9 +32,11 @@ ZTM_DB = CACHE / "ztm_gtfs.db"
 PKP_DB = CACHE / "pkp.db"
 ZTM_GTFS_URL = os.getenv("ZTM_GTFS_URL", "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGTFSFile")
 ZTM_RT_URL = os.getenv("ZTM_RT_URL", "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGtfsRtFile/?file=trip_updates.pb")
+GEOCODE_URL = os.getenv("GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
 PKP_API = os.getenv("PKP_API_BASE", "https://pdp-api.plk-sa.pl")
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Asystent-studenta"
 REFRESH = 24 * 3600
+ZTM_SCHEMA = "3"   # zmiana układu bazy rozkładu → ponowny import w tle (stara baza działa do czasu podmiany)
 
 
 def init():
@@ -108,6 +111,8 @@ def _meta(path, key):
 
 def _fresh(path) -> bool:
     at = _meta(path, "updated")
+    if path == ZTM_DB and _meta(path, "schema") != ZTM_SCHEMA:
+        return False
     return bool(at) and time.time() - float(at) < REFRESH
 
 
@@ -156,15 +161,21 @@ def import_ztm(raw: bytes | None = None):
     c.executescript("""
     PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
     CREATE TABLE meta (k TEXT PRIMARY KEY, v TEXT);
-    CREATE TABLE stops (stop_id TEXT PRIMARY KEY, name TEXT, nname TEXT, code TEXT);
+    CREATE TABLE stops (stop_id TEXT PRIMARY KEY, name TEXT, nname TEXT, code TEXT, lat REAL, lon REAL);
     CREATE TABLE routes (route_id TEXT PRIMARY KEY, short TEXT, type INTEGER);
     CREATE TABLE trips (trip_id TEXT PRIMARY KEY, route_id TEXT, service_id TEXT, headsign TEXT);
     CREATE TABLE stop_times (trip_id TEXT, seq INTEGER, stop_id TEXT, dep INTEGER);
     CREATE TABLE calendar (service_id TEXT, days TEXT, start TEXT, end TEXT);
     CREATE TABLE calendar_dates (service_id TEXT, date TEXT, type INTEGER);
     """)
-    c.executemany("INSERT OR REPLACE INTO stops VALUES(?,?,?,?)",
-                  ((r["stop_id"], r.get("stop_name", ""), norm(r.get("stop_name", "")), r.get("stop_code", "")) for r in _csv(z, "stops.txt")))
+    def num(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+    c.executemany("INSERT OR REPLACE INTO stops VALUES(?,?,?,?,?,?)",
+                  ((r["stop_id"], r.get("stop_name", ""), norm(r.get("stop_name", "")), r.get("stop_code", ""),
+                    num(r.get("stop_lat")), num(r.get("stop_lon"))) for r in _csv(z, "stops.txt")))
     c.executemany("INSERT OR REPLACE INTO routes VALUES(?,?,?)",
                   ((r["route_id"], r.get("route_short_name") or r.get("route_long_name", ""), int(r.get("route_type") or 3)) for r in _csv(z, "routes.txt")))
     c.executemany("INSERT OR REPLACE INTO trips VALUES(?,?,?,?)",
@@ -181,7 +192,11 @@ def import_ztm(raw: bytes | None = None):
     CREATE INDEX st_stop ON stop_times(stop_id, dep);
     CREATE INDEX st_trip ON stop_times(trip_id, seq);
     CREATE INDEX stops_n ON stops(nname);
+    CREATE TABLE stop_lines AS SELECT DISTINCT s.nname nname, r.short short, r.type type
+        FROM stop_times st JOIN stops s ON s.stop_id=st.stop_id JOIN trips t ON t.trip_id=st.trip_id JOIN routes r ON r.route_id=t.route_id;
+    CREATE INDEX sl_n ON stop_lines(nname);
     """)
+    c.execute("INSERT INTO meta VALUES('schema', ?)", (ZTM_SCHEMA,))
     c.execute("INSERT INTO meta VALUES('updated', ?)", (str(time.time()),))
     c.commit()
     c.close()
@@ -234,19 +249,58 @@ def ztm_next(from_name: str, to_name: str, n: int = 5, tram_only: bool = False) 
             if (x["trip_id"], x["t"] // 86400) not in seen:
                 seen.add((x["trip_id"], x["t"] // 86400))
                 uniq.append(x)
+    return _shape(uniq, secs, n)
+
+
+def _hm(s: int) -> str:
+    return f"{(s // 3600) % 24:02d}:{(s // 60) % 60:02d}"
+
+
+def _shape(rows: list, secs: int, n: int) -> list[dict]:
+    """Kursy → odjazdy z opóźnieniem na żywo. ts/arr_ts = czas uniksowy (odliczanie w przeglądarce co sekundę)."""
     delays = rt_delays()
+    epoch0 = time.time() - secs          # „dzisiejsza północ” w czasie uniksowym
     res = []
-    for x in uniq:
+    for x in rows:
         dl = _delay_for(delays.get(x["trip_id"]), x["seq"]) if x["t"] - secs < 3 * 3600 else None
         real = x["t"] + (dl or 0)
         if real < secs - 30:
             continue
-        hm = lambda s: f"{(s // 3600) % 24:02d}:{(s // 60) % 60:02d}"
-        res.append({"line": x["line"], "tram": x["type"] == 0, "headsign": x["headsign"], "dep": hm(x["t"]), "arr": hm(x["arr"]),
-                    "in_min": max(0, round((real - secs) / 60)), "travel_min": round((x["arr"] - x["t"]) / 60),
-                    "delay_min": round(dl / 60) if dl is not None else None})
-    res.sort(key=lambda x: x["in_min"])   # opóźnienie może zmienić kolejność
+        d = {"line": x["line"], "tram": x["type"] == 0, "headsign": x["headsign"], "dep": _hm(x["t"]), "dep_real": _hm(real),
+             "ts": round(epoch0 + real), "in_min": max(0, round((real - secs) / 60)), "live": dl is not None,
+             "delay_min": round(dl / 60) if dl is not None else None}
+        if "arr" in x:
+            d.update(arr=_hm(x["arr"]), arr_real=_hm(x["arr"] + (dl or 0)), arr_ts=round(epoch0 + x["arr"] + (dl or 0)),
+                     travel_min=round((x["arr"] - x["t"]) / 60))
+        res.append(d)
+    res.sort(key=lambda x: x["ts"])   # opóźnienie może zmienić kolejność
     return res[:n]
+
+
+def ztm_board(stop: str, n: int = 12, tram_only: bool = False) -> list[dict]:
+    """Tablica odjazdów z przystanku (wszystkie linie i kierunki) — jak na wyświetlaczu na przystanku."""
+    with _db(ZTM_DB) as c:
+        a = _ids(c, stop)
+        if not a:
+            raise HTTPException(404, f"Nie znam przystanku „{stop}”.")
+        now = now_pl()
+        secs = now.hour * 3600 + now.minute * 60 + now.second
+        out = []
+        for off, d in ((-86400, now.date() - timedelta(days=1)), (0, now.date()), (86400, now.date() + timedelta(days=1))):
+            sv = _services(c, d)
+            if not sv:
+                continue
+            lo = secs - 120 - off
+            q = f"""SELECT t.trip_id, r.short, r.type, t.headsign, sa.dep dep, sa.seq seq FROM stop_times sa
+                JOIN trips t ON t.trip_id=sa.trip_id JOIN routes r ON r.route_id=t.route_id
+                WHERE sa.stop_id IN ({",".join("?" * len(a))}) AND sa.dep>=? AND sa.dep<=?
+                  AND t.service_id IN ({",".join("?" * len(sv))}) {"AND r.type=0" if tram_only else ""}
+                  AND EXISTS (SELECT 1 FROM stop_times nx WHERE nx.trip_id=sa.trip_id AND nx.seq>sa.seq)
+                ORDER BY sa.dep LIMIT ?"""
+            for r in c.execute(q, (*a, lo, lo + 3 * 3600, *sv, n * 2)):
+                out.append({"trip_id": r["trip_id"], "line": r["short"], "type": r["type"], "headsign": r["headsign"],
+                            "t": r["dep"] + off, "seq": r["seq"]})
+    return _shape(sorted(out, key=lambda x: x["t"]), secs, n)
 
 
 # ---------- GTFS-RT (opóźnienia na żywo): minimalny dekoder protobuf, bez dodatkowych bibliotek ----------
@@ -419,7 +473,8 @@ def pkp_next(from_name: str, to_name: str, n: int = 5) -> list[dict]:
         if not a or not b:
             raise HTTPException(404, f"Nie znam stacji „{from_name if not a else to_name}”.")
         now = now_pl()
-        secs = now.hour * 3600 + now.minute * 60
+        secs = now.hour * 3600 + now.minute * 60 + now.second
+        epoch0 = time.time() - secs
         out = []
         for off, d in ((-86400, now.date() - timedelta(days=1)), (0, now.date()), (86400, now.date() + timedelta(days=1))):
             q = f"""SELECT t.*, sa.dep dep, sb.arr arr, sa.platform platform FROM stops sa
@@ -431,7 +486,8 @@ def pkp_next(from_name: str, to_name: str, n: int = 5) -> list[dict]:
         out.sort(key=lambda x: x[0])
     hm = lambda s: f"{(s // 3600) % 24:02d}:{(s // 60) % 60:02d}"
     return [{"carrier": r["carrier"], "cat": r["cat"], "number": r["number"], "name": r["name"], "dep": hm(t), "arr": hm(r["arr"] + t - r["dep"]),
-             "platform": r["platform"], "in_min": max(0, round((t - secs) / 60)), "travel_min": round((r["arr"] - r["dep"]) / 60)}
+             "platform": r["platform"], "in_min": max(0, round((t - secs) / 60)), "travel_min": round((r["arr"] - r["dep"]) / 60),
+             "ts": round(epoch0 + t), "arr_ts": round(epoch0 + r["arr"] + t - r["dep"])}
             for t, r in out[:n]]
 
 
@@ -475,8 +531,97 @@ def _search(path, table, q, limit=12):
 
 @router.get("/api/transit/ztm/stops")
 def ztm_stops(q: str = ""):
+    """Podpowiedzi przystanków z liniami, które się na nich zatrzymują (tramwaje najpierw)."""
     _ensure("ztm", ZTM_DB, import_ztm)
-    return _search(ZTM_DB, "stops", q)
+    names = _search(ZTM_DB, "stops", q, 8)
+    out = []
+    with _db(ZTM_DB) as c:
+        for nm in names:
+            out.append({"name": nm, "lines": _lines(c, norm(nm))})
+    return out
+
+
+# ---------- adres → najbliższe przystanki (geokodowanie OpenStreetMap / Nominatim) ----------
+_geo_cache: dict = {}
+_geo_lock = threading.Lock()
+_geo_last = [0.0]
+POZNAN_BOX = "16.55,52.62,17.30,52.22"   # obszar ZTM (Poznań i gminy aglomeracji) — wyniki z okolicy najpierw
+
+
+@router.get("/api/transit/geocode")
+def geocode(q: str):
+    """Adres → miejsca (maks. 5). Nominatim: limit 1 zapytanie/s i własny User-Agent — pilnujemy tego tutaj, wyniki trzymamy w pamięci."""
+    qn = norm(q)
+    if len(qn) < 4:
+        return []
+    if qn in _geo_cache:
+        return _geo_cache[qn]
+    params = urllib.parse.urlencode({"q": q, "format": "jsonv2", "limit": 5, "countrycodes": "pl", "viewbox": POZNAN_BOX,
+                                     "bounded": 1, "addressdetails": 1, "accept-language": "pl"})
+    with _geo_lock:
+        wait = 1.05 - (time.time() - _geo_last[0])
+        if wait > 0:
+            time.sleep(wait)
+        _geo_last[0] = time.time()
+        try:
+            data = json.loads(_get(GEOCODE_URL + "?" + params, {"User-Agent": UA + " (zenfix.pl/asystent)"}, timeout=10))
+        except Exception:
+            raise HTTPException(502, "Wyszukiwarka adresów chwilowo nie odpowiada.")
+    out = []
+    for r in data if isinstance(data, list) else []:
+        a = r.get("address") or {}
+        street = " ".join(x for x in (a.get("road") or a.get("pedestrian") or r.get("name") or "", a.get("house_number") or "") if x).strip()
+        place = a.get("city") or a.get("town") or a.get("village") or a.get("suburb") or ""
+        label = ", ".join(x for x in (street or r.get("name") or "", a.get("suburb") if place != a.get("suburb") else "", place) if x)
+        try:
+            out.append({"label": label or r.get("display_name", "")[:80], "lat": float(r["lat"]), "lon": float(r["lon"])})
+        except (KeyError, ValueError):
+            pass
+    if len(_geo_cache) > 500:
+        _geo_cache.clear()
+    _geo_cache[qn] = out
+    return out
+
+
+def _lines(c, nname: str) -> list[dict]:
+    try:
+        L = c.execute("SELECT short, type FROM stop_lines WHERE nname=?", (nname,)).fetchall()
+    except sqlite3.OperationalError:   # baza sprzed wersji z liniami (zaraz podmieni ją import w tle)
+        return []
+    return [{"l": r["short"], "tram": r["type"] == 0} for r in sorted(L, key=lambda r: (r["type"] != 0, len(r["short"]), r["short"]))]
+
+
+@router.get("/api/transit/ztm/near")
+def ztm_near(lat: float, lon: float, n: int = 5):
+    """Najbliższe przystanki (po nazwie — słupki jednego przystanku liczą się razem) z odległością i czasem dojścia."""
+    import math
+    _ensure("ztm", ZTM_DB, import_ztm)
+    k = math.cos(math.radians(lat))
+    d = 0.02   # ok. 2 km — najpierw zawężamy prostokątem, potem liczymy odległość
+    with _db(ZTM_DB) as c:
+        try:
+            rows = c.execute("SELECT name, nname, lat, lon FROM stops WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
+                             (lat - d, lat + d, lon - d / k, lon + d / k)).fetchall()
+            if not rows:
+                rows = c.execute("SELECT name, nname, lat, lon FROM stops WHERE lat IS NOT NULL").fetchall()
+        except sqlite3.OperationalError:
+            raise HTTPException(503, "Aktualizuję rozkład (dochodzą współrzędne przystanków) — spróbuj za minutę.")
+        best: dict = {}
+        for r in rows:
+            if r["lat"] is None:
+                continue
+            m = 6371000 * math.hypot(math.radians(r["lat"] - lat), math.radians(r["lon"] - lon) * k)
+            if r["nname"] not in best or m < best[r["nname"]][0]:
+                best[r["nname"]] = (m, r["name"])
+        top = sorted(best.items(), key=lambda x: x[1][0])[:max(1, min(10, n))]
+        return [{"name": nm, "dist_m": round(m), "walk_min": max(1, round(m * 1.25 / 80)), "lines": _lines(c, nn)}
+                for nn, (m, nm) in top]
+
+
+@router.get("/api/transit/ztm/board")
+def ztm_board_api(stop: str, n: int = 12, tram: bool = False):
+    _ensure("ztm", ZTM_DB, import_ztm)
+    return ztm_board(stop, max(1, min(30, n)), tram)
 
 
 @router.get("/api/transit/ztm/next")
