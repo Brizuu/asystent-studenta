@@ -121,6 +121,7 @@ def main():
     win.events.restored += lambda *a: api._set_max(False)
     aktualizacje.on_quit = win.destroy   # aktualizacja: instalator wystartował → zamknij okno, żeby mógł podmienić pliki
     # private_mode=False + storage_path: localStorage (Spotify, ustawienia) przetrwa restart
+    webview.settings["ALLOW_DOWNLOADS"] = True   # eksport notatki do PDF, pobieranie załączników (okno „Zapisz jako”)
     webview.start(private_mode=False, storage_path=str(DATA / "webview"))
     nagrania.rec_stop()   # zamknięcie okna w trakcie nagrywania: domknij plik, nagranie zostaje
     # zaległe zmiany lecą na serwer kont przy zamknięciu — od razu widać je w wersji webowej / na innych urządzeniach
