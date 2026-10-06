@@ -839,6 +839,57 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj-late{color:#ff9b9b} .dj-ok{color:#8fe8bd}
 .dj-empty{padding:26px 10px;text-align:center;color:var(--ink-dim);font-size:14px}
 .dj-more{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.dj-tabs[hidden]{display:none}
+.dj-kinds{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dj-kinds button{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
+  color:var(--ink-soft);font:inherit;text-align:left;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.dj-kinds button:hover{background:rgba(255,255,255,.07)}
+.dj-kinds button .ic{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.07)}
+.dj-kinds b{display:block;font-size:16px;color:var(--ink)} .dj-kinds small{display:block;font-size:12.5px;color:var(--ink-dim);margin-top:2px}
+.dj-kinds button.on{color:#fff;border-color:rgba(255,107,129,.45);background:linear-gradient(120deg,rgba(255,107,129,.16),rgba(90,170,255,.1))}
+.dj-kinds button[data-k=train].on{border-color:rgba(53,196,149,.5);background:linear-gradient(120deg,rgba(53,196,149,.16),rgba(90,170,255,.1))}
+.dj-kinds button.on .ic{background:rgba(255,255,255,.14)}
+.dj-whenwrap{position:relative}
+.dj-whenbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px 8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.dj-whenbtn:hover{background:rgba(255,255,255,.07)} .dj-whenbtn.set{border-color:rgba(255,209,102,.5);background:rgba(255,209,102,.1);color:#ffe3a3}
+.dj-whenbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round} .dj-whenbtn .cv{width:14px;height:14px;opacity:.7}
+.dj-pick{position:absolute;left:0;top:calc(100% + 8px);z-index:50;width:min(380px,86vw);padding:16px;border-radius:20px;background:rgba(22,24,38,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px -14px rgba(0,0,0,.75)}
+.dj-pick[hidden]{display:none} .dj-pick.up{top:auto;bottom:calc(100% + 8px)}
+.dj-pick h6{margin:0 0 8px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim)}
+.dj-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.dj-quick button,.dj-days button{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink-soft);font:inherit;font-size:13px;font-weight:600;padding:6px 11px;border-radius:99px;cursor:pointer}
+.dj-quick button:hover,.dj-days button:hover{background:rgba(255,255,255,.1)}
+.dj-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.dj-days button{border-radius:12px;padding:7px 0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px}
+.dj-days button b{font-size:16px;color:var(--ink)} .dj-days button.on{background:linear-gradient(135deg,#ff6b81,#c92f62);border-color:transparent;color:#fff} .dj-days button.on b{color:#fff}
+.dj-clock{display:flex;align-items:center;justify-content:center;gap:10px;position:relative}
+.dj-clock::before{content:"";position:absolute;left:50%;width:200px;margin-left:-100px;top:55px;height:40px;border-radius:10px;background:rgba(255,107,129,.14);border:1px solid rgba(255,107,129,.35);pointer-events:none}
+.dj-col{position:relative;height:150px;width:76px;overflow-y:auto;scroll-snap-type:y mandatory;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);scrollbar-width:none;padding:55px 0}
+.dj-col::-webkit-scrollbar{display:none}
+.dj-col button{display:block;width:100%;height:40px;border:0;background:none;color:var(--ink-dim);font:inherit;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;scroll-snap-align:center}
+.dj-col button.on{color:#fff;font-size:26px}
+.dj-clock>b{font-size:28px;color:var(--ink-dim)}
+.dj-pick .act{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+/* pociąg: numer najważniejszy, przewoźnik i nazwa mniejsze, czasy jak na tablicy */
+.dj-lg-logo{flex:none;width:64px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;padding:5px 7px;box-shadow:0 6px 16px -10px rgba(0,0,0,.8)}
+.dj-lg-logo img{max-width:100%;max-height:100%;display:block}
+.dj-lg-logo.mini{width:40px;height:26px;border-radius:7px;padding:3px 4px}
+.dj-tr{align-items:flex-start}
+.dj-tr .m{display:flex;flex-direction:column;gap:2px}
+.dj-tr-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dj-tr-no{font-size:19px;font-weight:800;letter-spacing:-.01em;color:#fff;font-variant-numeric:tabular-nums}
+.dj-tr-cat{font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.1);color:var(--ink-soft);align-self:center}
+.dj-tr-name{font-size:13.5px;font-style:italic;color:var(--ink-soft)}
+.dj-tr-car{font-size:12px;color:var(--ink-dim)}
+.dj-tr-t{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 12px;margin-top:8px}
+.dj-tr-t .tm{font-size:20px;font-weight:750;font-variant-numeric:tabular-nums;color:#fff;line-height:1}
+.dj-tr-t .tm s{font-size:13px;font-weight:500;color:var(--ink-dim);margin-left:4px}
+.dj-tr-t .mid{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap}
+.dj-tr-t .mid::before,.dj-tr-t .mid::after{content:"";flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,#35c495,#5aaaff);opacity:.7}
+.dj-tr-t .dj-sn{font-size:12.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .dj-tr-t .dj-sn.r{text-align:right}
+.dj-tr-t .pl{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;background:rgba(255,255,255,.08);color:var(--ink-soft);font-size:11.5px}
+.dj-tr .dj-cd{align-self:center}
+@media(max-width:620px){.dj-kinds button{padding:12px}.dj-kinds small{display:none}.dj-kinds button .ic{width:36px;height:36px;font-size:18px}.dj-tr-t .tm{font-size:17px}.dj-lg-logo{width:52px;height:38px}}
 .dj-dep{cursor:pointer}
 .dj-dep.fast{border-color:rgba(255,209,102,.45);box-shadow:0 0 0 1px rgba(255,209,102,.18),0 10px 30px -18px rgba(255,209,102,.6)}
 .dj-dep.gone{opacity:.55}
@@ -869,6 +920,7 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj-stp.end .dot{width:14px;height:14px;margin-top:-7px;left:2px;background:#ff6b81;border-color:#fff}
 .dj-stp.end b{font-weight:750;color:#fff}
 .dj-stp.past{opacity:.5}
+.dj-fgrp+.dj-fgrp{margin-top:18px} .dj-fgrp h4{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--ink-soft)}
 .dj-favs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
 .dj-fav{padding:16px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);cursor:pointer;transition:background .2s,transform .2s;position:relative}
 .dj-fav:hover{background:rgba(255,255,255,.075);transform:translateY(-2px)}
