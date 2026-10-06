@@ -41,7 +41,7 @@ GEOCODE_URL = os.getenv("GEOCODE_URL", "https://nominatim.openstreetmap.org/sear
 PKP_API = os.getenv("PKP_API_BASE", "https://pdp-api.plk-sa.pl")
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Asystent-studenta"
 REFRESH = 24 * 3600
-ZTM_SCHEMA = "3"   # zmiana układu bazy rozkładu → ponowny import w tle (stara baza działa do czasu podmiany)
+ZTM_SCHEMA = "4"   # zmiana układu bazy rozkładu → ponowny import w tle (stara baza działa do czasu podmiany)
 
 
 def init():
@@ -153,9 +153,17 @@ def _meta(path, key):
 
 def _fresh(src: str, path) -> bool:
     at = _meta(path, "updated")
-    if src == "ztm" and _meta(path, "schema") != ZTM_SCHEMA:
+    if not at:
         return False
-    return bool(at) and time.time() - float(at) < REFRESH
+    age = time.time() - float(at)
+    if src == "ztm":
+        if _meta(path, "schema") != ZTM_SCHEMA:
+            return False
+        today = now_pl().date().strftime("%Y%m%d")
+        lo, hi = _meta(path, "start"), _meta(path, "end")
+        if lo and hi and not (lo <= today <= hi) and age > 1800:   # rozkład nie obejmuje dziś — próbujemy co 30 min
+            return False
+    return age < REFRESH
 
 
 def _start(src: str, fn, *args):
@@ -198,9 +206,55 @@ def _csv(z: zipfile.ZipFile, name: str):
     return csv.DictReader(io.TextIOWrapper(z.open(name), encoding="utf-8-sig", newline=""))
 
 
-def import_ztm(raw: bytes | None = None):
-    raw = raw or _get(ZTM_GTFS_URL, timeout=120)
-    z = zipfile.ZipFile(io.BytesIO(raw))
+def _feed_range(z: zipfile.ZipFile) -> tuple[str, str]:
+    """Zakres dat pliku GTFS (YYYYMMDD) — z feed_info albo z kalendarza."""
+    for r in _csv(z, "feed_info.txt"):
+        if r.get("feed_start_date") and r.get("feed_end_date"):
+            return r["feed_start_date"], r["feed_end_date"]
+    st = [(r["start_date"], r["end_date"]) for r in _csv(z, "calendar.txt")]
+    dd = [r["date"] for r in _csv(z, "calendar_dates.txt")]
+    lo = min([x[0] for x in st] + dd, default="00000000")
+    hi = max([x[1] for x in st] + dd, default="99999999")
+    return lo, hi
+
+
+def _ztm_today_file(newest_start: str) -> bytes | None:
+    """ZTM publikuje rozkład z wyprzedzeniem: „najnowszy” plik często obowiązuje dopiero od jutra.
+    Pliki mają nazwy RRRRMMDD_RRRRMMDD.zip — szukamy tego, który obejmuje dzisiejszy dzień."""
+    today = now_pl().date()
+    try:
+        before_new = (datetime.strptime(newest_start, "%Y%m%d").date() - timedelta(days=1))
+    except ValueError:
+        before_new = today
+    ends = [before_new] + [today + timedelta(days=i) for i in range(4) if today + timedelta(days=i) != before_new]
+    for e in ends:
+        if e < today:
+            continue
+        for back in range(0, 8):
+            s = today - timedelta(days=back)
+            name = f"{s:%Y%m%d}_{e:%Y%m%d}.zip"
+            try:
+                raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, timeout=60)
+                zipfile.ZipFile(io.BytesIO(raw)).namelist()
+                return raw
+            except Exception:
+                continue
+    return None
+
+
+def import_ztm(raw: bytes | None = None, extra: bytes | None = None):
+    """Import rozkładu ZTM. Bez argumentów: najnowszy plik z ZTM + (jeśli zaczyna się dopiero jutro) plik obowiązujący dziś.
+    Pierwszy plik bez prefiksu (jego trip_id pasują do opóźnień na żywo), kolejne z prefiksem „n:”."""
+    if raw is None:
+        newest = _get(ZTM_GTFS_URL, timeout=120)
+        feeds = [newest]
+        start, _ = _feed_range(zipfile.ZipFile(io.BytesIO(newest)))
+        if start > now_pl().date().strftime("%Y%m%d"):
+            cur = _ztm_today_file(start)
+            if cur:
+                feeds.insert(0, cur)
+    else:
+        feeds = [raw] + ([extra] if extra else [])
     tmp = _tmp("ztm")
     c = _raw(tmp)
     c.executescript("""
@@ -213,26 +267,33 @@ def import_ztm(raw: bytes | None = None):
     CREATE TABLE calendar (service_id TEXT, days TEXT, start TEXT, end TEXT);
     CREATE TABLE calendar_dates (service_id TEXT, date TEXT, type INTEGER);
     """)
+
     def num(v):
         try:
             return float(v)
         except (TypeError, ValueError):
             return None
-    c.executemany("INSERT OR REPLACE INTO stops VALUES(?,?,?,?,?,?)",
-                  ((r["stop_id"], r.get("stop_name", ""), norm(r.get("stop_name", "")), r.get("stop_code", ""),
-                    num(r.get("stop_lat")), num(r.get("stop_lon"))) for r in _csv(z, "stops.txt")))
-    c.executemany("INSERT OR REPLACE INTO routes VALUES(?,?,?)",
-                  ((r["route_id"], r.get("route_short_name") or r.get("route_long_name", ""), int(r.get("route_type") or 3)) for r in _csv(z, "routes.txt")))
-    c.executemany("INSERT OR REPLACE INTO trips VALUES(?,?,?,?)",
-                  ((r["trip_id"], r["route_id"], r["service_id"], r.get("trip_headsign", "")) for r in _csv(z, "trips.txt")))
-    c.executemany("INSERT INTO stop_times VALUES(?,?,?,?)",
-                  ((r["trip_id"], int(r["stop_sequence"]), r["stop_id"], _hms(r.get("departure_time") or r.get("arrival_time") or ""))
-                   for r in _csv(z, "stop_times.txt") if (r.get("departure_time") or r.get("arrival_time"))))
     wd = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
-    c.executemany("INSERT INTO calendar VALUES(?,?,?,?)",
-                  ((r["service_id"], "".join(r.get(d, "0") for d in wd), r["start_date"], r["end_date"]) for r in _csv(z, "calendar.txt")))
-    c.executemany("INSERT INTO calendar_dates VALUES(?,?,?)",
-                  ((r["service_id"], r["date"], int(r["exception_type"])) for r in _csv(z, "calendar_dates.txt")))
+    lo_all, hi_all = "99999999", "00000000"
+    for i, fr in enumerate(feeds):
+        z = zipfile.ZipFile(io.BytesIO(fr))
+        px = "" if i == 0 else f"n{i}:"
+        lo, hi = _feed_range(z)
+        lo_all, hi_all = min(lo_all, lo), max(hi_all, hi)
+        c.executemany("INSERT OR REPLACE INTO stops VALUES(?,?,?,?,?,?)",
+                      ((r["stop_id"], r.get("stop_name", ""), norm(r.get("stop_name", "")), r.get("stop_code", ""),
+                        num(r.get("stop_lat")), num(r.get("stop_lon"))) for r in _csv(z, "stops.txt")))
+        c.executemany("INSERT OR REPLACE INTO routes VALUES(?,?,?)",
+                      ((px + r["route_id"], r.get("route_short_name") or r.get("route_long_name", ""), int(r.get("route_type") or 3)) for r in _csv(z, "routes.txt")))
+        c.executemany("INSERT OR REPLACE INTO trips VALUES(?,?,?,?)",
+                      ((px + r["trip_id"], px + r["route_id"], px + r["service_id"], r.get("trip_headsign", "")) for r in _csv(z, "trips.txt")))
+        c.executemany("INSERT INTO stop_times VALUES(?,?,?,?)",
+                      ((px + r["trip_id"], int(r["stop_sequence"]), r["stop_id"], _hms(r.get("departure_time") or r.get("arrival_time") or ""))
+                       for r in _csv(z, "stop_times.txt") if (r.get("departure_time") or r.get("arrival_time"))))
+        c.executemany("INSERT INTO calendar VALUES(?,?,?,?)",
+                      ((px + r["service_id"], "".join(r.get(d, "0") for d in wd), r["start_date"], r["end_date"]) for r in _csv(z, "calendar.txt")))
+        c.executemany("INSERT INTO calendar_dates VALUES(?,?,?)",
+                      ((px + r["service_id"], r["date"], int(r["exception_type"])) for r in _csv(z, "calendar_dates.txt")))
     c.executescript("""
     CREATE INDEX st_stop ON stop_times(stop_id, dep);
     CREATE INDEX st_trip ON stop_times(trip_id, seq);
@@ -241,8 +302,8 @@ def import_ztm(raw: bytes | None = None):
         FROM stop_times st JOIN stops s ON s.stop_id=st.stop_id JOIN trips t ON t.trip_id=st.trip_id JOIN routes r ON r.route_id=t.route_id;
     CREATE INDEX sl_n ON stop_lines(nname);
     """)
-    c.execute("INSERT INTO meta VALUES('schema', ?)", (ZTM_SCHEMA,))
-    c.execute("INSERT INTO meta VALUES('updated', ?)", (str(time.time()),))
+    c.executemany("INSERT INTO meta VALUES(?, ?)", [("schema", ZTM_SCHEMA), ("updated", str(time.time())),
+                                                   ("start", lo_all), ("end", hi_all), ("feeds", str(len(feeds)))])
     c.commit()
     c.close()
     _publish("ztm", tmp)
@@ -305,7 +366,7 @@ def ztm_next(from_name: str, to_name: str, n: int = 5, tram_only: bool = False, 
                 WHERE sa.stop_id IN ({",".join("?" * len(a))}) AND sa.dep>=? AND sa.dep<=?
                   AND t.service_id IN ({",".join("?" * len(sv))}) {"AND r.type=0" if tram_only else ""}
                 ORDER BY sa.dep {order} LIMIT ?"""
-            for r in c.execute(q, (*b, *a, lo, hi, *sv, n * 3)):
+            for r in c.execute(q, (*b, *a, lo, hi, *sv, n * 4 + 20)):
                 out.append({"trip_id": r["trip_id"], "line": r["short"], "type": r["type"], "headsign": r["headsign"],
                             "t": r["dep"] + off, "arr": r["arr"] + off, "seq": r["seq"], "seq_to": r["seq_to"], "t0": epoch0 + off})
         # ten sam kurs wpada raz (najbliższy przystanek startowy)
@@ -363,10 +424,16 @@ def ztm_board(stop: str, n: int = 12, tram_only: bool = False, at: float | None 
                   AND t.service_id IN ({",".join("?" * len(sv))}) {"AND r.type=0" if tram_only else ""}
                   AND EXISTS (SELECT 1 FROM stop_times nx WHERE nx.trip_id=sa.trip_id AND nx.seq>sa.seq)
                 ORDER BY sa.dep {order} LIMIT ?"""
-            for r in c.execute(q, (*a, lo, hi, *sv, n * 2)):
+            for r in c.execute(q, (*a, lo, hi, *sv, n * 4 + 20)):
                 out.append({"trip_id": r["trip_id"], "line": r["short"], "type": r["type"], "headsign": r["headsign"],
                             "t": r["dep"] + off, "seq": r["seq"], "t0": epoch0 + off})
-    return _shape(sorted(out, key=lambda x: x["t"]), secs, epoch0, n, at is None, back)
+    seen, uniq = set(), []   # ten sam kurs z dwóch słupków przystanku — raz
+    for x in sorted(out, key=lambda x: x["t"]):
+        k = (x["line"], x["headsign"], x["t"])
+        if k not in seen:
+            seen.add(k)
+            uniq.append(x)
+    return _shape(uniq, secs, epoch0, n, at is None, back)
 
 
 def ztm_trip(trip_id: str, t0: float) -> dict:
