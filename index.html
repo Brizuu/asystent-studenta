@@ -860,7 +860,7 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj-cd small{display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--ink-dim);margin-top:3px;white-space:nowrap}
 .dj-cd.now b{color:#ffd166}
 .dj-cd [data-ts] b{display:inline} .dj-cd [data-ts] small{display:inline;font-size:12px;color:var(--ink-soft);margin:0}
-.dj>.dj-card:first-child{z-index:5}
+.dj>.dj-card:first-child,.dj>.dj-card.dj-main{z-index:5}
 .dj-late{color:#ff9b9b} .dj-ok{color:#8fe8bd}
 .dj-empty{padding:26px 10px;text-align:center;color:var(--ink-dim);font-size:14px}
 .dj-more{display:flex;justify-content:center;gap:8px;margin:10px 0}
@@ -2788,7 +2788,7 @@ body.on-start .pomo{display:none}
           <button class="on" data-k="city" onclick="djKind('city')"><span class="ic">🚋</span><span><b>Komunikacja miejska</b><small>Tramwaje i autobusy · Poznań</small></span></button>
           <button data-k="train" onclick="djKind('train')"><span class="ic">🚆</span><span><b>Pociągi</b><small>PKP Intercity, Koleje Wielkopolskie, Polregio…</small></span></button>
         </div>
-        <div class="dj-card glass">
+        <div class="dj-card glass dj-main">
           <div class="dj-tabs" id="dj-tabs">
             <button class="on" data-m="route" onclick="djMode('route')"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 000-6H9a3 3 0 010-6h6.5"/></svg>Trasa</button>
             <button data-m="board" onclick="djMode('board')"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="2"/><path d="M7 8h6M7 12h10M12 16v4M8 20h8"/></svg>Odjazdy<span class="dj-lg" style="margin-left:-3px">z przystanku</span></button>

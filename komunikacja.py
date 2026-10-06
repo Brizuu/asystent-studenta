@@ -163,6 +163,10 @@ def _fresh(src: str, path) -> bool:
         lo, hi = _meta(path, "start"), _meta(path, "end")
         if lo and hi and not (lo <= today <= hi) and age > 1800:   # rozkład nie obejmuje dziś — próbujemy co 30 min
             return False
+    if src == "pkp":   # pociągi: rozkład ma sięgać tydzień naprzód (baza ze starszej wersji obejmowała 2 dni)
+        to = _meta(path, "to")
+        if not to or to < (now_pl().date() + timedelta(days=5)).strftime("%Y%m%d"):
+            return False
     return age < REFRESH
 
 
@@ -616,7 +620,7 @@ def _pkp_get(path: str, key: str, timeout: int = 60) -> bytes:
 def import_pkp(key: str, raw: bytes | None = None):
     if raw is None:
         d = now_pl().date()
-        raw = _pkp_get(f"/api/v1/schedules/shortened?dateFrom={(d - timedelta(days=1)).isoformat()}&dateTo={(d + timedelta(days=2)).isoformat()}",
+        raw = _pkp_get(f"/api/v1/schedules/shortened?dateFrom={(d - timedelta(days=1)).isoformat()}&dateTo={(d + timedelta(days=7)).isoformat()}",   # tydzień naprzód — tyle pokazuje wybór dnia
                        key, timeout=300)
     data = json.loads(raw)
     dc = data.get("dc") or {}
@@ -655,6 +659,7 @@ def import_pkp(key: str, raw: bytes | None = None):
     c.executescript("""CREATE INDEX s_st ON stops(station, dep); CREATE INDEX s_tid ON stops(tid, ord); CREATE INDEX td ON train_dates(tid, date);
                        CREATE INDEX st_n ON stations(nname); CREATE INDEX tr_no ON trains(number); CREATE INDEX tr_sid ON trains(sid, oid);""")
     c.execute("INSERT INTO meta VALUES('updated', ?)", (str(time.time()),))
+    c.execute("INSERT INTO meta VALUES('to', ?)", ((now_pl().date() + timedelta(days=7)).strftime("%Y%m%d"),))
     c.commit()
     c.close()
     _publish("pkp", tmp)
