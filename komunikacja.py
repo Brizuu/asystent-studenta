@@ -177,6 +177,7 @@ def _start(src: str, fn, *args):
             fn(*args)
         except Exception as e:
             _state[src]["error"] = str(e)[:300]
+            _log(src, "błąd: " + str(e)[:200])
         finally:
             _state[src]["importing"] = False
     threading.Thread(target=run, daemon=True).start()
@@ -218,27 +219,40 @@ def _feed_range(z: zipfile.ZipFile) -> tuple[str, str]:
     return lo, hi
 
 
+ZTM_LIST_URL = os.getenv("ZTM_LIST_URL", "https://www.ztm.poznan.pl/otwarte-dane/gtfsfiles/")
+
+
+def _log(src: str, msg: str):
+    """Dziennik ostatnich kroków importu (widoczny w /api/transit/status) — łatwiej zobaczyć, gdzie coś utknęło."""
+    L = _state[src].setdefault("log", [])
+    L.append(f"{now_pl():%H:%M:%S} {msg}")
+    del L[:-12]
+
+
 def _ztm_today_file(newest_start: str) -> bytes | None:
     """ZTM publikuje rozkład z wyprzedzeniem: „najnowszy” plik często obowiązuje dopiero od jutra.
-    Pliki mają nazwy RRRRMMDD_RRRRMMDD.zip — szukamy tego, który obejmuje dzisiejszy dzień."""
+    Pliki mają nazwy RRRRMMDD_RRRRMMDD.zip i zachodzą na siebie — najpierw czytamy ich listę ze strony ZTM,
+    a gdy się nie uda, próbujemy typowych nazw."""
     today = now_pl().date()
+    td = today.strftime("%Y%m%d")
+    names = []
     try:
-        before_new = (datetime.strptime(newest_start, "%Y%m%d").date() - timedelta(days=1))
-    except ValueError:
-        before_new = today
-    tries = [(today - timedelta(days=b), before_new) for b in range(4)] + [(today - timedelta(days=b), today) for b in range(4)]
-    seen = set()
-    for s, e in tries:
-        name = f"{s:%Y%m%d}_{e:%Y%m%d}.zip"
-        if e < today or name in seen:
-            continue
-        seen.add(name)
+        html = _get(ZTM_LIST_URL, timeout=15).decode("utf-8", "replace")
+        found = sorted(set(re.findall(r"(\d{8})_(\d{8})\.zip", html)), key=lambda x: (x[0], x[1]), reverse=True)
+        names = [f"{a}_{b}.zip" for a, b in found if a <= td <= b]
+        _log("ztm", f"lista plików ZTM: {len(found)}, obejmujące dziś: {', '.join(names) or 'brak'}")
+    except Exception as e:
+        _log("ztm", f"lista plików ZTM niedostępna: {e}")
+    if not names:   # typowe nazwy: pliki 1–3-dniowe kończące się dziś albo w ciągu 2 dni
+        names = [f"{today - timedelta(days=b):%Y%m%d}_{today + timedelta(days=f):%Y%m%d}.zip" for f in (1, 0, 2) for b in (0, 1, 2)]
+    for name in names[:9]:
         try:
-            raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, {"Accept": "application/octet-stream"}, timeout=8)
+            raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, {"Accept": "application/octet-stream"}, timeout=10)
             zipfile.ZipFile(io.BytesIO(raw)).namelist()
+            _log("ztm", f"pobrano {name} ({len(raw) // 1024} KB)")
             return raw
-        except Exception:
-            continue
+        except Exception as e:
+            _log("ztm", f"{name}: {str(e)[:60]}")
     return None
 
 
@@ -247,14 +261,20 @@ def import_ztm(raw: bytes | None = None, extra: bytes | None = None):
     Pierwszy plik bez prefiksu (jego trip_id pasują do opóźnień na żywo), kolejne z prefiksem „n:”."""
     if raw is None:
         # jak w pierwszej wersji: najnowszy plik pobieramy i od razu udostępniamy…
+        _state["ztm"]["log"] = []
+        _log("ztm", "pobieram najnowszy rozkład z ZTM…")
         newest = _get(ZTM_GTFS_URL, {"Accept": "application/octet-stream"}, timeout=120)
+        _log("ztm", f"najnowszy plik: {len(newest) // 1024} KB, zakres {'–'.join(_feed_range(zipfile.ZipFile(io.BytesIO(newest))))}")
         _build_ztm([newest])
+        _log("ztm", "rozkład gotowy")
         # …a dopiero potem, gdy zaczyna się jutro, szybko szukamy pliku obowiązującego dziś i dokładamy go
         start, _ = _feed_range(zipfile.ZipFile(io.BytesIO(newest)))
         if start > now_pl().date().strftime("%Y%m%d"):
+            _log("ztm", "najnowszy plik zaczyna się jutro — szukam pliku na dziś")
             cur = _ztm_today_file(start)
             if cur:
                 _build_ztm([cur, newest])
+                _log("ztm", "dołączono rozkład na dziś")
         return
     _build_ztm([raw] + ([extra] if extra else []))
 
@@ -376,9 +396,10 @@ def ztm_next(from_name: str, to_name: str, n: int = 5, tram_only: bool = False, 
                             "t": r["dep"] + off, "arr": r["arr"] + off, "seq": r["seq"], "seq_to": r["seq_to"], "t0": epoch0 + off})
         # ten sam kurs wpada raz (najbliższy przystanek startowy)
         seen, uniq = set(), []
-        for x in sorted(out, key=lambda x: x["t"]):
-            if (x["trip_id"], x["t0"]) not in seen:
-                seen.add((x["trip_id"], x["t0"]))
+        for x in sorted(out, key=lambda x: (x["t"], x["trip_id"].startswith("n"))):   # kurs z dwóch plików (zachodzą na siebie) — raz
+            k = (x["line"], x["headsign"], x["t"])
+            if k not in seen:
+                seen.add(k)
                 uniq.append(x)
     return _shape(uniq, secs, epoch0, n, at is None, back)
 
@@ -760,7 +781,8 @@ def _status(src):
     st = _state[src]
     path = _cur(src)
     at = _meta(path, "updated")
-    return {"ready": bool(at), "importing": st["importing"], "error": st["error"],
+    return {"ready": bool(at), "importing": st["importing"], "error": st["error"], "log": st.get("log", []),
+            "range": f"{_meta(path, 'start') or '?'}–{_meta(path, 'end') or '?'}",
             "updated": datetime.fromtimestamp(float(at), timezone.utc).isoformat(timespec="minutes") if at else None}
 
 
