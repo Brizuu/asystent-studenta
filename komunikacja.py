@@ -226,19 +226,19 @@ def _ztm_today_file(newest_start: str) -> bytes | None:
         before_new = (datetime.strptime(newest_start, "%Y%m%d").date() - timedelta(days=1))
     except ValueError:
         before_new = today
-    ends = [before_new] + [today + timedelta(days=i) for i in range(4) if today + timedelta(days=i) != before_new]
-    for e in ends:
-        if e < today:
+    tries = [(today - timedelta(days=b), before_new) for b in range(4)] + [(today - timedelta(days=b), today) for b in range(4)]
+    seen = set()
+    for s, e in tries:
+        name = f"{s:%Y%m%d}_{e:%Y%m%d}.zip"
+        if e < today or name in seen:
             continue
-        for back in range(0, 5):
-            s = today - timedelta(days=back)
-            name = f"{s:%Y%m%d}_{e:%Y%m%d}.zip"
-            try:
-                raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, timeout=20)
-                zipfile.ZipFile(io.BytesIO(raw)).namelist()
-                return raw
-            except Exception:
-                continue
+        seen.add(name)
+        try:
+            raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, {"Accept": "application/octet-stream"}, timeout=8)
+            zipfile.ZipFile(io.BytesIO(raw)).namelist()
+            return raw
+        except Exception:
+            continue
     return None
 
 
@@ -246,15 +246,20 @@ def import_ztm(raw: bytes | None = None, extra: bytes | None = None):
     """Import rozkładu ZTM. Bez argumentów: najnowszy plik z ZTM + (jeśli zaczyna się dopiero jutro) plik obowiązujący dziś.
     Pierwszy plik bez prefiksu (jego trip_id pasują do opóźnień na żywo), kolejne z prefiksem „n:”."""
     if raw is None:
-        newest = _get(ZTM_GTFS_URL, timeout=120)
-        feeds = [newest]
+        # jak w pierwszej wersji: najnowszy plik pobieramy i od razu udostępniamy…
+        newest = _get(ZTM_GTFS_URL, {"Accept": "application/octet-stream"}, timeout=120)
+        _build_ztm([newest])
+        # …a dopiero potem, gdy zaczyna się jutro, szybko szukamy pliku obowiązującego dziś i dokładamy go
         start, _ = _feed_range(zipfile.ZipFile(io.BytesIO(newest)))
         if start > now_pl().date().strftime("%Y%m%d"):
             cur = _ztm_today_file(start)
             if cur:
-                feeds.insert(0, cur)
-    else:
-        feeds = [raw] + ([extra] if extra else [])
+                _build_ztm([cur, newest])
+        return
+    _build_ztm([raw] + ([extra] if extra else []))
+
+
+def _build_ztm(feeds: list):
     tmp = _tmp("ztm")
     c = _raw(tmp)
     c.executescript("""
