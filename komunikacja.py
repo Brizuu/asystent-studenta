@@ -264,26 +264,29 @@ def import_ztm(raw: bytes | None = None, extra: bytes | None = None):
         _state["ztm"]["log"] = []
         _log("ztm", "pobieram najnowszy rozkład z ZTM…")
         newest = _get(ZTM_GTFS_URL, {"Accept": "application/octet-stream"}, timeout=120)
-        _log("ztm", f"najnowszy plik: {len(newest) // 1024} KB, zakres {'–'.join(_feed_range(zipfile.ZipFile(io.BytesIO(newest))))}")
-        _build_ztm([newest])
-        _log("ztm", "rozkład gotowy")
-        # …a dopiero potem, gdy zaczyna się jutro, szybko szukamy pliku obowiązującego dziś i dokładamy go
-        start, _ = _feed_range(zipfile.ZipFile(io.BytesIO(newest)))
-        if start > now_pl().date().strftime("%Y%m%d"):
+        start, end = _feed_range(zipfile.ZipFile(io.BytesIO(newest)))
+        _log("ztm", f"najnowszy plik: {len(newest) // 1024} KB, zakres {start}–{end}")
+        today = now_pl().date()
+        feeds = [newest]
+        if start > today.strftime("%Y%m%d"):
+            # najnowszy plik zaczyna się jutro — potrzebny plik obowiązujący dziś (ZTM ma też pliki na cały miesiąc)
             _log("ztm", "najnowszy plik zaczyna się jutro — szukam pliku na dziś")
             cur = _ztm_today_file(start)
             if cur:
-                _build_ztm([cur, newest])
-                _log("ztm", "dołączono rozkład na dziś")
+                _, cend = _feed_range(zipfile.ZipFile(io.BytesIO(cur)))
+                tomorrow = (today + timedelta(days=1)).strftime("%Y%m%d")
+                feeds = [cur] if cend >= tomorrow else [cur, newest]   # plik na dziś obejmuje też jutro → wystarczy sam
+        t = time.time()
+        _build_ztm(feeds)
+        _log("ztm", f"rozkład gotowy ({len(feeds)} {'plik' if len(feeds) == 1 else 'pliki'}, {time.time() - t:.0f} s)")
         return
     _build_ztm([raw] + ([extra] if extra else []))
 
 
 def _build_ztm(feeds: list):
     tmp = _tmp("ztm")
-    c = _raw(tmp)
+    c = sqlite3.connect(":memory:")   # budujemy w pamięci — na wolnym dysku zapis wiersz po wierszu trwał minutami
     c.executescript("""
-    PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
     CREATE TABLE meta (k TEXT PRIMARY KEY, v TEXT);
     CREATE TABLE stops (stop_id TEXT PRIMARY KEY, name TEXT, nname TEXT, code TEXT, lat REAL, lon REAL);
     CREATE TABLE routes (route_id TEXT PRIMARY KEY, short TEXT, type INTEGER);
@@ -324,12 +327,16 @@ def _build_ztm(feeds: list):
     CREATE INDEX st_trip ON stop_times(trip_id, seq);
     CREATE INDEX stops_n ON stops(nname);
     CREATE TABLE stop_lines AS SELECT DISTINCT s.nname nname, r.short short, r.type type
-        FROM stop_times st JOIN stops s ON s.stop_id=st.stop_id JOIN trips t ON t.trip_id=st.trip_id JOIN routes r ON r.route_id=t.route_id;
+        FROM (SELECT DISTINCT st.stop_id, t.route_id FROM stop_times st JOIN trips t ON t.trip_id=st.trip_id) x
+        JOIN stops s ON s.stop_id=x.stop_id JOIN routes r ON r.route_id=x.route_id;
     CREATE INDEX sl_n ON stop_lines(nname);
     """)
     c.executemany("INSERT INTO meta VALUES(?, ?)", [("schema", ZTM_SCHEMA), ("updated", str(time.time())),
                                                    ("start", lo_all), ("end", hi_all), ("feeds", str(len(feeds)))])
     c.commit()
+    disk = sqlite3.connect(str(tmp))
+    c.backup(disk)   # gotowa baza jednym ruchem na dysk
+    disk.close()
     c.close()
     _publish("ztm", tmp)
 
