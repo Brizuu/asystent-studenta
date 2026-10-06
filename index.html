@@ -4882,7 +4882,12 @@ async function djGo(silent){
   if(m==='board'){LS.set('dj_stop',$('#dj-stop').value.trim()); djRemember('ztm',$('#dj-stop').value.trim());}
   if(m==='pkp'){LS.set('dj_pk',JSON.stringify({f:$('#pk-from').value.trim(),t:$('#pk-to').value.trim()})); DJ.lastPkp=Date.now();}
   if(silent!==true||!DJ.rows.length)djSkel(box);
-  try{const L=djNames(await djFetch()); if(DJ.mode!==m)return; DJ.rows=L; DJ.paged=false; djPaint();}
+  try{const L=djNames(await djFetch()); if(DJ.mode!==m)return;
+    if(!L.length&&m!=='pkp'){const st=await api('/transit/status'); djStatus(st);
+      if(st.ztm.importing||(!st.ztm.today&&!DJ.refreshed)){if(!st.ztm.importing){DJ.refreshed=true; api('/transit/ztm/refresh',{method:'POST'});}
+        djWait(box,'Pobieram aktualny rozkład ZTM (to potrwa chwilę)…',djGo); return;}
+      if(!st.ztm.today){box.innerHTML='<div class="dj-empty">Pobrany rozkład ZTM nie obejmuje dzisiejszego dnia, a nowszego nie udało się pobrać. Spróbuję ponownie za pół godziny.</div>'; return;}}
+    DJ.rows=L; DJ.paged=false; djPaint();}
   catch(e){if(DJ.mode!==m)return; if(e.status===503)djWait(box,e.message,djGo,m==='pkp'); else box.innerHTML=`<div class="dj-empty">${esc(e.message)}${e.login?`<br><br><button class="btn" onclick="go('konto')">Zaloguj się</button>`:''}</div>`;}
 }
 async function djMore(back){
@@ -4923,6 +4928,7 @@ function djPicker(e){
 }
 function djPickOk(){const d=new Date(DJ_PICK.d); d.setHours(DJ_PICK.h,DJ_PICK.m,0,0); djSetAt(Math.round(d.getTime()/1000));}
 function djQuickTomorrow(h){const d=new Date(); d.setDate(d.getDate()+1); d.setHours(h,0,0,0); djSetAt(Math.round(d.getTime()/1000));}
+document.addEventListener('mousedown',e=>{if(!e.target.closest('.dj-ac'))$$('.dj-sug').forEach(b=>b.hidden=true);});
 document.addEventListener('click',e=>{const p=$('#dj-pick'); if(p&&!p.hidden&&!e.target.closest('.dj-whenwrap'))p.hidden=true;});
 async function loadDojazd(){
   const st=await api('/transit/status'); djStatus(st);
@@ -4971,7 +4977,7 @@ function djAuto(inp,src,onPick){
       const sub=x.kind==='near'?`<small class="dj-dist">${x.dist_m<1000?x.dist_m+' m':(x.dist_m/1000).toFixed(1).replace('.',',')+' km'} · ok. ${x.walk_min} min pieszo</small>`:x.kind==='geo'?'<small class="dj-dist">Najbliższe przystanki od miejsca, w którym jesteś</small>':'';
       h+=`<div class="dj-opt${i===sel?' on':''}" data-i="${i}"><span class="pin ${x.kind}"><svg viewBox="0 0 24 24">${IC[x.kind]}</svg></span>
         <div class="m"><b>${x.kind==='stop'||x.kind==='addr'?mark(x.name,q):esc(x.name)}</b>${sub}${lines(x.lines)}</div></div>`;});
-    box.innerHTML=h; box.hidden=false;};
+    box.innerHTML=h; box.hidden=document.activeElement!==inp&&!head;};
   const near=async(lat,lon,label)=>{
     head='Najbliższe przystanki: '+label; items=[]; box.innerHTML=`<h6>${esc(head)}</h6><div class="dj-load" style="padding:14px"><i></i>Szukam przystanków…</div>`; box.hidden=false;
     try{const L=await apiT('/transit/ztm/near?'+djQ({lat,lon,n:6})); items=L.map(x=>({...x,kind:'near'})); sel=0; paint('');}
@@ -4996,7 +5002,7 @@ function djAuto(inp,src,onPick){
     // adresy (OpenStreetMap) — wolniej i rzadziej: limit wyszukiwarki to 1 zapytanie na sekundę
     if(ztm&&q.length>=4)tg=setTimeout(async()=>{
       try{const A=await apiT('/transit/geocode?'+djQ({q})); if(my!==seq)return;
-        items=[...items.filter(x=>x.kind==='stop'),...A.map(x=>({kind:'addr',name:x.label,lat:x.lat,lon:x.lon}))]; if(sel<0&&items.length)sel=0; paint(q);}catch(_){}} ,550);
+        const seenA=new Set(); items=[...items.filter(x=>x.kind==='stop'),...A.filter(x=>!seenA.has(x.label)&&seenA.add(x.label)).map(x=>({kind:'addr',name:x.label,lat:x.lat,lon:x.lon}))]; if(sel<0&&items.length)sel=0; paint(q);}catch(_){}} ,550);
     else items=items.filter(x=>x.kind==='stop');};
   inp.addEventListener('input',load); inp.addEventListener('focus',()=>{inp.select();load();});
   inp.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement!==inp)close();},180));
@@ -5032,7 +5038,8 @@ async function djDetails(k,xx){
     <div class="actions">${djTrain(x)?`<button class="btn ghost" onclick="djSaveTrain('${k}','${esc(x._from||'')}','${esc(x._to||'')}')">☆ Obserwuj pociąg</button>`:''}<button class="btn" onclick="closeModal()">Zamknij</button></div>`;
   openModal();
   try{
-    const d=djTrain(x)?await djPk('details',{tid:x.tid,date:x.date}):await apiT('/transit/ztm/trip?'+djQ({trip_id:x.trip_id,t0:x.t0}));
+    const b64=t=>btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const d=djTrain(x)?await djPk('details',{tid:x.tid,date:x.date}):await apiT('/transit/ztm/trip?'+djQ({trip_b:b64(x.trip_id),t0:x.t0}));
     let on=false; const fromI=djTrain(x)?d.stops.findIndex(s=>s.station===x.from_st):d.stops.findIndex(s=>s.seq===x.seq);
     const toI=djTrain(x)?d.stops.findIndex((s,i)=>i>fromI&&s.station===x.to_st):d.stops.findIndex(s=>s.seq===x.seq_to);
     const now=Date.now()/1000;
