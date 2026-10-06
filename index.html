@@ -880,6 +880,9 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj-whenbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round} .dj-whenbtn .cv{width:14px;height:14px;opacity:.7}
 .dj-pick{position:absolute;left:0;top:calc(100% + 8px);z-index:50;width:min(380px,86vw);padding:16px;border-radius:20px;background:rgba(22,24,38,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px -14px rgba(0,0,0,.75)}
 .dj-pick[hidden]{display:none} .dj-pick.up{top:auto;bottom:calc(100% + 8px)}
+.dj-hm{float:right;margin-top:-6px;width:74px;padding:5px 8px;border-radius:9px;font:inherit;font-size:15px;font-weight:700;text-align:center;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid var(--line)}
+.dj-hm.bad{border-color:#ff8f8a;color:#ffb0a8} .dj-hm:focus{outline:none;border-color:rgba(255,107,129,.6)}
+.dj-col{cursor:grab;user-select:none} .dj-col:active{cursor:grabbing}
 .dj-pick h6{margin:0 0 8px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim)}
 .dj-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .dj-quick button,.dj-days button{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink-soft);font:inherit;font-size:13px;font-weight:600;padding:6px 11px;border-radius:99px;cursor:pointer}
@@ -4914,17 +4917,37 @@ function djPicker(e){
   const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i);return d;});
   box.innerHTML=`<h6>Szybko</h6><div class="dj-quick"><button onclick="djSetAt(null)">Teraz</button><button onclick="djSetAt(Math.round(Date.now()/1000)+900)">Za 15 min</button><button onclick="djSetAt(Math.round(Date.now()/1000)+3600)">Za godzinę</button><button onclick="djQuickTomorrow(7)">Jutro 7:00</button></div>
     <h6>Dzień</h6><div class="dj-days">${days.map((d,i)=>`<button data-i="${i}" class="${d.getTime()===DJ_PICK.d.getTime()?'on':''}">${i===0?'Dziś':i===1?'Jutro':d.toLocaleDateString('pl-PL',{weekday:'short'})}<b>${d.getDate()}</b></button>`).join('')}</div>
-    <h6>Godzina odjazdu</h6><div class="dj-clock"><div class="dj-col" id="dj-ch">${[...Array(24)].map((_,h)=>`<button data-v="${h}">${String(h).padStart(2,'0')}</button>`).join('')}</div><b>:</b>
+    <h6>Godzina odjazdu <input id="dj-hm" class="dj-hm" inputmode="numeric" maxlength="5" placeholder="gg:mm" title="Wpisz godzinę, np. 7:30 albo 0730"></h6><div class="dj-clock"><div class="dj-col" id="dj-ch">${[...Array(24)].map((_,h)=>`<button data-v="${h}">${String(h).padStart(2,'0')}</button>`).join('')}</div><b>:</b>
       <div class="dj-col" id="dj-cm">${[...Array(12)].map((_,i)=>`<button data-v="${i*5}">${String(i*5).padStart(2,'0')}</button>`).join('')}</div></div>
     <div class="act"><button class="btn ghost" onclick="$('#dj-pick').hidden=true">Anuluj</button><button class="btn" onclick="djPickOk()">Pokaż odjazdy</button></div>`;
   box.hidden=false; const r=$('#dj-whenbtn').getBoundingClientRect(); box.classList.toggle('up',innerHeight-r.bottom<box.offsetHeight+20&&r.top>box.offsetHeight+20);
   box.querySelectorAll('.dj-days button').forEach(b=>b.onclick=()=>{DJ_PICK.d=days[+b.dataset.i]; box.querySelectorAll('.dj-days button').forEach(x=>x.classList.toggle('on',x===b));});
-  const col=(id,key)=>{const c=$('#'+id); const mark=()=>c.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===DJ_PICK[key]));
-    const toSel=(sm)=>{const b=[...c.children].find(b=>+b.dataset.v===DJ_PICK[key]); if(b)c.scrollTo({top:b.offsetTop-55,behavior:sm?'smooth':'auto'});};
-    c.onclick=e=>{const b=e.target.closest('button'); if(!b)return; DJ_PICK[key]=+b.dataset.v; c._lock=Date.now(); mark(); toSel(true);};
-    let t=null; c.onscroll=()=>{clearTimeout(t); t=setTimeout(()=>{if(Date.now()-(c._lock||0)<800)return; const i=Math.round(c.scrollTop/40); const b=c.children[i]; if(b&&+b.dataset.v!==DJ_PICK[key]){DJ_PICK[key]=+b.dataset.v; mark();}},90);};
+  const hm=$('#dj-hm'), pad=v=>String(v).padStart(2,'0'), syncHm=()=>{if(document.activeElement!==hm)hm.value=pad(DJ_PICK.h)+':'+pad(DJ_PICK.m);};
+  const cols={};
+  const col=(id,key,step)=>{const c=$('#'+id), vals=[...c.children].map(b=>+b.dataset.v);
+    const mark=()=>{c.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===DJ_PICK[key])); syncHm();};
+    const near=v=>vals.reduce((a,x)=>Math.abs(x-v)<Math.abs(a-v)?x:a,vals[0]);
+    const toSel=(sm)=>{const b=[...c.children].find(b=>+b.dataset.v===near(DJ_PICK[key])); if(b)c.scrollTo({top:b.offsetTop-55,behavior:sm?'smooth':'auto'});};
+    const set=(v,sm)=>{DJ_PICK[key]=v; c._lock=Date.now(); mark(); toSel(sm);};
+    cols[key]={set,toSel,mark};
+    c.onclick=e=>{if(c._dragged)return; const b=e.target.closest('button'); if(b)set(+b.dataset.v,true);};
+    // kółko myszy: jeden krok na „ząbek”
+    c.onwheel=e=>{e.preventDefault(); const i=vals.indexOf(near(DJ_PICK[key])), j=Math.max(0,Math.min(vals.length-1,i+(e.deltaY>0?1:-1))); set(vals[j],true);};
+    // przeciąganie myszą (jak kółko w telefonie)
+    c.onpointerdown=e=>{if(e.pointerType!=='mouse')return; const y0=e.clientY, s0=c.scrollTop; c._dragged=false; c.setPointerCapture(e.pointerId);
+      c.onpointermove=ev=>{const dy=ev.clientY-y0; if(Math.abs(dy)>3)c._dragged=true; c.style.scrollSnapType='none'; c.scrollTop=s0-dy;};
+      c.onpointerup=()=>{c.onpointermove=null; c.style.scrollSnapType=''; const i=Math.max(0,Math.min(vals.length-1,Math.round(c.scrollTop/40))); if(c._dragged)set(vals[i],true); setTimeout(()=>c._dragged=false,0);};};
+    let t=null; c.onscroll=()=>{clearTimeout(t); t=setTimeout(()=>{if(Date.now()-(c._lock||0)<800||c.onpointermove)return; const i=Math.round(c.scrollTop/40); const b=c.children[i]; if(b&&+b.dataset.v!==DJ_PICK[key]){DJ_PICK[key]=+b.dataset.v; mark();}},90);};
     mark(); requestAnimationFrame(()=>toSel(false));};
   col('dj-ch','h'); col('dj-cm','m');
+  // wpisywanie: „7:30”, „0730”, „730”, „7” — kolumny ustawiają się same, Enter = pokaż odjazdy
+  hm.value=pad(DJ_PICK.h)+':'+pad(DJ_PICK.m);
+  hm.oninput=()=>{const d=hm.value.replace(/\D/g,''); let h,m;
+    if(/[:.\s]/.test(hm.value)){const [a,b2]=hm.value.split(/[:.\s]/); h=+a; m=+(b2||0);} else if(d.length<=2){h=+d; m=0;} else {h=+d.slice(0,d.length-2); m=+d.slice(-2);}
+    if(d===''||isNaN(h)||h>23||m>59){hm.classList.add('bad');return;} hm.classList.remove('bad');
+    DJ_PICK.h=h; DJ_PICK.m=m; cols.h.set(h,true); cols.m.set(m,true);};
+  hm.onkeydown=e=>{if(e.key==='Enter'&&!hm.classList.contains('bad')){e.preventDefault(); djPickOk();}};
+  hm.onblur=()=>{hm.value=pad(DJ_PICK.h)+':'+pad(DJ_PICK.m); hm.classList.remove('bad');};
 }
 function djPickOk(){const d=new Date(DJ_PICK.d); d.setHours(DJ_PICK.h,DJ_PICK.m,0,0); djSetAt(Math.round(d.getTime()/1000));}
 function djQuickTomorrow(h){const d=new Date(); d.setDate(d.getDate()+1); d.setHours(h,0,0,0); djSetAt(Math.round(d.getTime()/1000));}
