@@ -4885,7 +4885,7 @@ async function djGo(silent){
   try{const L=djNames(await djFetch()); if(DJ.mode!==m)return;
     if(!L.length&&m!=='pkp'){const st=await api('/transit/status'); djStatus(st);
       if(st.ztm.importing||(!st.ztm.today&&!DJ.refreshed)){if(!st.ztm.importing){DJ.refreshed=true; api('/transit/ztm/refresh',{method:'POST'});}
-        djWait(box,'Pobieram aktualny rozkład ZTM (to potrwa chwilę)…',djGo); return;}
+        const lg=(st.ztm.log||[]).slice(-1)[0]; djWait(box,'Pobieram aktualny rozkład ZTM (to potrwa chwilę)…'+(lg?' · '+lg.replace(/^\S+ /,''):''),djGo); return;}
       if(!st.ztm.today){box.innerHTML='<div class="dj-empty">Pobrany rozkład ZTM nie obejmuje dzisiejszego dnia, a nowszego nie udało się pobrać. Spróbuję ponownie za pół godziny.</div>'; return;}}
     DJ.rows=L; DJ.paged=false; djPaint();}
   catch(e){if(DJ.mode!==m)return; if(e.status===503)djWait(box,e.message,djGo,m==='pkp'); else box.innerHTML=`<div class="dj-empty">${esc(e.message)}${e.login?`<br><br><button class="btn" onclick="go('konto')">Zaloguj się</button>`:''}</div>`;}
