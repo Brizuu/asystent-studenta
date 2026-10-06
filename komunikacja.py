@@ -230,11 +230,11 @@ def _ztm_today_file(newest_start: str) -> bytes | None:
     for e in ends:
         if e < today:
             continue
-        for back in range(0, 8):
+        for back in range(0, 5):
             s = today - timedelta(days=back)
             name = f"{s:%Y%m%d}_{e:%Y%m%d}.zip"
             try:
-                raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, timeout=60)
+                raw = _get(ZTM_GTFS_URL.rstrip("/") + "/?file=" + name, timeout=20)
                 zipfile.ZipFile(io.BytesIO(raw)).namelist()
                 return raw
             except Exception:
@@ -761,7 +761,11 @@ def _status(src):
 
 @router.get("/api/transit/status")
 def status():
-    return {"ztm": _status("ztm")}
+    st = _status("ztm")
+    p = _cur("ztm")
+    lo, hi, today = _meta(p, "start"), _meta(p, "end"), now_pl().date().strftime("%Y%m%d")
+    st["today"] = not (lo and hi) or lo <= today <= hi   # czy pobrany rozkład obejmuje dzisiejszy dzień
+    return {"ztm": st}
 
 
 @router.post("/api/transit/{src}/refresh")
@@ -880,8 +884,13 @@ def ztm_departures(frm: str, to: str, n: int = 6, tram: bool = False, at: float 
 
 
 @router.get("/api/transit/ztm/trip")
-def ztm_trip_api(trip_id: str, t0: float):
-    return ztm_trip(trip_id, t0)
+def ztm_trip_api(t0: float, trip_id: str = "", trip_b: str = ""):
+    # identyfikatory ZTM mają „+” (np. 4_3269525^N+), który po drodze (proxy) potrafi zamienić się w spację —
+    # aplikacja wysyła je w base64; stare wywołania naprawiamy zamianą spacji z powrotem na „+”
+    if trip_b:
+        import base64
+        trip_id = base64.urlsafe_b64decode(trip_b + "=" * (-len(trip_b) % 4)).decode("utf-8")
+    return ztm_trip(trip_id.replace(" ", "+"), t0)
 
 
 # ---------- ulubione trasy ----------
