@@ -3,7 +3,11 @@
 Rozkład ZTM pobieramy raz na dobę do wspólnej bazy (ROOT_DIR/cache — jedna kopia także dla wszystkich kont wersji webowej),
 a odjazdy liczymy lokalnie: kursy, które jadą z przystanku A do przystanku B bez przesiadki.
 Ulubione trasy są w bazie użytkownika (synchronizowane jak notatki).
-PKP: szkielet — klucz API z formularza PLK (pdp-api.plk-sa.pl) w Ustawieniach, rozkład na dziś i jutro, połączenia A → B.
+PKP: rozkład z Otwartych Danych Kolejowych (raz na dobę) + opóźnienia na żywo (najwyżej raz na minutę, wspólne dla wszystkich).
+Klucz PLK trzyma serwer kont (ustawia go administrator) — pociągi liczy serwer, aplikacje pytają go przez /pkp/*.
+
+Bazy rozkładu mają w nazwie znacznik czasu (ztmdb_<ts>.db): nowa wersja dostaje nowy plik, więc na Windows nie trzeba
+podmieniać pliku, który ktoś właśnie czyta (os.replace na otwartym pliku = „Odmowa dostępu”). Stare pliki sprzątamy, gdy się da.
 """
 import csv
 import io
@@ -18,18 +22,19 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from db import ROOT_DIR, DATA_DIR, get_conn
+from db import ROOT_DIR, get_conn
 
 router = APIRouter()
 
 CACHE = ROOT_DIR / "cache"
-ZTM_DB = CACHE / "ztm_gtfs.db"
-PKP_DB = CACHE / "pkp.db"
+LEGACY = {"ztm": "ztm_gtfs.db", "pkp": "pkp.db"}   # nazwy sprzed wersji 1.4.3
+KEY_PROVIDER = None   # serwer kont podstawia tu funkcję zwracającą klucz PLK ustawiony przez administratora
 ZTM_GTFS_URL = os.getenv("ZTM_GTFS_URL", "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGTFSFile")
 ZTM_RT_URL = os.getenv("ZTM_RT_URL", "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGtfsRtFile/?file=trip_updates.pb")
 GEOCODE_URL = os.getenv("GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
@@ -89,10 +94,45 @@ def _get(url: str, headers: dict | None = None, timeout: int = 60) -> bytes:
         return r.read()
 
 
-def _db(path) -> sqlite3.Connection:
+def _raw(path) -> sqlite3.Connection:
     c = sqlite3.connect(str(path), timeout=30)
     c.row_factory = sqlite3.Row
     return c
+
+
+@contextmanager
+def _db(path):
+    """Połączenie zamykane od razu po użyciu (otwarte uchwyty blokowałyby na Windows sprzątanie starych baz)."""
+    c = _raw(path)
+    try:
+        yield c
+    finally:
+        c.close()
+
+
+def _cur(src: str):
+    """Najnowsza gotowa baza rozkładu (albo None)."""
+    files = sorted(CACHE.glob(f"{src}db_*.db")) if CACHE.exists() else []
+    if files:
+        return files[-1]
+    old = CACHE / LEGACY[src]
+    return old if old.exists() else None
+
+
+def _publish(src: str, tmp):
+    final = CACHE / f"{src}db_{int(time.time() * 1000)}.db"
+    os.replace(tmp, final)   # nowa nazwa — nigdy nie koliduje z otwartym plikiem
+    for f in [*CACHE.glob(f"{src}db_*.db"), *CACHE.glob(f"{src}db_*.tmp"), CACHE / LEGACY[src]]:
+        if f != final and f.exists():
+            try:
+                f.unlink()
+            except OSError:   # ktoś jeszcze czyta starą wersję — usuniemy przy następnym imporcie
+                pass
+
+
+def _tmp(src: str):
+    CACHE.mkdir(parents=True, exist_ok=True)
+    return CACHE / f"{src}db_{int(time.time() * 1000)}.tmp"
 
 
 # ---------- import w tle (jeden naraz na źródło) ----------
@@ -101,6 +141,8 @@ _lock = threading.Lock()
 
 
 def _meta(path, key):
+    if path is None:
+        return None
     try:
         with _db(path) as c:
             r = c.execute("SELECT v FROM meta WHERE k=?", (key,)).fetchone()
@@ -109,9 +151,9 @@ def _meta(path, key):
         return None
 
 
-def _fresh(path) -> bool:
+def _fresh(src: str, path) -> bool:
     at = _meta(path, "updated")
-    if path == ZTM_DB and _meta(path, "schema") != ZTM_SCHEMA:
+    if src == "ztm" and _meta(path, "schema") != ZTM_SCHEMA:
         return False
     return bool(at) and time.time() - float(at) < REFRESH
 
@@ -132,16 +174,21 @@ def _start(src: str, fn, *args):
     threading.Thread(target=run, daemon=True).start()
 
 
-def _ensure(src: str, path, fn, *args):
-    """Baza gotowa → używamy jej (a przestarzałą odświeżamy w tle). Brak → import w tle i 503 z komunikatem."""
-    if path.exists() and _meta(path, "updated"):
-        if not _fresh(path) and not _state[src]["error"]:
+def _ensure(src: str, fn, *args):
+    """Baza gotowa → zwraca jej ścieżkę (a przestarzałą odświeża w tle). Brak → import w tle i 503 z komunikatem."""
+    path = _cur(src)
+    if path and _meta(path, "updated"):
+        if not _fresh(src, path) and not _state[src]["error"]:
             _start(src, fn, *args)
-        return
+        return path
     if not _state[src]["error"]:
         _start(src, fn, *args)
     st = _state[src]
     raise HTTPException(503, st["error"] or "Pobieram rozkład (pierwszy raz trwa około minuty)…")
+
+
+def ztm_db():
+    return _ensure("ztm", import_ztm)
 
 
 # ---------- ZTM Poznań: GTFS → SQLite ----------
@@ -154,10 +201,8 @@ def _csv(z: zipfile.ZipFile, name: str):
 def import_ztm(raw: bytes | None = None):
     raw = raw or _get(ZTM_GTFS_URL, timeout=120)
     z = zipfile.ZipFile(io.BytesIO(raw))
-    CACHE.mkdir(parents=True, exist_ok=True)
-    tmp = CACHE / "ztm_gtfs.tmp"
-    tmp.unlink(missing_ok=True)
-    c = _db(tmp)
+    tmp = _tmp("ztm")
+    c = _raw(tmp)
     c.executescript("""
     PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
     CREATE TABLE meta (k TEXT PRIMARY KEY, v TEXT);
@@ -200,7 +245,7 @@ def import_ztm(raw: bytes | None = None):
     c.execute("INSERT INTO meta VALUES('updated', ?)", (str(time.time()),))
     c.commit()
     c.close()
-    os.replace(tmp, ZTM_DB)
+    _publish("ztm", tmp)
 
 
 def _services(c, d: date) -> list[str]:
@@ -216,91 +261,129 @@ def _ids(c, name: str) -> list[str]:
     return [r[0] for r in c.execute("SELECT stop_id FROM stops WHERE nname=?", (n,))]
 
 
-def ztm_next(from_name: str, to_name: str, n: int = 5, tram_only: bool = False) -> list[dict]:
-    with _db(ZTM_DB) as c:
+def _ref(at: float | None):
+    """Punkt odniesienia wyszukiwania: teraz albo wybrana godzina (czas uniksowy).
+    Zwraca (data, sekundy od północy tej daty, czas uniksowy tej północy)."""
+    now_ts = time.time()
+    base = now_pl() if at is None else now_pl() + timedelta(seconds=at - now_ts)
+    secs = base.hour * 3600 + base.minute * 60 + base.second
+    return base.date(), secs, (now_ts if at is None else at) - secs
+
+
+def _days(d: date):
+    # wczoraj (kursy po północy: czasy GTFS > 24:00), dziś, jutro — z przesunięciem względem północy dnia odniesienia
+    return ((-86400, d - timedelta(days=1)), (0, d), (86400, d + timedelta(days=1)))
+
+
+def _window(secs: int, off: int, back: bool, live: bool):
+    """Zakres czasów odjazdu (w sekundach dnia rozkładowego) i kierunek sortowania."""
+    if back:
+        hi = secs - off
+        return hi - 6 * 3600, hi - 1, "DESC"
+    lo = secs - off - (120 if live else 0)   # na żywo 2 min wstecz: spóźniony tramwaj jeszcze może przyjechać
+    return lo, lo + 6 * 3600, "ASC"
+
+
+def ztm_next(from_name: str, to_name: str, n: int = 5, tram_only: bool = False, at: float | None = None, back: bool = False) -> list[dict]:
+    with _db(ztm_db()) as c:
         a, b = _ids(c, from_name), _ids(c, to_name)
         if not a:
             raise HTTPException(404, f"Nie znam przystanku „{from_name}”.")
         if not b:
             raise HTTPException(404, f"Nie znam przystanku „{to_name}”.")
-        now = now_pl()
-        today = now.date()
-        secs = now.hour * 3600 + now.minute * 60 + now.second
+        d0, secs, epoch0 = _ref(at)
         out = []
-        # wczoraj (kursy po północy: czasy GTFS > 24:00), dziś, jutro — z przesunięciem względem dzisiejszej północy
-        for off, d in ((-86400, today - timedelta(days=1)), (0, today), (86400, today + timedelta(days=1))):
+        for off, d in _days(d0):
             sv = _services(c, d)
             if not sv:
                 continue
-            q = f"""SELECT t.trip_id, r.short, r.type, t.headsign, sa.dep dep, sb.dep arr, sa.seq seq, sa.stop_id stop
+            lo, hi, order = _window(secs, off, back, at is None)
+            q = f"""SELECT t.trip_id, r.short, r.type, t.headsign, sa.dep dep, sb.dep arr, sa.seq seq, sb.seq seq_to
                 FROM stop_times sa
                 JOIN stop_times sb ON sb.trip_id=sa.trip_id AND sb.seq>sa.seq AND sb.stop_id IN ({",".join("?" * len(b))})
                 JOIN trips t ON t.trip_id=sa.trip_id JOIN routes r ON r.route_id=t.route_id
                 WHERE sa.stop_id IN ({",".join("?" * len(a))}) AND sa.dep>=? AND sa.dep<=?
                   AND t.service_id IN ({",".join("?" * len(sv))}) {"AND r.type=0" if tram_only else ""}
-                ORDER BY sa.dep LIMIT ?"""
-            lo = secs - 120 - off   # 2 min wstecz: spóźniony tramwaj jeszcze może przyjechać
-            for r in c.execute(q, (*b, *a, lo, lo + 6 * 3600, *sv, n * 3)):
+                ORDER BY sa.dep {order} LIMIT ?"""
+            for r in c.execute(q, (*b, *a, lo, hi, *sv, n * 3)):
                 out.append({"trip_id": r["trip_id"], "line": r["short"], "type": r["type"], "headsign": r["headsign"],
-                            "t": r["dep"] + off, "arr": r["arr"] + off, "seq": r["seq"]})
-        # ten sam kurs wpada raz (najbliższy przystanek startowy); sortowanie po czasie
+                            "t": r["dep"] + off, "arr": r["arr"] + off, "seq": r["seq"], "seq_to": r["seq_to"], "t0": epoch0 + off})
+        # ten sam kurs wpada raz (najbliższy przystanek startowy)
         seen, uniq = set(), []
         for x in sorted(out, key=lambda x: x["t"]):
-            if (x["trip_id"], x["t"] // 86400) not in seen:
-                seen.add((x["trip_id"], x["t"] // 86400))
+            if (x["trip_id"], x["t0"]) not in seen:
+                seen.add((x["trip_id"], x["t0"]))
                 uniq.append(x)
-    return _shape(uniq, secs, n)
+    return _shape(uniq, secs, epoch0, n, at is None, back)
 
 
 def _hm(s: int) -> str:
     return f"{(s // 3600) % 24:02d}:{(s // 60) % 60:02d}"
 
 
-def _shape(rows: list, secs: int, n: int) -> list[dict]:
+def _shape(rows: list, secs: int, epoch0: float, n: int, live: bool = True, back: bool = False) -> list[dict]:
     """Kursy → odjazdy z opóźnieniem na żywo. ts/arr_ts = czas uniksowy (odliczanie w przeglądarce co sekundę)."""
-    delays = rt_delays()
-    epoch0 = time.time() - secs          # „dzisiejsza północ” w czasie uniksowym
+    now = time.time()
+    near = [x for x in rows if abs(epoch0 + x["t"] - now) < 3 * 3600]
+    delays = rt_delays() if near else {}
     res = []
     for x in rows:
-        dl = _delay_for(delays.get(x["trip_id"]), x["seq"]) if x["t"] - secs < 3 * 3600 else None
+        dl = _delay_for(delays.get(x["trip_id"]), x["seq"]) if abs(epoch0 + x["t"] - now) < 3 * 3600 else None
         real = x["t"] + (dl or 0)
-        if real < secs - 30:
+        if live and real < secs - 30:
             continue
         d = {"line": x["line"], "tram": x["type"] == 0, "headsign": x["headsign"], "dep": _hm(x["t"]), "dep_real": _hm(real),
-             "ts": round(epoch0 + real), "in_min": max(0, round((real - secs) / 60)), "live": dl is not None,
-             "delay_min": round(dl / 60) if dl is not None else None}
+             "ts": round(epoch0 + real), "in_min": max(0, round((epoch0 + real - now) / 60)), "live": dl is not None,
+             "delay_min": round(dl / 60) if dl is not None else None,
+             "trip_id": x["trip_id"], "t0": round(x["t0"]), "seq": x["seq"], "seq_to": x.get("seq_to")}
         if "arr" in x:
             d.update(arr=_hm(x["arr"]), arr_real=_hm(x["arr"] + (dl or 0)), arr_ts=round(epoch0 + x["arr"] + (dl or 0)),
                      travel_min=round((x["arr"] - x["t"]) / 60))
         res.append(d)
     res.sort(key=lambda x: x["ts"])   # opóźnienie może zmienić kolejność
-    return res[:n]
+    return res[-n:] if back else res[:n]
 
 
-def ztm_board(stop: str, n: int = 12, tram_only: bool = False) -> list[dict]:
+def ztm_board(stop: str, n: int = 12, tram_only: bool = False, at: float | None = None, back: bool = False) -> list[dict]:
     """Tablica odjazdów z przystanku (wszystkie linie i kierunki) — jak na wyświetlaczu na przystanku."""
-    with _db(ZTM_DB) as c:
+    with _db(ztm_db()) as c:
         a = _ids(c, stop)
         if not a:
             raise HTTPException(404, f"Nie znam przystanku „{stop}”.")
-        now = now_pl()
-        secs = now.hour * 3600 + now.minute * 60 + now.second
+        d0, secs, epoch0 = _ref(at)
         out = []
-        for off, d in ((-86400, now.date() - timedelta(days=1)), (0, now.date()), (86400, now.date() + timedelta(days=1))):
+        for off, d in _days(d0):
             sv = _services(c, d)
             if not sv:
                 continue
-            lo = secs - 120 - off
+            lo, hi, order = _window(secs, off, back, at is None)
             q = f"""SELECT t.trip_id, r.short, r.type, t.headsign, sa.dep dep, sa.seq seq FROM stop_times sa
                 JOIN trips t ON t.trip_id=sa.trip_id JOIN routes r ON r.route_id=t.route_id
                 WHERE sa.stop_id IN ({",".join("?" * len(a))}) AND sa.dep>=? AND sa.dep<=?
                   AND t.service_id IN ({",".join("?" * len(sv))}) {"AND r.type=0" if tram_only else ""}
                   AND EXISTS (SELECT 1 FROM stop_times nx WHERE nx.trip_id=sa.trip_id AND nx.seq>sa.seq)
-                ORDER BY sa.dep LIMIT ?"""
-            for r in c.execute(q, (*a, lo, lo + 3 * 3600, *sv, n * 2)):
+                ORDER BY sa.dep {order} LIMIT ?"""
+            for r in c.execute(q, (*a, lo, hi, *sv, n * 2)):
                 out.append({"trip_id": r["trip_id"], "line": r["short"], "type": r["type"], "headsign": r["headsign"],
-                            "t": r["dep"] + off, "seq": r["seq"]})
-    return _shape(sorted(out, key=lambda x: x["t"]), secs, n)
+                            "t": r["dep"] + off, "seq": r["seq"], "t0": epoch0 + off})
+    return _shape(sorted(out, key=lambda x: x["t"]), secs, epoch0, n, at is None, back)
+
+
+def ztm_trip(trip_id: str, t0: float) -> dict:
+    """Szczegóły kursu: wszystkie przystanki z godzinami (i opóźnieniem na żywo, jeśli jest)."""
+    with _db(ztm_db()) as c:
+        head = c.execute("SELECT t.headsign, r.short, r.type FROM trips t JOIN routes r ON r.route_id=t.route_id WHERE t.trip_id=?", (trip_id,)).fetchone()
+        if not head:
+            raise HTTPException(404, "Nie znalazłem tego kursu (rozkład mógł się zmienić).")
+        rows = c.execute("SELECT st.seq, st.dep, s.name FROM stop_times st JOIN stops s ON s.stop_id=st.stop_id WHERE st.trip_id=? ORDER BY st.seq",
+                         (trip_id,)).fetchall()
+    u = rt_delays().get(trip_id) if abs(t0 + (rows[0]["dep"] if rows else 0) - time.time()) < 4 * 3600 else None
+    stops = []
+    for r in rows:
+        dl = _delay_for(u, r["seq"]) if u else None
+        stops.append({"seq": r["seq"], "name": r["name"], "time": _hm(r["dep"]), "real": _hm(r["dep"] + (dl or 0)),
+                      "ts": round(t0 + r["dep"] + (dl or 0)), "delay_min": round(dl / 60) if dl is not None else None})
+    return {"line": head["short"], "tram": head["type"] == 0, "headsign": head["headsign"], "live": u is not None, "stops": stops}
 
 
 # ---------- GTFS-RT (opóźnienia na żywo): minimalny dekoder protobuf, bez dodatkowych bibliotek ----------
@@ -398,45 +481,55 @@ def _delay_for(u: dict | None, seq: int) -> int | None:
     return best if best is not None else u["delay"]
 
 
-# ---------- PKP PLK: Otwarte Dane Kolejowe (szkielet) ----------
+# ---------- PKP PLK: Otwarte Dane Kolejowe ----------
 def _pkp_key() -> str | None:
+    if KEY_PROVIDER:
+        try:
+            k = KEY_PROVIDER()
+            if k:
+                return k.strip()
+        except Exception:
+            pass
     k = os.getenv("PKP_PLK_APIKEY")
-    if k:
-        return k.strip()
-    p = DATA_DIR / ".plk_key"
-    return p.read_text(encoding="utf-8").strip() if p.exists() else None
+    return k.strip() if k else None
 
 
 def _pkp_time(t, day) -> int | None:
     if t in (None, ""):
         return None
-    s = t if isinstance(t, int) else _hms(str(t))
+    if isinstance(t, (int, float)):
+        s = int(t)
+    else:
+        t = str(t)
+        s = _hms(t.split("T")[-1][:8])
     return None if s is None else s + int(day or 0) * 86400
+
+
+def _pkp_get(path: str, key: str, timeout: int = 60) -> bytes:
+    try:
+        return _get(PKP_API + path, {"X-Api-Key": key, "Accept": "application/json"}, timeout=timeout)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError("Klucz PKP jest nieprawidłowy albo jeszcze nieaktywny (aktywacja trwa 3–5 dni roboczych)."
+                           if e.code in (401, 403) else f"API PKP: błąd {e.code}")
 
 
 def import_pkp(key: str, raw: bytes | None = None):
     if raw is None:
         d = now_pl().date()
-        q = f"?dateFrom={(d - timedelta(days=1)).isoformat()}&dateTo={(d + timedelta(days=1)).isoformat()}"
-        try:
-            raw = _get(PKP_API + "/api/v1/schedules/shortened" + q, {"X-Api-Key": key, "Accept": "application/json"}, timeout=180)
-        except urllib.error.HTTPError as e:
-            raise RuntimeError("Klucz PKP jest nieprawidłowy albo jeszcze nieaktywny (aktywacja trwa 3–5 dni roboczych)."
-                               if e.code in (401, 403) else f"API PKP: błąd {e.code}")
+        raw = _pkp_get(f"/api/v1/schedules/shortened?dateFrom={(d - timedelta(days=1)).isoformat()}&dateTo={(d + timedelta(days=2)).isoformat()}",
+                       key, timeout=300)
     data = json.loads(raw)
     dc = data.get("dc") or {}
     st = dc.get("st") or {}
     stations = st.values() if isinstance(st, dict) else st
     carriers = dc.get("cr") or {}
-    CACHE.mkdir(parents=True, exist_ok=True)
-    tmp = CACHE / "pkp.tmp"
-    tmp.unlink(missing_ok=True)
-    c = _db(tmp)
+    tmp = _tmp("pkp")
+    c = _raw(tmp)
     c.executescript("""
     PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
     CREATE TABLE meta (k TEXT PRIMARY KEY, v TEXT);
     CREATE TABLE stations (id INTEGER PRIMARY KEY, name TEXT, nname TEXT);
-    CREATE TABLE trains (tid INTEGER PRIMARY KEY, carrier TEXT, cat TEXT, number TEXT, name TEXT);
+    CREATE TABLE trains (tid INTEGER PRIMARY KEY, cc TEXT, carrier TEXT, cat TEXT, number TEXT, name TEXT, sid INTEGER, oid INTEGER);
     CREATE TABLE train_dates (tid INTEGER, date TEXT);
     CREATE TABLE stops (tid INTEGER, ord INTEGER, station INTEGER, arr INTEGER, dep INTEGER, platform TEXT);
     """)
@@ -448,9 +541,9 @@ def import_pkp(key: str, raw: bytes | None = None):
     for tid, r in enumerate(routes):
         cats = sorted({s.get("dcc") or s.get("acc") for s in r.get("st", []) if s.get("dcc") or s.get("acc")})
         cc = (r.get("cc") or "").strip()
-        c.execute("INSERT INTO trains VALUES(?,?,?,?,?)",
-                  (tid, carriers.get(r.get("cc"), cc) or cc, "/".join(cats) or r.get("ccs", ""),
-                   str(r.get("nn") or r.get("idn") or r.get("ian") or ""), r.get("nm") or ""))
+        c.execute("INSERT INTO trains VALUES(?,?,?,?,?,?,?,?)",
+                  (tid, cc, carriers.get(r.get("cc"), cc) or cc, "/".join(cats) or r.get("ccs", ""),
+                   str(r.get("nn") or r.get("idn") or r.get("ian") or ""), r.get("nm") or "", r.get("sid"), r.get("oid")))
         c.executemany("INSERT INTO train_dates VALUES(?,?)", ((tid, str(x)[:10]) for x in r.get("od", [])))
         rows = []
         for s in sorted(r.get("st", []), key=lambda s: s.get("ord", 0)):
@@ -459,49 +552,149 @@ def import_pkp(key: str, raw: bytes | None = None):
             if a is not None:
                 rows.append((tid, s.get("ord", 0), s.get("id"), a, d, s.get("dpl") or s.get("apl") or ""))
         c.executemany("INSERT INTO stops VALUES(?,?,?,?,?,?)", rows)
-    c.executescript("CREATE INDEX s_st ON stops(station, dep); CREATE INDEX s_tid ON stops(tid, ord); CREATE INDEX td ON train_dates(tid, date); CREATE INDEX st_n ON stations(nname);")
+    c.executescript("""CREATE INDEX s_st ON stops(station, dep); CREATE INDEX s_tid ON stops(tid, ord); CREATE INDEX td ON train_dates(tid, date);
+                       CREATE INDEX st_n ON stations(nname); CREATE INDEX tr_no ON trains(number); CREATE INDEX tr_sid ON trains(sid, oid);""")
     c.execute("INSERT INTO meta VALUES('updated', ?)", (str(time.time()),))
     c.commit()
     c.close()
-    os.replace(tmp, PKP_DB)
+    _publish("pkp", tmp)
 
 
-def pkp_next(from_name: str, to_name: str, n: int = 5) -> list[dict]:
-    with _db(PKP_DB) as c:
+def pkp_db():
+    key = _pkp_key()
+    if not key:
+        raise HTTPException(400, "Pociągi nie są jeszcze skonfigurowane — administrator musi dodać klucz PKP.")
+    return _ensure("pkp", import_pkp, key)
+
+
+# opóźnienia pociągów na żywo: jedno zapytanie o wszystkie pociągi w Polsce, najwyżej raz na minutę (oszczędzamy klucz)
+_ops = {"at": 0.0, "data": {}, "lock": threading.Lock()}
+OPS_TTL = 60
+
+
+def pkp_live() -> dict:
+    """(sid, oid, data kursu) → {stacja: (przyjazd, odjazd)} w sekundach dnia (rzeczywiste czasy)."""
+    with _ops["lock"]:
+        if time.time() - _ops["at"] < OPS_TTL:
+            return _ops["data"]
+        _ops["at"] = time.time()
+        key = _pkp_key()
+        if not key:
+            return _ops["data"]
+        out = {}
+        try:
+            for page in range(1, 6):
+                raw = json.loads(_pkp_get(f"/api/v1/operations/shortened?page={page}&pageSize=10000&fullRoutes=true", key, timeout=40))
+                for tr in raw.get("tr") or []:
+                    stops = {}
+                    for s in tr.get("st") or []:
+                        a, d = _pkp_time(s.get("aa"), 0), _pkp_time(s.get("ad"), 0)
+                        if s.get("id") is not None and (a is not None or d is not None):
+                            stops[s["id"]] = (a, d, bool(s.get("cn")))
+                    out[(tr.get("sid"), tr.get("oid"), str(tr.get("od") or "")[:10])] = stops
+                if not (raw.get("pg") or {}).get("hn"):
+                    break
+            _ops["data"] = out
+        except Exception:
+            pass   # brak danych na żywo → sam rozkład (spróbujemy za minutę)
+        return _ops["data"]
+
+
+def _pkp_delay(live: dict, r, station: int, planned: int, which: int = 1):
+    """Opóźnienie (s) na stacji: rzeczywisty czas minus planowy; pilnujemy przejścia przez północ."""
+    st = live.get((r["sid"], r["oid"], r["date"]))
+    if not st or station not in st:
+        return None, False
+    a, d, cn = st[station]
+    t = d if which == 1 and d is not None else a if a is not None else d
+    if t is None:
+        return None, cn
+    diff = (t - planned % 86400 + 43200) % 86400 - 43200
+    return diff, cn
+
+
+def pkp_next(from_name: str, to_name: str, n: int = 5, at: float | None = None, back: bool = False, number: str | None = None) -> list[dict]:
+    with _db(pkp_db()) as c:
         ids = lambda nm: [r[0] for r in c.execute("SELECT id FROM stations WHERE nname=?", (norm(nm),))]
         a, b = ids(from_name), ids(to_name)
         if not a or not b:
             raise HTTPException(404, f"Nie znam stacji „{from_name if not a else to_name}”.")
-        now = now_pl()
-        secs = now.hour * 3600 + now.minute * 60 + now.second
-        epoch0 = time.time() - secs
+        d0, secs, epoch0 = _ref(at)
         out = []
-        for off, d in ((-86400, now.date() - timedelta(days=1)), (0, now.date()), (86400, now.date() + timedelta(days=1))):
-            q = f"""SELECT t.*, sa.dep dep, sb.arr arr, sa.platform platform FROM stops sa
+        for off, d in _days(d0):
+            lo, hi, order = _window(secs, off, back, at is None)
+            hi = hi + 12 * 3600 if not back else hi   # pociągi jeżdżą rzadziej — szersze okno
+            lo = lo - 12 * 3600 if back else lo
+            q = f"""SELECT t.*, td.date date, sa.station st_from, sb.station st_to, sa.dep dep, sb.arr arr, sa.platform platform FROM stops sa
                 JOIN stops sb ON sb.tid=sa.tid AND sb.ord>sa.ord AND sb.station IN ({",".join("?" * len(b))})
                 JOIN trains t ON t.tid=sa.tid JOIN train_dates td ON td.tid=sa.tid AND td.date=?
-                WHERE sa.station IN ({",".join("?" * len(a))}) AND sa.dep>=? ORDER BY sa.dep LIMIT ?"""
-            for r in c.execute(q, (*b, d.isoformat(), *a, secs - off, n)):
-                out.append((r["dep"] + off, r))
+                WHERE sa.station IN ({",".join("?" * len(a))}) AND sa.dep>=? AND sa.dep<=? {"AND t.number=?" if number else ""}
+                ORDER BY sa.dep {order} LIMIT ?"""
+            args = (*b, d.isoformat(), *a, lo, hi, *((number,) if number else ()), n * 2)
+            for r in c.execute(q, args):
+                out.append((r["dep"] + off, epoch0 + off, r))
         out.sort(key=lambda x: x[0])
-    hm = lambda s: f"{(s // 3600) % 24:02d}:{(s // 60) % 60:02d}"
-    return [{"carrier": r["carrier"], "cat": r["cat"], "number": r["number"], "name": r["name"], "dep": hm(t), "arr": hm(r["arr"] + t - r["dep"]),
-             "platform": r["platform"], "in_min": max(0, round((t - secs) / 60)), "travel_min": round((r["arr"] - r["dep"]) / 60),
-             "ts": round(epoch0 + t), "arr_ts": round(epoch0 + r["arr"] + t - r["dep"])}
-            for t, r in out[:n]]
+    now = time.time()
+    live = pkp_live() if any(abs(t0 + t - now) < 6 * 3600 for t, t0, _ in out) else {}
+    res = []
+    for t, t0, r in out:
+        dl, cn = _pkp_delay(live, r, r["st_from"], r["dep"]) if abs(t0 + t - now) < 6 * 3600 else (None, False)
+        da, _ = _pkp_delay(live, r, r["st_to"], r["arr"], 0) if dl is not None else (None, False)
+        real = t + (dl or 0)
+        if at is None and not back and real < secs - 60:
+            continue
+        arr = r["arr"] - r["dep"] + t
+        res.append({"carrier": r["carrier"], "cc": r["cc"], "cat": r["cat"], "number": r["number"], "name": r["name"],
+                    "dep": _hm(t), "dep_real": _hm(real), "arr": _hm(arr), "arr_real": _hm(arr + (da if da is not None else dl or 0)),
+                    "platform": r["platform"], "travel_min": round((r["arr"] - r["dep"]) / 60), "live": dl is not None, "cancelled": cn,
+                    "delay_min": round(dl / 60) if dl is not None else None, "ts": round(t0 + real),
+                    "arr_ts": round(t0 + arr + (da if da is not None else dl or 0)), "in_min": max(0, round((t0 + real - now) / 60)),
+                    "tid": r["tid"], "date": r["date"], "from_st": r["st_from"], "to_st": r["st_to"]})
+    res.sort(key=lambda x: x["ts"])
+    return res[-n:] if back else res[:n]
 
 
-# ---------- API ----------
-def _status(src, path):
+def pkp_details(tid: int, day: str) -> dict:
+    with _db(pkp_db()) as c:
+        t = c.execute("SELECT * FROM trains WHERE tid=?", (tid,)).fetchone()
+        if not t:
+            raise HTTPException(404, "Nie znalazłem tego pociągu (rozkład mógł się zmienić).")
+        rows = c.execute("SELECT s.*, st.name FROM stops s JOIN stations st ON st.id=s.station WHERE s.tid=? ORDER BY s.ord", (tid,)).fetchall()
+    d0 = date.fromisoformat(day)
+    _, secs, epoch0 = _ref(None)
+    t0 = epoch0 + (d0 - now_pl().date()).days * 86400
+    live = pkp_live() if abs(t0 + (rows[0]["dep"] if rows else 0) - time.time()) < 12 * 3600 else {}
+    r = {"sid": t["sid"], "oid": t["oid"], "date": day}
+    stops = []
+    for s in rows:
+        dl, cn = _pkp_delay(live, r, s["station"], s["dep"])
+        stops.append({"name": s["name"], "time": _hm(s["dep"]), "arr": _hm(s["arr"]), "real": _hm(s["dep"] + (dl or 0)),
+                      "ts": round(t0 + s["dep"] + (dl or 0)), "platform": s["platform"], "station": s["station"],
+                      "delay_min": round(dl / 60) if dl is not None else None, "cancelled": cn})
+    return {"carrier": t["carrier"], "cc": t["cc"], "cat": t["cat"], "number": t["number"], "name": t["name"],
+            "live": any(x["delay_min"] is not None for x in stops), "stops": stops}
+
+
+def pkp_search(q: str) -> list[str]:
+    return _search(pkp_db(), "stations", q)
+
+
+def pkp_status() -> dict:
+    return {**_status("pkp"), "key": bool(_pkp_key())}
+
+
+# ---------- API (aplikacja lokalna / wersja webowa; pociągi liczy serwer kont — patrz cloud/app.py) ----------
+def _status(src):
     st = _state[src]
+    path = _cur(src)
     at = _meta(path, "updated")
-    return {"ready": bool(at) and path.exists(), "importing": st["importing"], "error": st["error"],
-            "updated": datetime.fromtimestamp(float(at)).isoformat(timespec="minutes") if at else None}
+    return {"ready": bool(at), "importing": st["importing"], "error": st["error"],
+            "updated": datetime.fromtimestamp(float(at), timezone.utc).isoformat(timespec="minutes") if at else None}
 
 
 @router.get("/api/transit/status")
 def status():
-    return {"ztm": _status("ztm", ZTM_DB), "pkp": {**_status("pkp", PKP_DB), "key": bool(_pkp_key())}}
+    return {"ztm": _status("ztm")}
 
 
 @router.post("/api/transit/{src}/refresh")
@@ -509,12 +702,6 @@ def refresh(src: str):
     if src == "ztm":
         _state["ztm"]["error"] = ""
         _start("ztm", import_ztm)
-    elif src == "pkp":
-        key = _pkp_key()
-        if not key:
-            raise HTTPException(400, "Najpierw wpisz klucz API PKP.")
-        _state["pkp"]["error"] = ""
-        _start("pkp", import_pkp, key)
     return status()
 
 
@@ -532,13 +719,10 @@ def _search(path, table, q, limit=12):
 @router.get("/api/transit/ztm/stops")
 def ztm_stops(q: str = ""):
     """Podpowiedzi przystanków z liniami, które się na nich zatrzymują (tramwaje najpierw)."""
-    _ensure("ztm", ZTM_DB, import_ztm)
-    names = _search(ZTM_DB, "stops", q, 8)
-    out = []
-    with _db(ZTM_DB) as c:
-        for nm in names:
-            out.append({"name": nm, "lines": _lines(c, norm(nm))})
-    return out
+    path = ztm_db()
+    names = _search(path, "stops", q, 8)
+    with _db(path) as c:
+        return [{"name": nm, "lines": _lines(c, norm(nm))} for nm in names]
 
 
 # ---------- adres → najbliższe przystanki (geokodowanie OpenStreetMap / Nominatim) ----------
@@ -595,10 +779,10 @@ def _lines(c, nname: str) -> list[dict]:
 def ztm_near(lat: float, lon: float, n: int = 5):
     """Najbliższe przystanki (po nazwie — słupki jednego przystanku liczą się razem) z odległością i czasem dojścia."""
     import math
-    _ensure("ztm", ZTM_DB, import_ztm)
+    path = ztm_db()
     k = math.cos(math.radians(lat))
     d = 0.02   # ok. 2 km — najpierw zawężamy prostokątem, potem liczymy odległość
-    with _db(ZTM_DB) as c:
+    with _db(path) as c:
         try:
             rows = c.execute("SELECT name, nname, lat, lon FROM stops WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
                              (lat - d, lat + d, lon - d / k, lon + d / k)).fetchall()
@@ -619,56 +803,23 @@ def ztm_near(lat: float, lon: float, n: int = 5):
 
 
 @router.get("/api/transit/ztm/board")
-def ztm_board_api(stop: str, n: int = 12, tram: bool = False):
-    _ensure("ztm", ZTM_DB, import_ztm)
-    return ztm_board(stop, max(1, min(30, n)), tram)
+def ztm_board_api(stop: str, n: int = 12, tram: bool = False, at: float | None = None, back: bool = False):
+    return ztm_board(stop, max(1, min(30, n)), tram, at, back)
 
 
 @router.get("/api/transit/ztm/next")
-def ztm_departures(frm: str, to: str, n: int = 6, tram: bool = False):
-    _ensure("ztm", ZTM_DB, import_ztm)
-    return ztm_next(frm, to, max(1, min(20, n)), tram)
+def ztm_departures(frm: str, to: str, n: int = 6, tram: bool = False, at: float | None = None, back: bool = False):
+    return ztm_next(frm, to, max(1, min(20, n)), tram, at, back)
 
 
-class PkpKey(BaseModel):
-    key: str
-
-
-@router.post("/api/transit/pkp/key")
-def pkp_key(p: PkpKey):
-    k = "".join(p.key.split())
-    f = DATA_DIR / ".plk_key"
-    if k:
-        f.write_text(k, encoding="utf-8")
-        _state["pkp"]["error"] = ""
-        _start("pkp", import_pkp, k)
-    else:
-        f.unlink(missing_ok=True)
-    return status()
-
-
-def _pkp_ready():
-    key = _pkp_key()
-    if not key:
-        raise HTTPException(400, "Brak klucza API PKP — wpisz go w sekcji Pociągi.")
-    _ensure("pkp", PKP_DB, import_pkp, key)
-
-
-@router.get("/api/transit/pkp/stations")
-def pkp_stations(q: str = ""):
-    _pkp_ready()
-    return _search(PKP_DB, "stations", q)
-
-
-@router.get("/api/transit/pkp/next")
-def pkp_departures(frm: str, to: str, n: int = 5):
-    _pkp_ready()
-    return pkp_next(frm, to, max(1, min(15, n)))
+@router.get("/api/transit/ztm/trip")
+def ztm_trip_api(trip_id: str, t0: float):
+    return ztm_trip(trip_id, t0)
 
 
 # ---------- ulubione trasy ----------
 class Fav(BaseModel):
-    kind: str = "ztm"
+    kind: str = "ztm"            # ztm (trasa) | pkp (trasa pociągiem) | pkp_train (konkretny pociąg — numer w label)
     from_name: str
     to_name: str
     label: str = ""
@@ -687,12 +838,12 @@ def fav_add(p: Fav):
     if not f or not t:
         raise HTTPException(400, "Podaj przystanek początkowy i końcowy.")
     with get_conn() as c:
-        if c.execute("SELECT 1 FROM transit_favs WHERE kind=? AND from_name=? AND to_name=? AND tram_only=?",
-                     (p.kind, f, t, int(p.tram_only))).fetchone():
-            raise HTTPException(400, "Ta trasa jest już w ulubionych.")
+        if c.execute("SELECT 1 FROM transit_favs WHERE kind=? AND from_name=? AND to_name=? AND tram_only=? AND label=?",
+                     (p.kind, f, t, int(p.tram_only), p.label.strip()[:60])).fetchone():
+            raise HTTPException(400, "To jest już w ulubionych.")
         pos = c.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM transit_favs").fetchone()[0]
         fid = c.execute("INSERT INTO transit_favs(kind, from_name, to_name, label, tram_only, position) VALUES(?,?,?,?,?,?)",
-                        (p.kind if p.kind in ("ztm", "pkp") else "ztm", f, t, p.label.strip()[:60], int(p.tram_only), pos)).lastrowid
+                        (p.kind if p.kind in ("ztm", "pkp", "pkp_train") else "ztm", f, t, p.label.strip()[:60], int(p.tram_only), pos)).lastrowid
     return {"id": fid}
 
 
@@ -705,16 +856,13 @@ def fav_del(fid: int):
 
 @router.get("/api/transit/favs/next")
 def favs_next(n: int = 3):
-    """Ulubione trasy z najbliższymi odjazdami — kafelek na Pulpicie i lista w zakładce Dojazd."""
+    """Ulubione trasy z najbliższymi odjazdami — kafelek na Pulpicie i lista w zakładce Dojazd.
+    Pociągi (pkp, pkp_train) dociąga aplikacja z serwera kont — tu wracają bez odjazdów."""
     out = []
     for f in favs():
         item = {**f, "deps": [], "error": ""}
         try:
-            if f["kind"] == "pkp":
-                _pkp_ready()
-                item["deps"] = pkp_next(f["from_name"], f["to_name"], n)
-            else:
-                _ensure("ztm", ZTM_DB, import_ztm)
+            if f["kind"] == "ztm":
                 item["deps"] = ztm_next(f["from_name"], f["to_name"], n, bool(f["tram_only"]))
         except HTTPException as e:
             item["error"] = e.detail

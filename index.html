@@ -335,12 +335,14 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
   transition:transform .1s ease-out;vertical-align:2px}
 .wl-chip:active{transform:var(--press)}
 .wl-chip .kico{width:13px;height:13px}
-.portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.portals{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px}
+.portals>.portal{grid-column:span 3} .portals>.portal:nth-child(n+3){grid-column:span 2}
+.portals>.portal:nth-child(n+3) .portal-art{height:92px} .portals>.portal:nth-child(n+3) .portal-txt h2{font-size:23px}
 .portals .portal{min-height:0;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;column-gap:20px}
 .portals .portal-art{height:112px;grid-row:1/3;align-self:center}
 .portals .portal-txt{margin:0;padding:0;align-self:end} .portals .portal-txt h2{font-size:26px}
 .portals .portal-foot{margin-top:12px}
-@media(min-width:1700px){.portals{grid-template-columns:repeat(4,minmax(0,1fr))}.portals .portal{display:flex;min-height:290px}.portals .portal-art{height:140px}.portals .portal-txt{margin-top:auto;padding-top:18px}}
+@media(min-width:1700px){.portals{grid-template-columns:repeat(5,minmax(0,1fr))}.portals>.portal,.portals>.portal:nth-child(n+3){grid-column:auto}.portals .portal{display:flex;min-height:290px}.portals .portal-art{height:140px}.portals .portal-txt{margin-top:auto;padding-top:18px}}
 .portal:hover .fin-card{transform:rotate(-5deg) translateY(-6px)} .portal:hover .fin-coins{transform:translateY(-8px)}
 .portal{position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:28px;padding:26px;min-height:300px;display:flex;flex-direction:column;
   background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 12%,rgba(30,30,40,.5)),rgba(24,24,32,.46) 60%,color-mix(in srgb,var(--pc2) 6%,rgba(22,22,30,.5)));
@@ -370,7 +372,7 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 .portal-go svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .35s var(--spring,ease)}
 .portal:hover .portal-go svg{transform:translateX(3px)}
 .portal-foot .btn{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:760px){.portals{grid-template-columns:1fr}.portals .portal{display:flex;flex-direction:column;min-height:0}.portals .portal-art{align-self:flex-start}.portals .portal-txt{align-self:stretch}.portals .portal-art{height:104px}.portals .portal-txt{margin-top:14px}}
+@media(max-width:760px){.portals{grid-template-columns:1fr}.portals>.portal,.portals>.portal:nth-child(n+3){grid-column:auto}.portals .portal{display:flex;flex-direction:column;min-height:0}.portals .portal-art{align-self:flex-start}.portals .portal-txt{align-self:stretch}.portals .portal-art{height:104px}.portals .portal-txt{margin-top:14px}}
 .portals .portal>*{min-width:0}
 @media(max-width:600px){#view-pulpit{padding-top:44px}#view-pulpit.active{justify-content:flex-start;min-height:0}.welcome{padding:16px 0 26px;flex-direction:column-reverse;align-items:flex-start}.wl-clock{text-align:left}.ck-time{font-size:44px}.wl-main{flex:none}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s2)}
@@ -861,6 +863,37 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj>.dj-card:first-child{z-index:5}
 .dj-late{color:#ff9b9b} .dj-ok{color:#8fe8bd}
 .dj-empty{padding:26px 10px;text-align:center;color:var(--ink-dim);font-size:14px}
+.dj-more{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.dj-dep{cursor:pointer}
+.dj-dep.fast{border-color:rgba(255,209,102,.45);box-shadow:0 0 0 1px rgba(255,209,102,.18),0 10px 30px -18px rgba(255,209,102,.6)}
+.dj-dep.gone{opacity:.55}
+.dj-fast{display:inline-flex;align-items:center;margin-left:8px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.02em;vertical-align:2px;color:#2a1c00;background:linear-gradient(135deg,#ffe08a,#ffb547)}
+.dj-star{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink-soft);cursor:pointer;font-size:16px}
+.dj-star:hover{color:#ffd166;border-color:rgba(255,209,102,.5);background:rgba(255,209,102,.1)}
+.dj-line.train{position:relative;overflow:hidden;font-size:15px;letter-spacing:.02em}
+.dj-line.train i{position:absolute;left:0;right:0;bottom:0;height:4px}
+.dj-line.mini{min-width:30px;height:22px;font-size:11.5px;border-radius:7px;padding:0 6px;box-shadow:none}
+.dj-line.mini i{height:2px}
+.dj-when-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.dj-when-row>span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+.dj-when{display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.dj-when button{border:0;background:none;color:var(--ink-dim);font:inherit;font-size:13.5px;font-weight:600;padding:6px 12px;border-radius:9px;cursor:pointer}
+.dj-when button.on{background:rgba(255,255,255,.1);color:#fff}
+.dj-when input{border:0;background:none;color:var(--ink-soft);font:inherit;font-size:13.5px;padding:4px 8px;border-radius:9px;color-scheme:dark}
+.dj-when input.on{background:rgba(255,255,255,.1);color:#fff}
+.dj-dt-h{display:flex;align-items:center;gap:14px;margin-bottom:14px} .dj-dt-h h3{margin:0}
+#dj-dt{max-height:58vh;overflow:auto;margin:0 -6px;padding:0 6px}
+.dj-tlv{position:relative;padding-left:4px}
+.dj-stp{position:relative;display:flex;align-items:baseline;gap:10px;padding:7px 0 7px 26px;font-size:14px}
+.dj-stp::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.12)}
+.dj-stp:first-child::before{top:50%} .dj-stp:last-child::before{bottom:50%}
+.dj-stp .dot{position:absolute;left:4px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#2a2f45;border:2px solid rgba(255,255,255,.35)}
+.dj-stp b{flex:1;font-weight:500;color:var(--ink-soft)} .dj-stp .tm{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-size:13px;white-space:nowrap}
+.dj-stp .tm s{color:var(--ink-dim);opacity:.7}
+.dj-stp.seg::before{background:linear-gradient(180deg,#ff6b81,#5aaaff)} .dj-stp.seg b{color:var(--ink);font-weight:600} .dj-stp.seg .tm{color:var(--ink-soft)}
+.dj-stp.end .dot{width:14px;height:14px;margin-top:-7px;left:2px;background:#ff6b81;border-color:#fff}
+.dj-stp.end b{font-weight:750;color:#fff}
+.dj-stp.past{opacity:.5}
 .dj-favs{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
 .dj-fav{padding:16px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);cursor:pointer;transition:background .2s,transform .2s;position:relative}
 .dj-fav:hover{background:rgba(255,255,255,.075);transform:translateY(-2px)}
@@ -2595,6 +2628,20 @@ body.on-start .pomo{display:none}
             <button class="btn ghost sm" id="portal-fin-btn" onclick="event.stopPropagation();window._finThen='entry';go('finanse')">+ Wydatek</button>
           </div>
         </div>
+        <div class="portal p-dj" style="--pc:#ff6b81;--pc2:#5aaaff" role="button" tabindex="0" onclick="go('dojazd')" onkeydown="if(event.key==='Enter')go('dojazd')">
+          <div class="portal-art" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><linearGradient id="pdj-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a8c"/><stop offset="1" stop-color="#c92f62"/></linearGradient></defs>
+            <g class="lift"><path d="M60 8v12M48 8h24" stroke="#cfd3e6" stroke-width="3" stroke-linecap="round"/><rect x="28" y="20" width="64" height="80" rx="16" fill="url(#pdj-a)"/>
+            <rect x="36" y="30" width="48" height="30" rx="7" fill="#1b2340"/><path d="M40 56l40-20" stroke="#ffffff22" stroke-width="6"/><rect x="36" y="66" width="48" height="5" rx="2.5" fill="#ffffff33"/>
+            <circle cx="42" cy="84" r="5" fill="#ffe08a"/><circle cx="78" cy="84" r="5" fill="#ffe08a"/><rect x="52" y="80" width="16" height="8" rx="3" fill="#ffffff44"/>
+            <path d="M40 100l-8 12M80 100l8 12" stroke="#cfd3e6" stroke-width="4" stroke-linecap="round"/></g></svg></div>
+          <div class="portal-txt">
+            <h2>Dojazd</h2>
+            <p id="portal-dj-sub">Tramwaje, autobusy i pociągi</p>
+          </div>
+          <div class="portal-foot">
+            <span class="portal-go">Otwórz <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2698,18 +2745,19 @@ body.on-start .pomo{display:none}
               <button class="dj-swap" title="Zamień kierunek" onclick="djSwap('dj')"><svg viewBox="0 0 24 24"><path d="M7 4v16M7 4L3.5 7.5M7 4l3.5 3.5M17 20V4M17 20l-3.5-3.5M17 20l3.5-3.5"/></svg></button>
               <div class="dj-ac lbl"><label>Dokąd</label><input id="dj-to" placeholder="Przystanek docelowy" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
             </div>
-            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-tram" onchange="djSearch()">🚋 Tylko tramwaje</label><span class="dj-st" id="dj-ztm-st"></span><span class="sp"></span>
-              <button class="btn ghost" onclick="djSave('ztm')">☆ Zapisz trasę</button><button class="btn" onclick="djSearch()">Szukaj</button></div>
+            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-tram" onchange="djGo(true)">🚋 Tylko tramwaje</label><span class="dj-st" id="dj-ztm-st"></span><span class="sp"></span>
+              <button class="btn ghost" onclick="djSave('ztm')">☆ Zapisz trasę</button><button class="btn" onclick="djGo()">Szukaj</button></div>
           </div>
           <div id="dj-pane-board" hidden>
             <div class="dj-ac lbl"><label>Przystanek</label><input id="dj-stop" placeholder="Np. Rondo Kaponiera" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
-            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-btram" onchange="djBoard()">🚋 Tylko tramwaje</label><span class="sp"></span><button class="btn" onclick="djBoard()">Pokaż odjazdy</button></div>
+            <div class="dj-bar"><label class="dj-tg"><input type="checkbox" id="dj-btram" onchange="djGo(true)">🚋 Tylko tramwaje</label><span class="sp"></span><button class="btn" onclick="djGo()">Pokaż odjazdy</button></div>
           </div>
           <div id="dj-pane-pkp" hidden><div id="dj-pkp"></div></div>
+          <div class="dj-when-row"><span>Odjazd</span><div class="dj-when"><button id="dj-now" class="on" onclick="djWhen('now')">Teraz</button><input type="datetime-local" id="dj-at" onchange="djWhen('at')" title="Wybierz dzień i godzinę"></div></div>
           <div class="dj-res" id="dj-res"></div>
         </div>
         <div class="dj-card glass">
-          <div class="dj-h"><h3>Ulubione trasy</h3><span class="dj-st">kliknij trasę, żeby zobaczyć więcej odjazdów</span></div>
+          <div class="dj-h"><h3>Ulubione</h3><span class="dj-st">kliknij, żeby zobaczyć szczegóły najbliższego kursu</span></div>
           <div id="dj-favs"><div class="dj-skel"></div></div>
         </div>
         <p class="dj-foot">Połączenia bez przesiadek · dane: ZTM Poznań (otwarte dane GTFS i GTFS-RT), PKP PLK (Otwarte Dane Kolejowe)</p>
@@ -2727,6 +2775,11 @@ body.on-start .pomo{display:none}
         <div class="st-card glass">
           <div class="st-h"><h3>Serwer kont <span class="adm-health" id="adm-health"></span></h3><p>Adres serwera logowania i znajomych. Lokalnie: <code>http://127.0.0.1:8100</code>, na serwerze: <code>https://zenfix.pl/asystent</code> (domyślny).</p></div>
           <div class="st-key"><input id="adm-cloud" placeholder="https://konta.twojadomena.pl" spellcheck="false"><button class="btn" onclick="saveCloudUrl()">Zapisz</button></div>
+        </div>
+        <div class="st-card glass">
+          <div class="adm-h"><h3>Pociągi PKP <span class="adm-n" id="adm-pkp-st"></span></h3><button class="btn ghost sm" onclick="admPkp('refresh')">Odśwież rozkład</button></div>
+          <p class="st-note" style="margin:0 0 12px">Klucz API z <a href="https://pdp-api.plk-sa.pl/" target="_blank" rel="noopener">Otwartych Danych Kolejowych PLK</a>. Zostaje na serwerze — użytkownicy go nie widzą, a pociągi działają u wszystkich z tego jednego klucza (rozkład raz na dobę, opóźnienia najwyżej raz na minutę).</p>
+          <div class="st-key"><input id="adm-pkp-key" placeholder="Wklej klucz API PLK" spellcheck="false" autocomplete="off"><button class="btn" onclick="admPkp('key')">Zapisz</button></div>
         </div>
         <div class="st-card glass">
           <div class="adm-h"><h3>Sugestie <span class="adm-n" id="adm-sg-count"></span></h3>
@@ -4665,77 +4718,148 @@ async function startAutoSync(){
 addEventListener('focus',()=>{if(ME&&SYNC.last&&!SYNC.busy)syncNow();});   // powrót do okna = świeże dane z innych urządzeń
 /* ---------- ADMINISTRATOR: serwer kont + lista kont ---------- */
 let ADM=[];
-/* ---------- DOJAZD: ZTM Poznań (GTFS + opóźnienia na żywo) i PKP (Otwarte Dane Kolejowe) ----------
-   Jak w jakdojade: wyniki odliczają się co sekundę (znaczniki czasu z serwera), a co 20 s dociągamy świeże opóźnienia. */
+/* ---------- DOJAZD: ZTM Poznań (GTFS + opóźnienia na żywo, liczone lokalnie) i PKP (serwer kont, wspólny klucz PLK) ----------
+   Jak w jakdojade: wyniki odliczają się co sekundę; tramwaje odświeżamy co 20 s, pociągi co minutę (oszczędzamy klucz). */
 async function apiT(u,o){const r=await fetch('api'+u,o&&{...o,headers:{'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));
   if(!r.ok){const e=new Error(d.detail||('Błąd '+r.status));e.status=r.status;throw e;} return d;}
-const djQ=o=>Object.entries(o).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-const DJ={mode:'route',last:null,poll:null,refresh:null};
+const djQ=o=>Object.entries(o).filter(([,v])=>v!==null&&v!==undefined&&v!=='').map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+async function djPk(path,params={}){if(!ME)throw Object.assign(new Error('Zaloguj się, żeby widzieć pociągi — rozkład PKP pochodzi z serwera kont.'),{login:true});
+  try{return await cloud('/pkp/'+path+'?'+djQ(params));}catch(e){if(/Pobieram rozkład/.test(e.message))e.status=503;throw e;}}
+const DJ={mode:'route',at:null,rows:[],paged:false,poll:null,refresh:null,lastPkp:0,pkpFav:{at:0,data:{}}};
 const DJ_IC={pin:'<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
   clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   home:'<path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V19h12V9.5"/><path d="M10 19v-5h4v5"/>',
-  loc:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7"/>'};
+  loc:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7"/>',
+  train:'<rect x="5" y="3" width="14" height="14" rx="3.5"/><path d="M5 11h14M9 20.5l-1.5-3.5M15 20.5l1.5-3.5"/>'};
 const djNight=l=>/^2\d\d$/.test(l);
-const djBadge=x=>x.carrier!==undefined?`<span class="dj-line train">${esc((x.cat||'').split('/')[0]||'PKP')}</span>`
-  :`<span class="dj-line${x.tram?' tram':djNight(x.line)?' night':''}">${esc(x.line)}</span>`;
-const djDelay=x=>x.delay_min==null?'':x.delay_min>=1?`<span class="dj-late">+${x.delay_min} min</span>`:x.delay_min<=-1?`<span class="dj-ok">${x.delay_min} min</span>`:'<span class="dj-ok">o czasie</span>';
+/* przewoźnicy: barwy i skróty jak na ich logotypach */
+const DJ_CARRIERS=[
+  {re:/intercity|^IC$/i,t:'IC',bg:'linear-gradient(140deg,#123a73,#0b2550)',fg:'#fff',bar:'#f39200'},
+  {re:/wielkopolsk|^KW$/i,t:'KW',bg:'linear-gradient(140deg,#ffd200,#f2b800)',fg:'#003d7c'},
+  {re:/polregio|przewozy regionalne|^PR$/i,t:'PR',bg:'linear-gradient(140deg,#e52421,#b5161b)',fg:'#fff',bar:'#ffd200'},
+  {re:/mazowieck|^KM$/i,t:'KM',bg:'linear-gradient(140deg,#14a05a,#007a3d)',fg:'#fff',bar:'#ffd200'},
+  {re:/śląsk|slask|^KS$/i,t:'KŚ',bg:'linear-gradient(140deg,#e30613,#a3000d)',fg:'#fff',bar:'#ffcc00'},
+  {re:/dolnośl|dolnosl|^KD$/i,t:'KD',bg:'linear-gradient(140deg,#e2001a,#7a0d1e)',fg:'#fff'},
+  {re:/małopol|malopol|^KML|^KMŁ/i,t:'KMŁ',bg:'linear-gradient(140deg,#1f5fa8,#103e75)',fg:'#fff',bar:'#e30613'},
+  {re:/łódzk|lodzk|^ŁKA|^LKA/i,t:'ŁKA',bg:'linear-gradient(140deg,#0089cf,#005e95)',fg:'#fff',bar:'#e30613'},
+  {re:/trójm|trojm|^SKMT/i,t:'SKM',bg:'linear-gradient(140deg,#0072bc,#004b85)',fg:'#fff',bar:'#ffcc00'},
+  {re:/skm.*warsz|^SKM$/i,t:'SKM',bg:'linear-gradient(140deg,#e2001a,#9c0012)',fg:'#fff'},
+  {re:/arriva|^AR/i,t:'AR',bg:'linear-gradient(140deg,#21b6e8,#0a86b5)',fg:'#fff'},
+  {re:/regiojet|^RJ$/i,t:'RJ',bg:'linear-gradient(140deg,#ffd400,#f0b800)',fg:'#1b1b1b'},
+  {re:/leo/i,t:'LE',bg:'linear-gradient(140deg,#262626,#111)',fg:'#f7b500'},
+];
+function djCarrier(x){const k=(x.cc||'')+'|'+(x.carrier||''); return DJ_CARRIERS.find(c=>c.re.test(x.cc||'')||c.re.test(x.carrier||''))||{t:(x.cc||'PKP').slice(0,3),bg:'linear-gradient(140deg,#35c495,#1d84a8)',fg:'#fff'};}
+const djTrain=x=>x.carrier!==undefined;
+const djBadge=(x,mini)=>{if(djTrain(x)){const c=djCarrier(x);
+    return `<span class="dj-line train${mini?' mini':''}" style="background:${c.bg};color:${c.fg}" title="${esc(x.carrier||'')}">${esc(c.t)}${c.bar?`<i style="background:${c.bar}"></i>`:''}</span>`;}
+  return `<span class="dj-line${mini?' mini':''}${x.tram?' tram':djNight(x.line)?' night':''}">${esc(x.line)}</span>`;};
+const djDelay=x=>x.cancelled?'<span class="dj-late">odwołany</span>':x.delay_min==null?'':x.delay_min>=1?`<span class="dj-late">+${x.delay_min} min</span>`:x.delay_min<=-1?`<span class="dj-ok">${x.delay_min} min</span>`:'<span class="dj-ok">o czasie</span>';
 /* „za ile” liczone w przeglądarce z czasu uniksowego — aktualizowane co sekundę */
-function djLeft(ts){const s=ts-Date.now()/1000; if(s<=45)return {n:'teraz',u:'',now:true}; const m=Math.round(s/60);
-  if(m<60)return {n:String(m),u:'min'}; const d=new Date(ts*1000); return {n:d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}),u:''};}
+const djHM=ts=>new Date(ts*1000).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+function djLeft(ts){const s=ts-Date.now()/1000; if(s<=-90)return {n:'',u:'odjechał'}; if(s<=45)return {n:'teraz',u:'',now:true}; const m=Math.round(s/60);
+  if(m>0&&m<60)return {n:String(m),u:'min'}; return {n:djHM(ts),u:''};}
+const djKey=x=>djTrain(x)?`p${x.tid}_${x.date}`:`z${x.trip_id}_${x.t0}`;
 function djTick(){
   $$('[data-ts]').forEach(el=>{const ts=+el.dataset.ts, L=djLeft(ts), row=el.closest('.dj-dep');
-    if(row&&ts<Date.now()/1000-60){row.remove();return;}
-    const t=el.dataset.fmt==='inline'?(L.now?'teraz':L.u?`za ${L.n} ${L.u}`:L.n):null;
-    if(t!==null){if(el.textContent!==t)el.textContent=t;return;}
+    if(row&&row.closest('.dj-list[data-live]')&&ts<Date.now()/1000-90){row.remove();return;}
+    if(el.dataset.fmt==='inline'){const t=L.now?'teraz':L.u?`za ${L.n} ${L.u}`:L.n; if(el.textContent!==t)el.textContent=t; return;}
     const html=`<b>${L.n}</b>${L.u?` <small>${L.u}</small>`:''}`; if(el.dataset.h!==html){el.dataset.h=html;el.innerHTML=html;el.closest('.dj-cd')?.classList.toggle('now',!!L.now);}});
 }
 setInterval(djTick,1000);
-function djRow(x,i,board){
-  const train=x.carrier!==undefined;
-  const hd=train?`${esc(x.carrier)} ${esc(x.number)}${x.name?' „'+esc(x.name)+'”':''}`:`${esc(x.headsign)}`;
-  const dep=train?x.dep:(x.live&&x.dep_real!==x.dep?`<b>${x.dep_real}</b> <s>${x.dep}</s>`:`<b>${x.dep}</b>`);
-  const tl=board?`${dep} ${djDelay(x)}`
-    :`${dep}<span class="ln"></span>${x.travel_min} min<span class="ln"></span><b>${train?x.arr:(x.arr_real||x.arr)}</b>${train&&x.platform?` · peron ${esc(x.platform)}`:''} ${train?'':djDelay(x)}`;
-  const L=djLeft(x.ts);
-  return `<div class="dj-dep${i?'':' first'}">${djBadge(x)}<div class="m"><span class="hd">${train?'':'→ '}${hd}</span><div class="dj-tl">${tl}</div></div>
+function djRow(x,i,o={}){
+  const train=djTrain(x), L=djLeft(x.ts);
+  const hd=train?`${esc(x.cat?x.cat.split('/')[0]+' ':'')}${esc(x.number)}${x.name?' „'+esc(x.name)+'”':''}`:`→ ${esc(x.headsign)}`;
+  const dep=x.live&&x.dep_real!==x.dep?`<b>${x.dep_real}</b> <s>${x.dep}</s>`:`<b>${x.dep}</b>`;
+  const tl=o.board?`${dep} ${djDelay(x)}`
+    :`${dep}<span class="ln"></span>${x.travel_min} min<span class="ln"></span><b>${x.arr_real||x.arr}</b>${train&&x.platform?` · peron ${esc(x.platform)}`:''} ${djDelay(x)}`;
+  return `<div class="dj-dep${o.fast?' fast':''}${x.cancelled?' gone':''}" data-k="${djKey(x)}" onclick="djDetails('${djKey(x)}')">${djBadge(x)}<div class="m"><span class="hd">${hd}${o.fast?'<span class="dj-fast">⚡ Najszybszy</span>':''}</span><div class="dj-tl">${tl}</div></div>
+    ${train?`<button class="dj-star" title="Obserwuj ten pociąg (ulubione)" onclick="event.stopPropagation();djSaveTrain('${djKey(x)}')">☆</button>`:''}
     <div class="dj-cd${L.now?' now':''}"><span data-ts="${x.ts}"><b>${L.n}</b>${L.u?` <small>${L.u}</small>`:''}</span><small>${x.live?'<i class="dj-pulse"></i>na żywo':'rozkład'}</small></div></div>`;
 }
 function djSkel(box){box.innerHTML='<div class="dj-skel"></div><div class="dj-skel"></div><div class="dj-skel"></div>';}
-function djWait(box,msg,src,again){box.innerHTML=`<div class="dj-load"><i></i>${esc(msg)}</div>`;
-  clearTimeout(DJ.poll); DJ.poll=setTimeout(async()=>{const st=await api('/transit/status');djStatus(st);
-    if(st[src].ready&&!st[src].importing){again(true);djFavs();}else if(st[src].error)box.innerHTML=`<div class="dj-empty">${esc(st[src].error)}</div>`;else djWait(box,msg,src,again);},3000);}
+/* wyniki: lista z „Wcześniejsze / Późniejsze”; najszybszy = najwcześniejszy przyjazd */
+function djPaint(){
+  const box=$('#dj-res'), R=DJ.rows, board=DJ.mode==='board';
+  if(!R.length){box.innerHTML=`<div class="dj-empty">${board?'W tym czasie nic stąd nie odjeżdża.':'Brak bezpośrednich połączeń w tym czasie.'}</div>
+    <div class="dj-more"><button class="btn ghost sm" onclick="djMore(true)">↑ Wcześniejsze</button><button class="btn ghost sm" onclick="djMore(false)">Późniejsze ↓</button></div>`;return;}
+  let fast=null; if(!board){const ok=R.filter(x=>x.arr_ts&&!x.cancelled&&x.ts>=Date.now()/1000-60);
+    if(ok.length>1)fast=ok.reduce((a,b)=>b.arr_ts<a.arr_ts||(b.arr_ts===a.arr_ts&&b.travel_min<a.travel_min)?b:a);}
+  const live=DJ.at===null&&!DJ.paged;
+  box.innerHTML=`<div class="dj-more"><button class="btn ghost sm" onclick="djMore(true)">↑ Wcześniejsze</button></div>
+    <div class="dj-list"${live?' data-live':''}>${R.map((x,i)=>djRow(x,i,{board,fast:x===fast})).join('')}</div>
+    <div class="dj-more"><button class="btn ghost sm" onclick="djMore(false)">Późniejsze ↓</button></div>`;
+}
+function djWait(box,msg,again,pkp){box.innerHTML=`<div class="dj-load"><i></i>${esc(msg)}</div>`;
+  clearTimeout(DJ.poll); DJ.poll=setTimeout(()=>again(true),pkp?5000:3000);}
+async function djFetch(extra={}){
+  const m=DJ.mode, at=extra.at!==undefined?extra.at:DJ.at, back=extra.back?1:'';
+  if(m==='route')return apiT('/transit/ztm/next?'+djQ({frm:$('#dj-from').value.trim(),to:$('#dj-to').value.trim(),tram:$('#dj-tram').checked,n:8,at,back}));
+  if(m==='board')return apiT('/transit/ztm/board?'+djQ({stop:$('#dj-stop').value.trim(),n:14,tram:$('#dj-btram').checked,at,back}));
+  return djPk('next',{frm:$('#pk-from').value.trim(),to:$('#pk-to').value.trim(),n:6,at,back});
+}
+function djReady(silent){
+  const m=DJ.mode, need=m==='route'?['dj-from','dj-to']:m==='board'?['dj-stop']:['pk-from','pk-to'];
+  if(need.every(id=>$('#'+id)&&$('#'+id).value.trim()))return true;
+  if(silent!==true)popout({icon:'warn',title:m==='pkp'?'Podaj obie stacje':m==='board'?'Wpisz przystanek':'Podaj oba przystanki',text:'Podpowiedzi pojawią się po 2 literach.'});
+  return false;
+}
+async function djGo(silent){
+  if(!djReady(silent))return;
+  const box=$('#dj-res'), m=DJ.mode;
+  if(m==='route'){const f=$('#dj-from').value.trim(),t=$('#dj-to').value.trim(); LS.set('dj_last',JSON.stringify({f,t,tram:$('#dj-tram').checked})); djRemember('ztm',f); djRemember('ztm',t);}
+  if(m==='board'){LS.set('dj_stop',$('#dj-stop').value.trim()); djRemember('ztm',$('#dj-stop').value.trim());}
+  if(m==='pkp'){LS.set('dj_pk',JSON.stringify({f:$('#pk-from').value.trim(),t:$('#pk-to').value.trim()})); DJ.lastPkp=Date.now();}
+  if(silent!==true||!DJ.rows.length)djSkel(box);
+  try{const L=await djFetch(); if(DJ.mode!==m)return; DJ.rows=L; DJ.paged=false; djPaint();}
+  catch(e){if(DJ.mode!==m)return; if(e.status===503)djWait(box,e.message,djGo,m==='pkp'); else box.innerHTML=`<div class="dj-empty">${esc(e.message)}${e.login?`<br><br><button class="btn" onclick="go('konto')">Zaloguj się</button>`:''}</div>`;}
+}
+async function djMore(back){
+  const R=DJ.rows, ref=back?(R[0]?R[0].ts:(DJ.at||Date.now()/1000)):(R.length?R[R.length-1].ts+30:(DJ.at||Date.now()/1000));
+  try{const L=await djFetch({at:back?ref-1:ref,back}); const have=new Set(R.map(djKey)); const add=L.filter(x=>!have.has(djKey(x)));
+    if(!add.length){popout({icon:'info',title:back?'Brak wcześniejszych':'Brak późniejszych',text:'W tym przedziale nie ma więcej połączeń.'});return;}
+    DJ.rows=back?[...add,...R]:[...R,...add]; DJ.paged=true; djPaint();
+    if(back)$('#dj-res .dj-list')?.scrollIntoView({block:'nearest'});}
+  catch(e){popout({icon:'warn',title:'Nie udało się',text:e.message});}
+}
+/* kiedy: teraz albo wybrana data i godzina */
+function djWhen(v){
+  if(v==='now'){DJ.at=null; $('#dj-at').value='';}
+  else{const t=Date.parse($('#dj-at').value); if(isNaN(t))return; DJ.at=Math.round(t/1000);}
+  $('#dj-now').classList.toggle('on',DJ.at===null); $('#dj-at').classList.toggle('on',DJ.at!==null);
+  $('#dj-live').hidden=DJ.at!==null; djGo(true);
+}
 async function loadDojazd(){
-  const st=await api('/transit/status'); djStatus(st); djPkpRender(st);
+  const st=await api('/transit/status'); djStatus(st);
   try{const last=JSON.parse(LS.get('dj_last')||'null'); if(last&&!$('#dj-from').value){$('#dj-from').value=last.f;$('#dj-to').value=last.t;$('#dj-tram').checked=!!last.tram;}
     const bs=LS.get('dj_stop'); if(bs&&!$('#dj-stop').value)$('#dj-stop').value=bs;}catch(_){}
-  djAuto($('#dj-from'),'ztm',()=>{$('#dj-to').value?djSearch():$('#dj-to').focus();});
-  djAuto($('#dj-to'),'ztm',()=>djSearch());
-  djAuto($('#dj-stop'),'ztm',()=>djBoard());
+  djAuto($('#dj-from'),'ztm',()=>{$('#dj-to').value?djGo():$('#dj-to').focus();});
+  djAuto($('#dj-to'),'ztm',()=>djGo());
+  djAuto($('#dj-stop'),'ztm',()=>djGo());
+  djPkpRender();
   if(!st.ztm.ready&&!st.ztm.importing)api('/transit/ztm/refresh',{method:'POST'}).then(djStatus);
-  djFavs(); djRun(true);
+  djFavs(); djGo(true);
   clearInterval(DJ.refresh); DJ.refresh=setInterval(()=>{
     if(!$('#view-dojazd').classList.contains('active')){clearInterval(DJ.refresh);return;}
     if(document.hidden||$('#modal-bd').classList.contains('open')||$('.dj-sug:not([hidden])'))return;
-    djFavs(); djRun(true);},20000);
+    djFavs();
+    if(DJ.at===null&&!DJ.paged&&(DJ.mode!=='pkp'||Date.now()-DJ.lastPkp>=60000))djGo(true);},20000);
 }
-function djRun(silent){DJ.mode==='board'?djBoard(silent):DJ.mode==='pkp'?djPkpSearch(true):djSearch(silent);}
-function djMode(m){DJ.mode=m; $$('#dj-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
-  ['route','board','pkp'].forEach(k=>$('#dj-pane-'+k).hidden=k!==m); $('#dj-res').innerHTML=''; djRun(true);}
+function djMode(m){DJ.mode=m; DJ.rows=[]; DJ.paged=false; $$('#dj-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  ['route','board','pkp'].forEach(k=>$('#dj-pane-'+k).hidden=k!==m); $('#dj-res').innerHTML=''; djGo(true);}
 function djStatus(st){
-  const f=x=>x.importing?'Pobieram rozkład…':x.error?'⚠ '+x.error:x.ready?`rozkład z ${new Date(x.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';
-  $('#dj-ztm-st').textContent=f(st.ztm); const p=$('#dj-pkp-st'); if(p)p.textContent=st.pkp.key?f(st.pkp):'';
+  const x=st.ztm; $('#dj-ztm-st').textContent=x.importing?'Pobieram rozkład…':x.error?'⚠ '+x.error:x.ready?`rozkład z ${new Date(x.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';
 }
-/* podpowiedzi przystanków: własna lista (linie przy przystanku, ostatnio wyszukiwane, klawiatura ↑↓ Enter Esc) */
-const djRecent=()=>{try{return JSON.parse(LS.get('dj_recent')||'[]');}catch(_){return [];}};
-function djRemember(n){if(!n)return; LS.set('dj_recent',JSON.stringify([n,...djRecent().filter(x=>x!==n)].slice(0,6)));}
+/* podpowiedzi: osobne dla tramwajów i pociągów (własne „ostatnio wyszukiwane”); adresy i lokalizacja tylko dla przystanków ZTM */
+const djRecent=src=>{try{return JSON.parse(LS.get('dj_recent_'+src)||'[]');}catch(_){return [];}};
+function djRemember(src,n){if(!n)return; LS.set('dj_recent_'+src,JSON.stringify([n,...djRecent(src).filter(x=>x!==n)].slice(0,6)));}
 function djAuto(inp,src,onPick){
   if(inp._dj)return; inp._dj=1;
   const box=inp.parentElement.querySelector('.dj-sug'); let items=[], sel=-1, t=null, tg=null, seq=0, head='';
   const ztm=src==='ztm';
   const close=()=>{box.hidden=true;sel=-1;};
   const mark=(name,q)=>{const n=norm(name),i=q?n.indexOf(norm(q)):-1; return i<0?esc(name):esc(name.slice(0,i))+'<mark>'+esc(name.slice(i,i+q.length))+'</mark>'+esc(name.slice(i+q.length));};
-  const H={recent:'Ostatnio wyszukiwane',stop:'Przystanki',addr:'Adresy — pokażę najbliższy przystanek',near:''};
-  const IC={recent:DJ_IC.clock,stop:DJ_IC.pin,addr:DJ_IC.home,near:DJ_IC.pin,geo:DJ_IC.loc};
+  const H={recent:'Ostatnio wyszukiwane',stop:ztm?'Przystanki':'Stacje',addr:'Adresy — pokażę najbliższy przystanek',near:''};
+  const IC={recent:DJ_IC.clock,stop:ztm?DJ_IC.pin:DJ_IC.train,addr:DJ_IC.home,near:DJ_IC.pin,geo:DJ_IC.loc};
   const lines=ls=>ls&&ls.length?`<div class="ls">${ls.slice(0,9).map(l=>`<span class="dj-mini${l.tram?' tram':''}">${esc(l.l)}</span>`).join('')}${ls.length>9?`<span class="dj-mini more">+${ls.length-9}</span>`:''}</div>`:'';
   const paint=q=>{
     if(!items.length){box.innerHTML=q?'<div class="dj-empty" style="padding:14px">Brak takiego przystanku ani adresu</div>':'';box.hidden=!q;return;}
@@ -4759,12 +4883,12 @@ function djAuto(inp,src,onPick){
       navigator.geolocation.getCurrentPosition(p=>near(p.coords.latitude,p.coords.longitude,'Twoja lokalizacja'),
         ()=>{box.innerHTML='<div class="dj-empty" style="padding:14px">Nie udało się ustalić położenia — wpisz adres, np. „Półwiejska 2”.</div>';},{enableHighAccuracy:true,timeout:10000});
       return;}
-    inp.value=x.name; djRemember(x.name); close(); head=''; onPick&&onPick();};
+    inp.value=x.name; djRemember(src,x.name); close(); head=''; onPick&&onPick();};
   const load=()=>{const q=inp.value.trim(); head='';
-    if(q.length<2){items=[...(ztm?[{kind:'geo',name:'Moja lokalizacja'}]:[]),...djRecent().map(n=>({kind:'recent',name:n}))]; sel=-1; paint(''); return;}
+    if(q.length<2){items=[...(ztm?[{kind:'geo',name:'Moja lokalizacja'}]:[]),...djRecent(src).map(n=>({kind:'recent',name:n}))]; sel=-1; paint(''); return;}
     clearTimeout(t); clearTimeout(tg); const my=++seq;
     t=setTimeout(async()=>{
-      try{const L=await apiT(`/transit/${src}/${ztm?'stops':'stations'}?`+djQ({q})); if(my!==seq)return;
+      try{const L=ztm?await apiT('/transit/ztm/stops?'+djQ({q})):await djPk('stations',{q}); if(my!==seq)return;
         items=[...L.map(x=>typeof x==='string'?{kind:'stop',name:x}:{kind:'stop',...x}),...items.filter(x=>x.kind==='addr')]; sel=items.length?0:-1; paint(q);}
       catch(e){if(my===seq){box.innerHTML=`<div class="dj-empty" style="padding:14px">${esc(e.message)}</div>`;box.hidden=false;}}},140);
     // adresy (OpenStreetMap) — wolniej i rzadziej: limit wyszukiwarki to 1 zapytanie na sekundę
@@ -4780,80 +4904,100 @@ function djAuto(inp,src,onPick){
     else if(e.key==='Escape')close();});
   box.addEventListener('mousedown',e=>{e.preventDefault(); const o=e.target.closest('.dj-opt'); if(o)pick(+o.dataset.i);});
 }
-function djSwap(p){const a=$('#'+p+'-from'),b=$('#'+p+'-to');[a.value,b.value]=[b.value,a.value]; p==='dj'?djSearch(true):djPkpSearch(true);}
-async function djSearch(silent){
-  const f=$('#dj-from').value.trim(), t=$('#dj-to').value.trim(), tram=$('#dj-tram').checked, box=$('#dj-res');
-  if(!f||!t){if(silent!==true)popout({icon:'warn',title:'Podaj oba przystanki',text:'Wpisz, skąd i dokąd jedziesz — podpowiedzi pojawią się po 2 literach.'});return;}
-  LS.set('dj_last',JSON.stringify({f,t,tram})); djRemember(f); djRemember(t);
-  if(silent!==true||!box.innerHTML)djSkel(box);
-  try{const L=await apiT('/transit/ztm/next?'+djQ({frm:f,to:t,tram,n:8}));
-    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i)).join('')}</div>`:'<div class="dj-empty">Brak bezpośrednich kursów w najbliższych godzinach.</div>';}
-  catch(e){e.status===503?djWait(box,e.message,'ztm',djSearch):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
-}
-async function djBoard(silent){
-  const s=$('#dj-stop').value.trim(), box=$('#dj-res'); if(!s){if(silent!==true)popout({icon:'warn',title:'Wpisz przystanek'});return;}
-  LS.set('dj_stop',s); djRemember(s);
-  if(silent!==true||!box.innerHTML)djSkel(box);
-  try{const L=await apiT('/transit/ztm/board?'+djQ({stop:s,n:14,tram:$('#dj-btram').checked}));
-    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i,true)).join('')}</div>`:'<div class="dj-empty">W najbliższych godzinach nic stąd nie odjeżdża.</div>';}
-  catch(e){e.status===503?djWait(box,e.message,'ztm',djBoard):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
-}
+function djSwap(p){const a=$('#'+p+'-from'),b=$('#'+p+'-to');[a.value,b.value]=[b.value,a.value]; djGo(true);}
 async function djSave(kind){
   const p=kind==='pkp'?'pk':'dj', f=$('#'+p+'-from').value.trim(), t=$('#'+p+'-to').value.trim();
   if(!f||!t){popout({icon:'warn',title:kind==='pkp'?'Podaj obie stacje':'Podaj oba przystanki'});return;}
   const r=await api('/transit/favs',{method:'POST',body:JSON.stringify({kind,from_name:f,to_name:t,tram_only:kind==='ztm'&&$('#dj-tram').checked})});
   if(r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
-  popout({icon:'ok',title:'Zapisano trasę',text:'Najbliższe odjazdy zobaczysz na Pulpicie i w ulubionych.'}); djFavs();
+  popout({icon:'ok',title:'Zapisano trasę',text:'Najbliższe odjazdy zobaczysz na Pulpicie i w ulubionych.'}); djFavs(true);
 }
-async function djFavDel(e,id){e.stopPropagation(); if(!await confirmPop('Usunąć trasę z ulubionych?'))return; await api('/transit/favs/'+id,{method:'DELETE'}); djFavs();}
+/* konkretny pociąg do ulubionych: numer + stacje — pokazujemy jego najbliższy kurs (dziś albo jutro) */
+async function djSaveTrain(k,from,to){
+  const x=djFind(k); if(!x)return;
+  const f=from||$('#pk-from').value.trim(), t=to||$('#pk-to').value.trim();
+  const r=await api('/transit/favs',{method:'POST',body:JSON.stringify({kind:'pkp_train',from_name:f,to_name:t,label:x.number})});
+  if(r.detail){popout({icon:'warn',title:'Nie zapisano',text:r.detail});return;}
+  popout({icon:'ok',title:`Obserwujesz pociąg ${djCarrier(x).t} ${x.number}`,text:`${f} → ${t}. Najbliższy kurs z opóźnieniem zobaczysz na Pulpicie.`}); djFavs(true);
+}
+const djFind=k=>[...DJ.rows,...(DJ_FAV||[]).flatMap(f=>f.deps||[]),...(DJ.extra||[])].find(x=>djKey(x)===k);
+/* szczegóły kursu: wszystkie przystanki z godzinami, odcinek podróży wyróżniony */
+async function djDetails(k,xx){
+  const x=xx||djFind(k); if(!x)return;
+  const m=$('#modal'); m.style.maxWidth='560px';
+  m.innerHTML=`<div class="dj-dt-h">${djBadge(x)}<div><h3>${djTrain(x)?esc(x.carrier||'')+' '+esc(x.number):'Linia '+esc(x.line)}</h3><div class="msub">${djTrain(x)?(x.name?'„'+esc(x.name)+'” · ':'')+esc(x.cat||''):'→ '+esc(x.headsign)}</div></div></div>
+    <div id="dj-dt"><div class="dj-load"><i></i>Wczytuję kurs…</div></div>
+    <div class="actions">${djTrain(x)?`<button class="btn ghost" onclick="djSaveTrain('${k}','${esc(x._from||'')}','${esc(x._to||'')}')">☆ Obserwuj pociąg</button>`:''}<button class="btn" onclick="closeModal()">Zamknij</button></div>`;
+  openModal();
+  try{
+    const d=djTrain(x)?await djPk('details',{tid:x.tid,date:x.date}):await apiT('/transit/ztm/trip?'+djQ({trip_id:x.trip_id,t0:x.t0}));
+    let on=false; const fromI=djTrain(x)?d.stops.findIndex(s=>s.station===x.from_st):d.stops.findIndex(s=>s.seq===x.seq);
+    const toI=djTrain(x)?d.stops.findIndex((s,i)=>i>fromI&&s.station===x.to_st):d.stops.findIndex(s=>s.seq===x.seq_to);
+    const now=Date.now()/1000;
+    $('#dj-dt').innerHTML=`${d.live?'<div class="dj-live" style="margin:0 0 12px"><i></i><span>Dane na żywo</span></div>':''}<div class="dj-tlv">${d.stops.map((s,i)=>{const seg=i>=fromI&&(toI<0||i<=toI), past=s.ts<now-30;
+      return `<div class="dj-stp${seg?' seg':''}${i===fromI||i===toI?' end':''}${past?' past':''}"><span class="dot"></span><b>${esc(s.name)}</b>
+        <span class="tm">${s.delay_min&&s.real!==s.time?`<s>${s.time}</s> ${s.real}`:s.time}${s.platform?` · peron ${esc(s.platform)}`:''}${s.cancelled?' · <span class="dj-late">odwołany</span>':''}</span></div>`;}).join('')}</div>`;
+    $('#dj-dt .dj-stp.end')?.scrollIntoView({block:'center'});
+  }catch(e){$('#dj-dt').innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
+}
+async function djFavDel(e,id){e.stopPropagation(); if(!await confirmPop('Usunąć z ulubionych?'))return; await api('/transit/favs/'+id,{method:'DELETE'}); djFavs(true);}
 function djUse(i){const f=(DJ_FAV||[])[i]; if(!f)return;
-  if(f.kind==='pkp'){djMode('pkp'); setTimeout(()=>{if($('#pk-from')){$('#pk-from').value=f.from_name;$('#pk-to').value=f.to_name;djPkpSearch();}},50);}
-  else{if(DJ.mode!=='route')djMode('route'); $('#dj-from').value=f.from_name;$('#dj-to').value=f.to_name;$('#dj-tram').checked=!!f.tram_only;djSearch();}
-  $('#view-dojazd').scrollIntoView({behavior:'smooth'});}
+  if(f.deps&&f.deps[0]){djDetails(djKey(f.deps[0]),f.deps[0]);return;}
+  if(f.kind!=='ztm'){djMode('pkp'); setTimeout(()=>{if($('#pk-from')){$('#pk-from').value=f.from_name;$('#pk-to').value=f.to_name;djGo();}},50);}
+  else{if(DJ.mode!=='route')djMode('route'); $('#dj-from').value=f.from_name;$('#dj-to').value=f.to_name;$('#dj-tram').checked=!!f.tram_only;djGo();}}
 let DJ_FAV=null;
-async function djFavs(){
-  const box=$('#dj-favs'); if(!box)return;
-  let L; try{L=await apiT('/transit/favs/next?n=4');}catch(e){box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;return;}
-  DJ_FAV=L; paintPulpitTransit(L);
+/* pociągi w ulubionych liczy serwer kont — dociągamy je najwyżej raz na minutę */
+async function djFillPkp(L,force){
+  const P=L.filter(f=>f.kind!=='ztm'); if(!P.length)return L;
+  const fresh=!force&&Date.now()-DJ.pkpFav.at<60000;
+  await Promise.all(P.map(async f=>{const key=f.kind+'|'+f.from_name+'|'+f.to_name+'|'+f.label;
+    if(!fresh){try{DJ.pkpFav.data[key]={deps:await djPk('next',{frm:f.from_name,to:f.to_name,n:f.kind==='pkp_train'?2:4,number:f.kind==='pkp_train'?f.label:''}),error:''};}
+      catch(e){DJ.pkpFav.data[key]={deps:[],error:e.message};}}
+    const v=DJ.pkpFav.data[key]||{deps:[],error:''}; f.deps=v.deps.map(d=>({...d,_from:f.from_name,_to:f.to_name})); f.error=v.error;}));
+  if(!fresh)DJ.pkpFav.at=Date.now();
+  return L;
+}
+async function djFavs(force){
+  const box=$('#dj-favs');
+  let L; try{L=await djFillPkp(await apiT('/transit/favs/next?n=4'),force);}catch(e){if(box)box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;return;}
+  DJ_FAV=L; paintPulpitTransit(L); if(!box)return;
   box.innerHTML=L.length?`<div class="dj-favs">${L.map((f,i)=>{const x=f.deps[0], Lf=x&&djLeft(x.ts);
+    const title=f.kind==='pkp_train'&&x?`${djCarrier(x).t} ${esc(f.label)}${x.name?' „'+esc(x.name)+'”':''}`:f.kind==='pkp_train'?'Pociąg '+esc(f.label):'';
     return `<div class="dj-fav" onclick="djUse(${i})"><button class="x" title="Usuń z ulubionych" onclick="djFavDel(event,${f.id})">✕</button>
-      <div class="dj-fav-r"><b>${esc(f.from_name)}</b> → <b>${esc(f.to_name)}</b>${f.kind==='pkp'?' · pociąg':f.tram_only?' · tramwaje':''}</div>
+      <div class="dj-fav-r">${title?`<b>${title}</b><br>`:''}<b>${esc(f.from_name)}</b> → <b>${esc(f.to_name)}</b>${f.kind==='pkp'?' · pociągi':f.tram_only?' · tramwaje':''}</div>
       ${f.error?`<div class="dj-st" style="margin-top:10px">${esc(f.error)}</div>`:x?`<div class="dj-fav-main">${djBadge(x)}<div><div class="cd" data-ts="${x.ts}"><b>${Lf.n}</b>${Lf.u?` <small>${Lf.u}</small>`:''}</div>
-        <div class="sub">${x.carrier!==undefined?`odjazd ${x.dep}`:`→ ${esc(x.headsign)} · ${x.dep_real||x.dep}`} ${x.live?djDelay(x):''}</div></div></div>
-        ${f.deps.length>1?`<div class="dj-next">${f.deps.slice(1).map(y=>`<span>${djBadge(y).replace('dj-line','dj-mini')} ${y.dep_real||y.dep}</span>`).join('')}</div>`:''}`
+        <div class="sub">${djTrain(x)?`${x.dep_real||x.dep} → ${x.arr_real||x.arr}`:`→ ${esc(x.headsign)} · ${x.dep_real||x.dep}`} ${x.live?djDelay(x):''}</div></div></div>
+        ${f.deps.length>1?`<div class="dj-next">${f.deps.slice(1).map(y=>`<span>${djBadge(y,true)} ${y.dep_real||y.dep}</span>`).join('')}</div>`:''}`
       :'<div class="dj-st" style="margin-top:10px">Brak bezpośrednich kursów w najbliższych godzinach.</div>'}</div>`;}).join('')}</div>`
-    :'<div class="dj-empty">Wyszukaj trasę i kliknij „☆ Zapisz trasę” — najbliższe odjazdy będą tutaj i na Pulpicie.</div>';
+    :'<div class="dj-empty">Wyszukaj trasę i kliknij „☆ Zapisz trasę” (albo ☆ przy pociągu) — najbliższe odjazdy będą tutaj i na Pulpicie.</div>';
 }
-/* pulpit: najbliższy odjazd każdej ulubionej trasy (maks. 3); odliczanie co sekundę, dane z serwera co minutę */
-async function loadPulpitTransit(){try{paintPulpitTransit(await apiT('/transit/favs/next?n=1'));}catch(_){}}
+/* pulpit: najbliższy odjazd każdej ulubionej trasy (maks. 3); klik → szczegóły tego kursu */
+let PUL_TR=[];
+async function loadPulpitTransit(){try{const L=await djFillPkp(await apiT('/transit/favs/next?n=1')); DJ_FAV=DJ_FAV||L; paintPulpitTransit(L);}catch(_){}}
 function paintPulpitTransit(L){
-  const box=$('#wl-tr'); if(!box)return; const items=(L||[]).filter(f=>f.deps&&f.deps.length).slice(0,3);
-  box.hidden=!items.length;
-  box.innerHTML=items.map(f=>{const x=f.deps[0], Lf=djLeft(x.ts);
-    return `<button onclick="go('dojazd')" title="${esc(f.from_name)} → ${esc(f.to_name)}">${djBadge(x)}<span><b><span data-ts="${x.ts}" data-fmt="inline">${Lf.now?'teraz':Lf.u?'za '+Lf.n+' '+Lf.u:Lf.n}</span>${x.live?'<i class="dj-pulse"></i>':''}${x.delay_min>=1?` <span class="dj-late" style="font-size:12px">+${x.delay_min}</span>`:''}</b><small>${esc(f.from_name)} → ${esc(f.to_name)}</small></span></button>`;}).join('');
+  const box=$('#wl-tr'), sub=$('#portal-dj-sub'); const items=(L||[]).filter(f=>f.deps&&f.deps.length).slice(0,3);
+  PUL_TR=items.map(f=>f.deps[0]);
+  if(sub){const x=PUL_TR[0]; sub.textContent=x?`${djTrain(x)?djCarrier(x).t+' '+x.number:x.line} · ${x.dep_real||x.dep} · ${items[0].from_name}`:'Tramwaje, autobusy i pociągi';}
+  if(!box)return; box.hidden=!items.length;
+  box.innerHTML=items.map((f,i)=>{const x=f.deps[0], Lf=djLeft(x.ts);
+    return `<button onclick="djOpenPulpit(${i})" title="${esc(f.from_name)} → ${esc(f.to_name)}">${djBadge(x)}<span><b><span data-ts="${x.ts}" data-fmt="inline">${Lf.now?'teraz':Lf.u?'za '+Lf.n+' '+Lf.u:Lf.n}</span>${x.live?'<i class="dj-pulse"></i>':''}${x.delay_min>=1?` <span class="dj-late" style="font-size:12px">+${x.delay_min}</span>`:''}</b><small>${esc(f.from_name)} → ${esc(f.to_name)}</small></span></button>`;}).join('');
 }
-/* PKP: klucz z formularza PLK → rozkład na dziś i jutro, połączenia A → B */
-function djPkpRender(st){
+function djOpenPulpit(i){const x=PUL_TR[i]; go('dojazd'); if(x){DJ.extra=[x]; setTimeout(()=>djDetails(djKey(x),x),250);}}
+/* pociągi: rozkład i opóźnienia z serwera kont (klucz PLK ustawia administrator) */
+async function djPkpRender(){
   const box=$('#dj-pkp');
-  if(!st.pkp.key){box.innerHTML=`<p class="st-note" style="margin:0 0 12px">Pociągi (Koleje Wielkopolskie, Polregio, Intercity i inne) pochodzą z darmowego API PKP PLK. Potrzebny jest klucz: wypełnij formularz na <a href="https://pdp-api.plk-sa.pl/" target="_blank" rel="noopener">pdp-api.plk-sa.pl</a> — klucz przychodzi od razu, a aktywacja trwa 3–5 dni roboczych.</p>
-      <div class="st-key"><input id="pk-key" placeholder="Wklej klucz API PKP" spellcheck="false" autocomplete="off"><button class="btn" onclick="djPkpKey()">Zapisz klucz</button></div>`;return;}
-  box.innerHTML=`<div class="dj-route">
+  if(!ME){box.innerHTML='<div class="dj-empty">Rozkład pociągów pochodzi z serwera kont — zaloguj się, żeby go zobaczyć.<br><br><button class="btn" onclick="go(\'konto\')">Zaloguj się</button></div>';return;}
+  if(!$('#pk-from')){
+    box.innerHTML=`<div class="dj-route">
       <div class="dj-rail"><i></i><span></span><i class="to"></i></div>
       <div class="dj-ac lbl"><label>Ze stacji</label><input id="pk-from" placeholder="Np. Poznań Główny" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div>
       <button class="dj-swap" title="Zamień kierunek" onclick="djSwap('pk')"><svg viewBox="0 0 24 24"><path d="M7 4v16M7 4L3.5 7.5M7 4l3.5 3.5M17 20V4M17 20l-3.5-3.5M17 20l3.5-3.5"/></svg></button>
       <div class="dj-ac lbl"><label>Do stacji</label><input id="pk-to" placeholder="Np. Gniezno" autocomplete="off" spellcheck="false"><div class="dj-sug" hidden></div></div></div>
-    <div class="dj-bar"><button class="btn ghost sm" onclick="djPkpKeyClear()">Usuń klucz</button><span class="dj-st" id="dj-pkp-st"></span><span class="sp"></span><button class="btn ghost" onclick="djSave('pkp')">☆ Zapisz trasę</button><button class="btn" onclick="djPkpSearch()">Szukaj</button></div>`;
-  djAuto($('#pk-from'),'pkp',()=>{$('#pk-to').value?djPkpSearch():$('#pk-to').focus();}); djAuto($('#pk-to'),'pkp',()=>djPkpSearch());
-}
-async function djPkpKey(){const k=$('#pk-key').value.trim(); if(!k)return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:k})}); djPkpRender(st); djStatus(st);}
-async function djPkpKeyClear(){if(!await confirmPop('Usunąć klucz PKP?','Pociągi przestaną się wyświetlać do czasu wpisania nowego.'))return; const st=await api('/transit/pkp/key',{method:'POST',body:JSON.stringify({key:''})}); djPkpRender(st); djStatus(st);}
-async function djPkpSearch(silent){
-  const f=$('#pk-from')?.value.trim(), t=$('#pk-to')?.value.trim(), box=$('#dj-res'); if(DJ.mode!=='pkp')return;
-  if(!f||!t){if(silent!==true)popout({icon:'warn',title:'Podaj obie stacje'});return;}
-  if(silent!==true||!box.innerHTML)djSkel(box);
-  try{const L=await apiT('/transit/pkp/next?'+djQ({frm:f,to:t,n:6}));
-    box.innerHTML=L.length?`<div class="dj-list">${L.map((x,i)=>djRow(x,i)).join('')}</div>`:'<div class="dj-empty">Brak bezpośrednich pociągów dziś i jutro.</div>';}
-  catch(e){e.status===503?djWait(box,e.message,'pkp',djPkpSearch):box.innerHTML=`<div class="dj-empty">${esc(e.message)}</div>`;}
+    <div class="dj-bar"><span class="dj-st" id="dj-pkp-st"></span><span class="sp"></span><button class="btn ghost" onclick="djSave('pkp')">☆ Zapisz trasę</button><button class="btn" onclick="djGo()">Szukaj</button></div>`;
+    try{const l=JSON.parse(LS.get('dj_pk')||'null'); if(l){$('#pk-from').value=l.f;$('#pk-to').value=l.t;}}catch(_){}
+    djAuto($('#pk-from'),'pkp',()=>{$('#pk-to').value?djGo():$('#pk-to').focus();}); djAuto($('#pk-to'),'pkp',()=>djGo());
+  }
+  try{const st=await djPk('status'); $('#dj-pkp-st').textContent=!st.key?'Administrator nie dodał jeszcze klucza PKP':st.importing?'Pobieram rozkład pociągów…':st.error?'⚠ '+st.error:st.ready?`rozkład z ${new Date(st.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · opóźnienia co minutę`:'';}catch(_){}
 }
 
 /* ---------- SUGESTIE (serwer kont: użytkownik wysyła, administrator przegląda) ---------- */
@@ -4924,13 +5068,24 @@ function renderAdmSugg(){
 async function admSg(id,body){try{await cloud('/admin/suggestions/'+id,{method:'PATCH',body});loadAdmSugg();}catch(e){popout({icon:'warn',title:'Nie zapisano',text:e.message});}}
 async function admSgDel(id){if(!await confirmPop('Usunąć sugestię?','Zniknie też u autora.','Usuń'))return; try{await cloud('/admin/suggestions/'+id,{method:'DELETE'});loadAdmSugg();}catch(e){popout({icon:'warn',title:'Nie usunięto',text:e.message});}}
 
+async function admPkp(act){
+  const box=$('#adm-pkp-st'); if(!box||!ME||!ME.is_admin)return;
+  try{
+    const r=act==='key'?await cloud('/admin/pkp/key',{method:'POST',body:{key:$('#adm-pkp-key').value.trim()}})
+      :act==='refresh'?await cloud('/admin/pkp/refresh',{method:'POST'}):await cloud('/admin/pkp');
+    if(act==='key')$('#adm-pkp-key').value='';
+    const when=r.updated?new Date(r.updated).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    box.textContent=!r.key?'brak klucza':r.importing?`klucz ${r.masked} · pobieram rozkład…`:r.error?`klucz ${r.masked} · ⚠ ${r.error}`:r.ready?`klucz ${r.masked} · rozkład z ${when}`:`klucz ${r.masked}`;
+    if(r.importing)setTimeout(()=>admPkp(),4000);
+  }catch(e){box.textContent=e.message;}
+}
 async function loadAdmin(){
   $('#adm-cloud').value=APP.cloud_url||'';
   const st=$('#adm-health'); st.textContent='Sprawdzam…'; st.className='adm-health';
   fetch(cloudUrl()+'/health').then(r=>{st.textContent=r.ok?'Serwer odpowiada':'Serwer nie odpowiada';st.classList.add(r.ok?'ok':'bad');}).catch(()=>{st.textContent='Brak połączenia';st.classList.add('bad');});
   const box=$('#adm-users');
   if(!ME||!ME.is_admin){box.innerHTML='<div class="empty">Ta sekcja jest dostępna tylko dla administratora.</div>';return;}
-  loadAdmSugg();
+  loadAdmSugg(); admPkp();
   try{ADM=await cloud('/admin/users');}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return;}
   renderAdmin();
 }

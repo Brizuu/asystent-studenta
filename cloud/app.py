@@ -677,6 +677,83 @@ except ImportError:   # obraz bez plików aplikacji — sam serwer kont
     pass
 
 
+# ---------- POCIĄGI PKP: wspólny klucz PLK (ustawia administrator), rozkład i opóźnienia liczone tutaj dla wszystkich ----------
+with db() as _c:
+    _c.execute("CREATE TABLE IF NOT EXISTS settings (k TEXT PRIMARY KEY, v TEXT)")
+
+
+def _setting(k: str) -> str:
+    with db() as c:
+        r = c.execute("SELECT v FROM settings WHERE k=?", (k,)).fetchone()
+    return r["v"] if r else ""
+
+
+try:
+    import komunikacja as _kom   # noqa: E402  (pliki aplikacji leżą obok — jak web.py)
+    _kom.KEY_PROVIDER = lambda: _setting("pkp_key")
+except ImportError:
+    _kom = None
+
+
+def _kom_ok():
+    if not _kom:
+        raise HTTPException(503, "Pociągi nie są dostępne na tym serwerze.")
+    return _kom
+
+
+class PkpKeyIn(BaseModel):
+    key: str
+
+
+@app.get("/admin/pkp")
+def admin_pkp(a=Depends(admin_user)):
+    k = _setting("pkp_key")
+    st = _kom_ok().pkp_status()
+    return {**st, "key": bool(k), "masked": (k[:4] + "…" + k[-4:]) if len(k) > 10 else ("•••" if k else "")}
+
+
+@app.post("/admin/pkp/key")
+def admin_pkp_key(p: PkpKeyIn, a=Depends(admin_user)):
+    k = "".join(p.key.split())
+    with db() as c:
+        c.execute("INSERT OR REPLACE INTO settings VALUES('pkp_key', ?)", (k,))
+    if k:
+        kom = _kom_ok()
+        kom._state["pkp"]["error"] = ""
+        kom._start("pkp", kom.import_pkp, k)
+    return admin_pkp(a)
+
+
+@app.post("/admin/pkp/refresh")
+def admin_pkp_refresh(a=Depends(admin_user)):
+    kom, k = _kom_ok(), _setting("pkp_key")
+    if not k:
+        raise HTTPException(400, "Najpierw wpisz klucz.")
+    kom._state["pkp"]["error"] = ""
+    kom._start("pkp", kom.import_pkp, k)
+    return admin_pkp(a)
+
+
+@app.get("/pkp/status")
+def pkp_status(u=Depends(current_user)):
+    return _kom_ok().pkp_status()
+
+
+@app.get("/pkp/stations")
+def pkp_stations(q: str = "", u=Depends(current_user)):
+    return _kom_ok().pkp_search(q)
+
+
+@app.get("/pkp/next")
+def pkp_next(frm: str, to: str, n: int = 6, at: float | None = None, back: bool = False, number: str = "", u=Depends(current_user)):
+    return _kom_ok().pkp_next(frm, to, max(1, min(15, n)), at, back, number or None)
+
+
+@app.get("/pkp/details")
+def pkp_details(tid: int, date: str, u=Depends(current_user)):
+    return _kom_ok().pkp_details(tid, date)
+
+
 # ---------- GRUPY: znajomi w grupach, udostępnienie do grupy trafia do każdego członka ----------
 def _is_member(c, gid: int, uid: int) -> bool:
     return bool(c.execute("SELECT 1 FROM group_members WHERE group_id=? AND user_id=?", (gid, uid)).fetchone())
