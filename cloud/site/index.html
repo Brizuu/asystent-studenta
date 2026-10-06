@@ -82,10 +82,10 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
 .rail:hover .btxt,.rail:hover .navlist .lbl,.rail:hover .foot,.rail:hover .bell span{opacity:1}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;padding:6px 8px}
 .brand .mark{width:30px;height:30px;flex:none}
-.navlist{display:flex;flex-direction:column;gap:4px;margin-top:var(--s2)}
+.navlist{display:flex;flex-direction:column;gap:2px;margin-top:var(--s2)}
 .navlist button{
   display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
-  padding:11px 12px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink-soft);
+  padding:9px 12px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink-soft);
   font:inherit;font-weight:500;transition:background .15s,color .15s;
 }
 .navlist button[hidden]{display:none}   /* moduły tymczasowo ukryte (Finanse, Źródła) */
@@ -105,8 +105,8 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
 @media(max-width:820px){#nav-sync{display:none}}
 .rail>.navlist{margin-bottom:auto}
 /* dolna grupa (admin, synchronizacja, konto, ustawienia, powiadomienia): ciasno jak menu, oddzielona od głównych zakładek */
-.rail-bottom{display:flex;flex-direction:column;gap:4px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-.rail-bottom .bell{margin-top:0;padding:10px 12px}
+.rail-bottom{display:flex;flex-direction:column;gap:2px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.rail-bottom .bell{margin-top:0;padding:8px 12px}
 @media(max-width:820px){.rail-bottom{display:contents}}
 .bell:hover{background:var(--glass-2);color:var(--ink)}
 .bell.on svg{stroke:var(--pos)}
@@ -2152,7 +2152,7 @@ body.win-max .wrz{display:none}
 #nauka-head.compact .crumb-sep{margin:0 6px!important}
 
 @media(max-height:940px){.rail .foot{display:none}}
-@media(max-height:820px) and (min-width:821px){.rail{gap:10px;padding-top:16px;padding-bottom:12px}.navlist{margin-top:4px;gap:2px}.navlist button{padding-top:9px;padding-bottom:9px}.rail-bottom{margin-top:8px;padding-top:8px;gap:2px}.rail-bottom .bell{padding:8px 12px}}
+@media(max-height:820px) and (min-width:821px){.rail{gap:10px;padding-top:16px;padding-bottom:12px}.navlist{margin-top:4px;gap:1px}.navlist button{padding-top:7px;padding-bottom:7px}.rail-bottom{margin-top:6px;padding-top:6px;gap:1px}.rail-bottom .bell{padding:7px 12px}}
 
 /* Pulpit na niższym ekranie laptopa: powitanie, karta „Teraz” i 4 kafelki mieszczą się bez przewijania */
 @media(max-height:960px) and (min-width:821px){
