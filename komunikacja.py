@@ -719,7 +719,19 @@ def _pkp_delay(live: dict, r, station: int, planned: int, which: int = 1):
 
 
 def pkp_next(from_name: str, to_name: str, n: int = 5, at: float | None = None, back: bool = False, number: str | None = None) -> list[dict]:
-    with _db(pkp_db()) as c:
+    path = pkp_db()
+    if at is not None:   # dzień spoza pobranego rozkładu → jasny komunikat zamiast pustej listy (a nowszy rozkład pobiera się w tle)
+        day = _ref(at)[0]
+        with _db(path) as c:
+            last = c.execute("SELECT MAX(date) FROM train_dates").fetchone()[0]
+        if last and day.isoformat() > last:
+            st = _state["pkp"]
+            if st["error"] and not st["importing"]:
+                raise HTTPException(400, f"Rozkład pociągów sięga do {last[8:10]}.{last[5:7]}, a pobranie nowszego się nie udało: {st['error']}")
+            if not st["importing"]:
+                _start("pkp", import_pkp, _pkp_key())
+            raise HTTPException(503, f"Pobieram rozkład pociągów na kolejne dni (obecny sięga do {last[8:10]}.{last[5:7]})…")
+    with _db(path) as c:
         ids = lambda nm: [r[0] for r in c.execute("SELECT id FROM stations WHERE nname=?", (norm(nm),))]
         a, b = ids(from_name), ids(to_name)
         if not a or not b:
