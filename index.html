@@ -1594,6 +1594,7 @@ table.grid tr:first-child td:hover .sortbtn{opacity:1}
 .editor .ntitle{flex:0 1 auto;width:auto;min-width:60px;max-width:100%;background:transparent;border:0;outline:none;font-family:var(--font-display);font-weight:700;
   font-size:23px;letter-spacing:-.02em;color:var(--ink);padding:0}
 .ntitle-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+textarea.ntitle{resize:none;overflow:hidden;display:block;line-height:1.25;min-height:0;white-space:pre-wrap;word-break:break-word}
 .note-tbadge{flex:none}
 .editor .saved{font-size:11px;color:var(--ink-dim);white-space:nowrap;opacity:.7;pointer-events:none;min-height:14px;margin-top:-3px}
 .nmade{margin-top:2px;font-size:11px;color:var(--ink-dim);opacity:.85}
@@ -2410,6 +2411,166 @@ body.on-start .pomo{display:none}
 @media(max-width:960px){.lps-pts{grid-template-columns:1fr}}
 @media(max-width:720px){.lps-map{grid-template-columns:1fr;gap:6px}.lps-line{width:2px;height:34px;margin:4px auto;background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}.lps-line em{display:none}.lp-steps .st::after{display:none}.lps{padding:22px}}
 @media(prefers-reduced-motion:reduce){.lps-line em{animation:none;display:none}}
+
+/* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
+@media(max-width:820px){
+  /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
+  .rail{justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    background:rgba(13,14,21,.94);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent)}
+  .rail::-webkit-scrollbar{display:none}
+  .navlist{flex:none;justify-content:flex-start;gap:2px}
+  .nav-groups{display:flex!important}
+  .navlist button,.rail .bell{flex:none!important;width:66px;min-width:66px;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    padding:8px 2px 7px!important;font-size:11px;font-weight:500;border-radius:14px;scroll-snap-align:start;text-align:center;position:relative}
+  .navlist button svg,.rail .bell svg,.rail .bell .nav-av{width:23px;height:23px}
+  .navlist .lbl,.rail .bell>span:not(.nav-av){display:block;opacity:1;max-width:62px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+  #bell>span{font-size:0} #bell>span::after{content:"Alerty";font-size:11px}
+  #nav-admin>span{font-size:0} #nav-admin>span::after{content:"Admin";font-size:11px}
+  .navlist button.active,.rail .bell.active{background:rgba(255,255,255,.08);color:var(--ink)}
+  .bell.on::after{left:calc(50% + 5px);top:6px}
+  .rail .bell-n,.navlist .nav-badge{position:absolute;top:3px;right:12px;margin:0}
+
+  /* Pomodoro i Spotify: przewijają się z treścią (nie zasłaniają nagłówków), panele jako karta na całą szerokość */
+  .spoti,.pomo{position:absolute;top:calc(10px + env(safe-area-inset-top))}
+  .spoti{right:12px} .pomo{right:64px}
+  .main{padding-top:66px}
+  #view-pulpit{padding-top:0}
+  .pomo-panel,.spoti-panel{position:fixed;top:calc(66px + env(safe-area-inset-top));left:10px;right:10px;width:auto;max-width:none;
+    max-height:calc(100vh - 170px);max-height:calc(100dvh - 170px);overflow:auto;transform-origin:top center;background:rgba(22,20,32,.97)!important}
+  .pomo-panel{text-align:center}
+
+  /* wydajność i dotyk: bez niebieskiego błysku przy stuknięciu, menu bez kosztownego rozmycia (tło i tak jest kryjące) */
+  *{-webkit-tap-highlight-color:transparent}
+  .rail{backdrop-filter:none;-webkit-backdrop-filter:none}
+  /* nagłówki widoków: przyciski Pomodoro/Spotify są teraz nad nagłówkiem, więc pełna szerokość */
+  .head{padding-right:0}
+  .head h1{font-size:clamp(28px,8vw,34px)}
+
+  /* NAUKA: przewija się cała strona, a nie małe okienko pod nagłówkiem */
+  .study{height:auto!important;min-height:0}
+  .pane{flex:none;overflow:visible;margin-top:-13px}
+  #pane-note .editor,.editor{height:auto;min-height:0;overflow:visible}
+  #nauka-head.compact h1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nauka-head.compact .eyebrow{display:none}
+  .tab #tab-note-label{max-width:120px}
+  /* zeszyty: pełna nazwa (2 linie), akcje zawsze widoczne obok liczby notatek */
+  .nbgrid{grid-template-columns:1fr}
+  .nbcard{display:grid;grid-template-columns:40px minmax(0,1fr) auto;grid-template-areas:"cv top top" "cv meta acts";column-gap:12px;row-gap:4px;align-items:center}
+  .nbcover{grid-area:cv}
+  .nbcard-main{display:contents}
+  .nbcard-top{grid-area:top;flex-direction:column;align-items:flex-start;gap:2px}
+  .nbcard-meta{grid-area:meta;margin-top:0}
+  .nbacts{grid-area:acts;opacity:1}
+  .nbname{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+  /* notatki: tytuł w 2 liniach zamiast ucinania, bez plakietki „Notatka” (zostaje kolor), akcje pod palcem */
+  .note-item{padding:10px 10px 10px 14px}
+  .note-item .grab{display:none}
+  .note-item .nt{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .note-item .nt-side .tybadge{display:none}
+  .note-item .acts{position:static;transform:none;opacity:1;pointer-events:auto}
+  .note-item .acts .move,.note-item .acts .del{opacity:1;width:32px;height:32px;border:1px solid var(--line);background:rgba(20,21,29,.5)}
+  /* notatka: długi tytuł zawija się, PDF i tabele mieszczą się na ekranie */
+  .editor .ntitle{font-size:21px;line-height:1.25}
+  .pdf-actions{flex-wrap:wrap}
+  .pdf-actions>*{flex:1 1 calc(50% - 6px)!important;justify-content:center}
+  .pdf-hint{display:none}
+  .block .bctl{left:0;transform:none;max-width:calc(100vw - 40px);overflow-x:auto;scrollbar-width:none}
+
+  /* PLAN DNIA: zwarty pasek narzędzi, kalendarz z kropkami, czytelne wpisy */
+  #view-plan .head .row{gap:8px}
+  #view-plan #plan-date{min-width:0;width:100%}
+  .panel{padding:16px 14px}
+  .cal{gap:4px}
+  .cal .d{min-height:46px;padding:5px}
+  .cal .more,.cal .ev{display:none}
+  .item{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;grid-template-areas:"tik kic time x" "tik kic body x";column-gap:12px;row-gap:0;padding:12px}
+  .item>.tik,.item>.tik-ph{grid-area:tik}
+  .item>.kic{grid-area:kic;width:32px;height:32px}
+  .item>.time{grid-area:time;min-width:0;font-size:12.5px;color:var(--accent-2);margin-bottom:2px}
+  .item>.time:empty{display:none}
+  .item>.body{grid-area:body}
+  .item>.x{grid-area:x;align-self:center;width:36px;height:36px}
+  .item:has(>.time:empty){grid-template-areas:"tik kic body x"}
+  .item{align-items:center}
+  #view-plan .head .row{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;width:100%}
+  #view-plan .head .row>*{grid-column:span 6}
+  #view-plan .head .row>.btn{white-space:nowrap;justify-content:center;overflow:hidden;text-overflow:ellipsis;padding-left:6px;padding-right:6px;font-size:12.5px}
+  #view-plan #plan-date{grid-column:span 5;padding-left:10px;padding-right:8px;font-size:15px}
+  #view-plan .head .row>.btn:nth-of-type(1){grid-column:span 2}
+  #view-plan .head .row>.btn:nth-of-type(2){grid-column:span 5}
+  /* najpierw dzisiejsze wpisy, kalendarz pod nimi */
+  #view-plan.active{display:flex;flex-direction:column}
+  #view-plan>.panel:last-child{order:1;margin-top:0} #view-plan>.panel:nth-child(2){order:2}
+  .nbcover{align-self:start}
+  .nbcard-meta .nbdot{display:none}
+  .nbcard-meta>span{white-space:nowrap}
+  .item .t{line-height:1.3}
+
+  .rail .bell .nav-av{display:flex!important}
+  /* DOJAZD: wyniki bez ucinania, pociąg w 3 rzędach (numer · przewoźnik · godziny na całą szerokość) */
+  .dj-dep{gap:10px;padding:12px}
+  .dj-dep .hd{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:15px;line-height:1.25}
+  .dj-tl{flex-wrap:wrap;gap:2px 4px;white-space:nowrap}
+  .dj-tl s{display:none}
+  .dj-tl>.dj-late,.dj-tl>.dj-ok{flex-basis:100%;font-size:12px}
+  .dj-tl .ln{flex:1 1 auto;min-width:8px}
+  .dj-cd{min-width:56px;padding:6px 7px}
+  .dj-cd [data-ts] small{font-size:11px}
+  .dj-tl{font-size:12.5px}
+  .dj-tl .ln{min-width:6px}
+  #modal .btn{white-space:nowrap}
+  .dj-cd b{font-size:19px}
+  .dj-tr{display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"lg h st" "lg car cd" "t t t";column-gap:10px;row-gap:3px;align-items:start}
+  .dj-tr>.dj-lg-logo{grid-area:lg;width:52px;height:38px}
+  .dj-tr>.m{display:contents}
+  .dj-tr .dj-tr-h{grid-area:h;align-self:center}
+  .dj-tr .dj-tr-car{grid-area:car}
+  .dj-tr .dj-tr-t{grid-area:t;margin-top:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+  .dj-tr>.dj-star{grid-area:st;justify-self:end}
+  .dj-tr>.dj-cd{grid-area:cd;align-self:start}
+  .dj-tr-t .tm s{display:block;margin:3px 0 0;font-size:11.5px}
+  /* wybór dnia i godziny: panel wysuwany od dołu nad menu */
+  .dj-pick,.dj-pick.up{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;z-index:260;border-radius:22px 22px 0 0;
+    padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;max-height:88dvh;overflow:auto;
+    box-shadow:0 0 0 100vmax rgba(4,5,10,.6),0 -20px 50px rgba(0,0,0,.5)}
+  .dj-pick .act button{flex:1;min-height:46px;justify-content:center}
+  .dj-days button{padding:9px 0}
+  .dj-quick button{padding:8px 12px}
+  /* ZADANIA: pole dodawania mieści się w karcie, nagłówek zawija się zamiast ściskać */
+  .td-quick input{min-width:0}
+  .td-head{flex-wrap:wrap}
+  .td-main{min-height:0}
+  /* PULPIT: kafelki zwarte (ilustracja obok tytułu) — mniej przewijania do Dojazdu i Finansów */
+  .portals{gap:12px}
+  .portals .portal,.portals>.portal:nth-child(n+3){display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto auto;column-gap:16px;row-gap:12px;
+    padding:16px 18px;border-radius:22px;min-height:0;align-items:center}
+  .portals .portal-art{height:66px;grid-row:1;grid-column:1;align-self:center;justify-content:center;margin:0;overflow:visible}
+  .portals .portal-txt{grid-row:1;grid-column:2;margin:0!important;padding:0!important;align-self:center}
+  .portals .portal-art svg{max-width:78px;max-height:66px;height:auto}
+  .portals .portal-txt h2{font-size:21px}
+  .portals .portal-txt p{font-size:13.5px;margin-top:3px}
+  .portals .portal-foot{grid-column:1/-1;grid-row:2;margin-top:0!important}
+  /* okna (modale): wysuwane od dołu, pełna szerokość, wygodne przyciski */
+  .modal-bd{align-items:flex-end;padding:0}
+  .modal{max-width:none!important;width:100%;border-radius:22px 22px 0 0;padding:22px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;max-height:92dvh}
+  .modal .frow{flex-wrap:wrap}
+  .modal .frow .field{flex:1 1 130px}
+  .modal .frow .field:has(.seg){flex-basis:100%}
+  .modal .seg button{min-width:0}
+  #modal .actions{flex-wrap:wrap}
+  #modal .actions .btn{flex:1 1 auto;justify-content:center;min-height:44px}
+
+  /* pola i przyciski: min. 16 px (bez powiększania przy pisaniu) i cel dotyku ~40 px */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}
+  .btn.sm{min-height:38px}
+}
+/* ekrany dotykowe: akcje ukryte „do najechania myszą” są zawsze widoczne */
+@media(hover:none){
+  .dj-fav .x,.sechead .scacts,.pick .row-i .del,.row-i .rowact,.nbacts{opacity:1}
+  .note-item .acts{opacity:1;pointer-events:auto}
+  .note-item:hover .nt-side .tybadge{opacity:1}
+}
 </style>
 </head>
 <body class="on-pulpit">
@@ -2945,7 +3106,7 @@ body.on-start .pomo{display:none}
           <div id="ed-body" style="display:none">
             <div class="nhead">
               <div class="nhead-main">
-                <div class="ntitle-row"><input class="ntitle" id="note-title" placeholder="Tytuł notatki"><span class="note-tbadge" id="note-tbadge"></span></div>
+                <div class="ntitle-row"><textarea class="ntitle" id="note-title" rows="1" placeholder="Tytuł notatki" spellcheck="false"></textarea><span class="note-tbadge" id="note-tbadge"></span></div>
                 <div class="nsub" id="note-sub"></div>
                 <div class="nhead-acts">
                   <button class="btn ghost xs nexport" onclick="shareCurrent('note')" title="Udostępnij notatkę znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
@@ -3133,6 +3294,7 @@ function go(v){
   document.body.classList.toggle('on-social', v==='konto'||v==='znajomi'||v==='grupy');
   document.body.classList.toggle('on-auth', (v==='konto'||v==='znajomi'||v==='grupy')&&!ME);
   pushNav();
+  if(matchMedia('(max-width:820px)').matches)requestAnimationFrame(()=>$('.rail .active')?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}));
 }
 
 /* historia nawigacji: każdy widok/zeszyt/notatka = wpis w historii przeglądarki,
@@ -3168,8 +3330,10 @@ function showTab(t){
   requestAnimationFrame(fitStudy); setTimeout(fitStudy,90);
 }
 /* dopasuj wysokość obszaru nauki do dołu ekranu (scroll tylko w notatce) */
+const MOBILE=matchMedia('(max-width:820px)');
 function fitStudy(){
   const s=$('.study'); if(!s||!$('#view-nauka').classList.contains('active'))return;
+  if(MOBILE.matches){s.style.height='';return;}   // telefon: przewija się cała strona
   const top=s.getBoundingClientRect().top;               // względem okna
   const padB=parseInt(getComputedStyle($('.main')).paddingBottom)||14;
   s.style.height=Math.max(360, Math.round(innerHeight-top-padB-2))+'px';
@@ -3178,8 +3342,9 @@ window.addEventListener('resize',fitStudy);
 function updateBreadcrumb(){
   const nb=allNotebooks.find(n=>n.id===nbActive);
   let html=`<span class="crumb" onclick="showTab('notebooks')">Zeszyty</span>`;
-  if(nb) html+=`<wbr><span class="crumb-sep">·</span><wbr><span class="crumb" onclick="showTab('notes')">${esc(nb.name)}</span>`;
-  if(noteActive&&noteData) html+=`<wbr><span class="crumb-sep">·</span><wbr><span class="crumb cur">${esc(noteData.title||'Notatka')}</span>`;
+  const W=matchMedia('(max-width:820px)').matches?'':'<wbr>';   // telefon: okruszki w jednej linii
+  if(nb) html+=`${W}<span class="crumb-sep">·</span>${W}<span class="crumb" onclick="showTab('notes')">${esc(nb.name)}</span>`;
+  if(noteActive&&noteData) html+=`${W}<span class="crumb-sep">·</span>${W}<span class="crumb cur">${esc(noteData.title||'Notatka')}</span>`;
   const el=$('#nauka-title'); if(el)el.innerHTML=html;
   const sub=$('#nauka-sub'); if(sub)sub.style.display=(nb||noteActive)?'none':'';
   $('#nauka-head')&&$('#nauka-head').classList.toggle('compact',!!(nb||noteActive));
@@ -4672,13 +4837,41 @@ async function winClose(){
 /* ---------- AKTUALIZACJE (aplikacja na Windows): GitHub Releases → AsystentSetup.exe ---------- */
 let UPD=null, updTimer=null;
 const SETUP_URL='https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe';
+/* aplikacja na Androida: sprawdzenie i instalacja przez most natywny (MainActivity.Bridge) */
+const AND=window.AsystentAndroid||null, AND_UPD=!!(AND&&typeof AND.checkUpdate==='function');
+const APK_URL='https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.apk';
+let andWait=null, ANDP=null;
+window.androidUpdate=r=>{UPD=r;paintUpdate();if(andWait){andWait(r);andWait=null;}};
+window.androidUpdateProgress=s=>{ANDP=s;paintAndProg();};
+function paintAndProg(){
+  const p=$('#upd-prog'), s=ANDP; if(!p||!s)return;
+  p.hidden=false; const pct=s.total?Math.round(s.done/s.total*100):0;
+  p.querySelector('i').style.width=(s.state==='installing'?100:pct)+'%';
+  p.querySelector('span').textContent=s.state==='downloading'?(s.total?`Pobieranie… ${pct}% (${(s.done/1048576).toFixed(1)} / ${(s.total/1048576).toFixed(1)} MB)`:'Pobieranie…')
+    :s.state==='installing'?'Gotowe — potwierdź instalację w oknie systemu. Dane zostają.':s.state==='error'?'Błąd: '+s.error:'';
+}
 async function checkUpdate(force){
+  if(AND_UPD){UPD=await new Promise(res=>{andWait=res;AND.checkUpdate();setTimeout(()=>{if(andWait){andWait({error:'Brak odpowiedzi — sprawdź internet.'});andWait=null;}},15000);});paintUpdate();return UPD;}
   try{UPD=await api('/update/check'+(force?'?force=1':''));}catch(_){UPD=null;}
   paintUpdate(); return UPD;
 }
 function paintUpdate(){
   const box=$('#st-upd'); if(!box)return;
   const v=APP.version||'—';
+  if(AND){
+    const av=AND.version?AND.version():'?', a=UPD&&UPD.available, err=UPD&&UPD.error;
+    box.innerHTML=`<div class="st-h"><h3>Aplikacja na telefon <span class="adm-health ${a?'bad':err||!UPD?'':'ok'}">${a?'Dostępna aktualizacja':err?'Nie sprawdzono':UPD?'Aktualna':'Android'}</span></h3>
+      <p>Wersja aplikacji <b>${esc(av)}</b>${a?` → nowa <b>${esc(UPD.latest)}</b>`:''}. Wygląd i funkcje aktualizują się same po każdej zmianie na serwerze —
+      nowa wersja aplikacji jest potrzebna tylko przy zmianach w samym telefonie (pliki, powiadomienia).</p></div>
+      ${a&&UPD.notes?`<div class="upd-notes">${esc(UPD.notes).replace(/\n/g,'<br>')}</div>`:''}
+      <div class="upd-prog" id="upd-prog" hidden><i></i><span></span></div>
+      <div class="st-actions">${AND_UPD?(a?`<button class="btn" onclick="AND.installUpdate()">Zaktualizuj teraz</button>`:'')
+        +`<button class="btn ghost" onclick="checkUpdate(true).then(u=>u&&!u.available&&!u.error&&popout({icon:'ok',title:'Masz najnowszą wersję',text:'Asystent '+u.current}))">Sprawdź teraz</button>`
+        :`<a class="btn" href="${APK_URL}">Pobierz najnowszą wersję</a>`}</div>
+      ${AND_UPD?'':'<p class="st-note">Po zainstalowaniu tej wersji aktualizacje będą instalować się prosto z tego miejsca.</p>'}
+      ${err?`<p class="st-note">${esc(err)}</p>`:''}`;
+    paintAndProg(); return;
+  }
   if(!APP.desktop){
     box.innerHTML=`<div class="st-h"><h3>Aplikacja na Windows</h3><p>Ta sama aplikacja w osobnym oknie, z nagrywaniem wykładów i automatycznymi aktualizacjami.</p></div>
       <div class="st-actions"><a class="btn" href="${SETUP_URL}">Pobierz instalator</a></div>`;return;}
@@ -4922,6 +5115,7 @@ function djSetAt(ts){
 }
 function djPicker(e){
   e&&e.stopPropagation(); const box=$('#dj-pick'); if(!box.hidden){box.hidden=true;return;}
+  if(matchMedia('(max-width:820px)').matches&&box.parentNode!==document.body)document.body.appendChild(box);   // telefon: panel od dołu (poza kartą z rozmyciem tła)
   const base=DJ.at?new Date(DJ.at*1000):new Date(); DJ_PICK.d=new Date(base); DJ_PICK.d.setHours(0,0,0,0); DJ_PICK.h=base.getHours(); DJ_PICK.m=Math.ceil(base.getMinutes()/5)*5%60;
   if(!DJ.at&&base.getMinutes()>55)DJ_PICK.h=(DJ_PICK.h+1)%24;
   const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i);return d;});
@@ -4962,7 +5156,7 @@ function djPicker(e){
 function djPickOk(){const d=new Date(DJ_PICK.d); d.setHours(DJ_PICK.h,DJ_PICK.m,0,0); djSetAt(Math.round(d.getTime()/1000));}
 function djQuickTomorrow(h){const d=new Date(); d.setDate(d.getDate()+1); d.setHours(h,0,0,0); djSetAt(Math.round(d.getTime()/1000));}
 document.addEventListener('mousedown',e=>{if(!e.target.closest('.dj-ac'))$$('.dj-sug').forEach(b=>b.hidden=true);});
-document.addEventListener('click',e=>{const p=$('#dj-pick'); if(p&&!p.hidden&&!e.target.closest('.dj-whenwrap'))p.hidden=true;});
+document.addEventListener('click',e=>{const p=$('#dj-pick'); if(p&&!p.hidden&&!e.target.closest('.dj-whenwrap,#dj-pick'))p.hidden=true;});
 async function loadDojazd(){
   const st=await api('/transit/status'); djStatus(st);
   try{const last=JSON.parse(LS.get('dj_last')||'null'); if(last&&!$('#dj-from').value){$('#dj-from').value=last.f;$('#dj-to').value=last.t;$('#dj-tram').checked=!!last.tram;}
@@ -5619,7 +5813,7 @@ async function paintWinPrefs(){
     <div class="st-row"><span>Pasek tytułu</span><div class="seg"><button class="${w.frameless?'on':''}" onclick="setWinPrefs(true)">Asystent</button><button class="${w.frameless?'':'on'}" onclick="setWinPrefs(false)">Windows</button></div></div>`;
 }
 async function setWinPrefs(v){await api('/desktop/window',{method:'POST',body:JSON.stringify({frameless:v})});paintWinPrefs();}
-async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage(); paintUpdate(); paintWinPrefs(); if(APP.desktop&&!UPD)checkUpdate();}
+async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage(); paintUpdate(); paintWinPrefs(); if((APP.desktop||AND_UPD)&&!UPD)checkUpdate();}
 const fmtTok=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+' mln':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+' tys.':String(n);
 const usageTone=p=>p>=100?['#ff9088','#ff6b6b']:p>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
 let _usageTimer=null, _usagePrev={};
@@ -6173,8 +6367,10 @@ function sizeTitleInput(){const i=$('#note-title');if(!i)return;i.removeAttribut
   cx.font=(cs.fontWeight||'700')+' '+cs.fontSize+' '+cs.fontFamily;
   const v=i.value||i.placeholder||'';
   const max=(i.closest('.nhead-main')?.clientWidth||520)-30;
-  i.style.width=Math.min(max,Math.max(40,Math.ceil(cx.measureText(v).width)+6))+'px';}
-$('#note-title').addEventListener('input',e=>{noteData.title=e.target.value;sizeTitleInput();$('#tab-note-label').textContent=e.target.value||'Notatka';updateBreadcrumb();scheduleSave();});
+  i.style.width=Math.min(max,Math.max(40,Math.ceil(cx.measureText(v).width)+6))+'px';
+  i.style.height='auto'; i.style.height=i.scrollHeight+'px';}   // długi tytuł zawija się do kolejnej linii
+$('#note-title').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
+$('#note-title').addEventListener('input',e=>{if(/\n/.test(e.target.value))e.target.value=e.target.value.replace(/\s*\n\s*/g,' ');noteData.title=e.target.value;sizeTitleInput();$('#tab-note-label').textContent=e.target.value||'Notatka';updateBreadcrumb();scheduleSave();});
 
 function scheduleSave(){
   $('#note-saved').textContent='Zapisywanie…';
