@@ -1,0 +1,45 @@
+// Asystent na Androida: natywne okno (WebView) z wersją webową zenfix.pl/asystent/app — konto, synchronizacja, Dojazd, AI.
+// Wersja z pliku VERSION w katalogu głównym repozytorium (ta sama co aplikacji na Windows).
+plugins {
+    id "com.android.application"
+}
+
+def appVersion = new File(rootDir.parentFile, "VERSION").text.trim()
+def (vMaj, vMin, vPat) = appVersion.tokenize(".").collect { it as int }
+
+android {
+    namespace "pl.zenfix.asystent"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "pl.zenfix.asystent"
+        minSdk 24
+        targetSdk 34
+        versionCode vMaj * 10000 + vMin * 100 + vPat
+        versionName appVersion
+    }
+
+    signingConfigs {
+        release {
+            // Każde wydanie musi być podpisane tym samym kluczem — inaczej Android nie zainstaluje aktualizacji na starą wersję.
+            // Domyślnie klucz projektu (android/asystent.jks); własny można podać sekretami GitHuba (ANDROID_KEYSTORE_*).
+            def ks = System.getenv("ANDROID_KEYSTORE_FILE")
+            storeFile ks ? file(ks) : new File(rootDir, "asystent.jks")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: "asystent-studenta"
+            keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: "asystent"
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: "asystent-studenta"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

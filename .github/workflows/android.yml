@@ -1,0 +1,58 @@
+name: Aplikacja Android
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Wersja (z tagu v1.2.3 albo z pliku VERSION)
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "${GITHUB_REF#refs/tags/v}" > VERSION; fi
+          echo "APP_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+      - name: Własny klucz podpisu (opcjonalnie, z sekretów)
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then echo "$KS" | base64 -d > "$RUNNER_TEMP/ks.jks"; echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/ks.jks" >> $GITHUB_ENV; fi
+      - name: Budowanie Asystent.apk
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          gradle --no-daemon assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk ../Asystent.apk
+          ls -la ../Asystent.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Asystent-android
+          path: Asystent.apk
+      - name: Dołączenie do wydania
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # wydanie tworzy workflow Windows (nowa wersja w VERSION albo tag) — czekamy na nie najwyżej 40 min
+          for i in $(seq 1 80); do
+            if gh release view "v$APP_VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release upload "v$APP_VERSION" Asystent.apk --clobber --repo "$GITHUB_REPOSITORY"
+              echo "Dołączono Asystent.apk do v$APP_VERSION"; exit 0
+            fi
+            sleep 30
+          done
+          echo "Brak wydania v$APP_VERSION — APK zostaje jako artefakt"
