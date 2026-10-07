@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
+        if (onInstallResult(i)) return;
         if (i.getData() != null) web.loadUrl(startUrl(i));
     }
 
@@ -111,6 +112,11 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        // wrócił z ustawień „Instaluj nieznane aplikacje” — dokończ aktualizację
+        if (pendingInstall && (Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls())) {
+            pendingInstall = false;
+            installUpdate();
+        }
     }
 
     @Override
@@ -270,41 +276,165 @@ public class MainActivity extends Activity {
         public String version() {
             return MainActivity.this.version();
         }
+
+        /** Ustawienia → Dane → „Sprawdź teraz”: wynik trafia do window.androidUpdate(json). */
+        @JavascriptInterface
+        public void checkUpdate() {
+            new Thread(() -> toPage("androidUpdate", fetchRelease())).start();
+        }
+
+        /** „Zaktualizuj teraz”: pobranie z postępem (window.androidUpdateProgress) i instalacja. */
+        @JavascriptInterface
+        public void installUpdate() {
+            runOnUiThread(MainActivity.this::installUpdate);
+        }
     }
 
-    /* ---------- aktualizacje: najnowsze wydanie na GitHubie z plikiem Asystent.apk ---------- */
+    /* ---------- aktualizacje: najnowsze wydanie na GitHubie z plikiem Asystent.apk ----------
+       Sprawdzenie przy starcie (okno „Nowa wersja”) i z Ustawień → Dane (most JS). Instalacja w aplikacji:
+       pobranie APK z postępem i PackageInstaller — bez szukania pliku na stronie. */
+    volatile String updLatest, updUrl, updNotes;
+    volatile boolean updBusy;
+
+    /** Pobiera informacje o najnowszym wydaniu; zwraca JSON dla strony. */
+    JSONObject fetchRelease() {
+        JSONObject out = new JSONObject();
+        try {
+            out.put("current", version());
+            HttpURLConnection c = (HttpURLConnection) new URL(RELEASES).openConnection();
+            c.setRequestProperty("Accept", "application/vnd.github+json");
+            c.setConnectTimeout(8000);
+            c.setReadTimeout(8000);
+            String body;
+            try (InputStream in = c.getInputStream(); Scanner sc = new Scanner(in, "UTF-8").useDelimiter("\\A")) {
+                body = sc.hasNext() ? sc.next() : "";
+            }
+            JSONObject rel = new JSONObject(body);
+            String latest = rel.optString("tag_name", "").replaceFirst("^v", "");
+            String apk = null;
+            JSONArray assets = rel.optJSONArray("assets");
+            for (int k = 0; assets != null && k < assets.length(); k++) {
+                JSONObject a = assets.getJSONObject(k);
+                if ("Asystent.apk".equals(a.optString("name"))) apk = a.optString("browser_download_url");
+            }
+            updLatest = latest;
+            updUrl = apk;
+            updNotes = rel.optString("body", "");
+            out.put("latest", latest);
+            out.put("published", rel.optString("published_at", ""));
+            out.put("notes", updNotes.length() > 1500 ? updNotes.substring(0, 1500) : updNotes);
+            out.put("available", apk != null && newer(latest, version()));
+        } catch (Exception e) {
+            try { out.put("error", "Nie udało się sprawdzić aktualizacji — sprawdź internet i spróbuj ponownie."); } catch (Exception ignored) { }
+        }
+        return out;
+    }
+
     void checkUpdate() {
         new Thread(() -> {
-            try {
-                HttpURLConnection c = (HttpURLConnection) new URL(RELEASES).openConnection();
-                c.setRequestProperty("Accept", "application/vnd.github+json");
-                c.setConnectTimeout(8000);
-                c.setReadTimeout(8000);
-                String body;
-                try (InputStream in = c.getInputStream(); Scanner sc = new Scanner(in, "UTF-8").useDelimiter("\\A")) {
-                    body = sc.hasNext() ? sc.next() : "";
-                }
-                JSONObject rel = new JSONObject(body);
-                String latest = rel.optString("tag_name", "").replaceFirst("^v", "");
-                String apk = null;
-                JSONArray assets = rel.optJSONArray("assets");
-                for (int k = 0; assets != null && k < assets.length(); k++) {
-                    JSONObject a = assets.getJSONObject(k);
-                    if ("Asystent.apk".equals(a.optString("name"))) apk = a.optString("browser_download_url");
-                }
-                if (apk != null && newer(latest, version())) {
-                    final String url = apk;
-                    runOnUiThread(() -> new AlertDialog.Builder(this)
-                            .setTitle("Nowa wersja " + latest)
-                            .setMessage("Jest nowsza wersja aplikacji Asystent. Pobrać ją teraz?")
-                            .setPositiveButton("Pobierz", (d, w) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))))
-                            .setNegativeButton("Później", null)
-                            .show());
-                }
-            } catch (Exception ignored) {
-                // brak sieci albo limit GitHuba — sprawdzimy przy następnym uruchomieniu
+            JSONObject r = fetchRelease();
+            if (r.optBoolean("available")) {
+                runOnUiThread(() -> new AlertDialog.Builder(this)
+                        .setTitle("Nowa wersja " + updLatest)
+                        .setMessage("Jest nowsza wersja aplikacji Asystent. Zainstalować ją teraz? Twoje dane zostają.")
+                        .setPositiveButton("Zaktualizuj", (d, w) -> installUpdate())
+                        .setNegativeButton("Później", null)
+                        .show());
             }
         }).start();
+    }
+
+    /** Wynik/postęp dla strony: window.androidUpdate(json) i window.androidUpdateProgress(json). */
+    void toPage(String fn, JSONObject o) {
+        String js = "window." + fn + "&&window." + fn + "(" + o.toString() + ")";
+        runOnUiThread(() -> web.evaluateJavascript(js, null));
+    }
+
+    void progress(String state, long done, long total, String err) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("state", state);
+            o.put("done", done);
+            o.put("total", total);
+            if (err != null) o.put("error", err);
+            toPage("androidUpdateProgress", o);
+        } catch (Exception ignored) { }
+    }
+
+    void installUpdate() {
+        if (updBusy) return;
+        // Android 8+: pierwsza aktualizacja wymaga zgody „Instaluj nieznane aplikacje” dla Asystenta
+        if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+            pendingInstall = true;
+            Toast.makeText(this, "Zezwól Asystentowi na instalowanie aktualizacji i wróć do aplikacji", Toast.LENGTH_LONG).show();
+            try {
+                startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+            } catch (Exception e) {
+                progress("error", 0, 0, "Włącz w ustawieniach telefonu: Aplikacje → Asystent → Instalowanie nieznanych aplikacji.");
+            }
+            return;
+        }
+        updBusy = true;
+        progress("downloading", 0, 0, null);
+        new Thread(() -> {
+            try {
+                if (updUrl == null) fetchRelease();
+                if (updUrl == null) throw new Exception("Brak pliku Asystent.apk w najnowszym wydaniu.");
+                File apk = new File(getCacheDir(), "Asystent-update.apk");
+                HttpURLConnection c = (HttpURLConnection) new URL(updUrl).openConnection();
+                c.setInstanceFollowRedirects(true);
+                c.setConnectTimeout(15000);
+                c.setReadTimeout(30000);
+                long total = c.getContentLengthLong(), done = 0, last = 0;
+                try (InputStream in = c.getInputStream(); FileOutputStream o = new FileOutputStream(apk)) {
+                    byte[] buf = new byte[65536];
+                    for (int n; (n = in.read(buf)) > 0; ) {
+                        o.write(buf, 0, n);
+                        done += n;
+                        long now = System.currentTimeMillis();
+                        if (now - last > 250) { last = now; progress("downloading", done, total, null); }
+                    }
+                }
+                progress("installing", done, total, null);
+                android.content.pm.PackageInstaller pi = getPackageManager().getPackageInstaller();
+                android.content.pm.PackageInstaller.SessionParams sp =
+                        new android.content.pm.PackageInstaller.SessionParams(android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+                sp.setSize(apk.length());
+                int id = pi.createSession(sp);
+                try (android.content.pm.PackageInstaller.Session ses = pi.openSession(id)) {
+                    try (InputStream in = new java.io.FileInputStream(apk); OutputStream o = ses.openWrite("asystent.apk", 0, apk.length())) {
+                        byte[] buf = new byte[65536];
+                        for (int n; (n = in.read(buf)) > 0; ) o.write(buf, 0, n);
+                        ses.fsync(o);
+                    }
+                    Intent cb = new Intent(this, MainActivity.class).setAction(ACTION_INSTALL);
+                    int fl = android.app.PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? 0x02000000 /* FLAG_MUTABLE */ : 0);
+                    ses.commit(android.app.PendingIntent.getActivity(this, 7, cb, fl).getIntentSender());
+                }
+            } catch (Exception e) {
+                progress("error", 0, 0, e.getMessage() != null ? e.getMessage() : "Nie udało się pobrać aktualizacji.");
+            } finally {
+                updBusy = false;
+            }
+        }).start();
+    }
+
+    static final String ACTION_INSTALL = "pl.zenfix.asystent.INSTALL";
+    boolean pendingInstall;
+
+    /** Odpowiedź instalatora systemowego: prośba o potwierdzenie albo błąd. */
+    boolean onInstallResult(Intent i) {
+        if (i == null || !ACTION_INSTALL.equals(i.getAction())) return false;
+        int st = i.getIntExtra(android.content.pm.PackageInstaller.EXTRA_STATUS, -999);
+        if (st == android.content.pm.PackageInstaller.STATUS_PENDING_USER_ACTION) {
+            Intent confirm = (Intent) i.getParcelableExtra(Intent.EXTRA_INTENT);
+            if (confirm != null) startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } else if (st != android.content.pm.PackageInstaller.STATUS_SUCCESS) {
+            String msg = i.getStringExtra(android.content.pm.PackageInstaller.EXTRA_STATUS_MESSAGE);
+            progress("error", 0, 0, st == android.content.pm.PackageInstaller.STATUS_FAILURE_ABORTED
+                    ? "Instalacja anulowana." : "Instalacja nie powiodła się" + (msg != null ? ": " + msg : "."));
+        }
+        return true;
     }
 
     static boolean newer(String a, String b) {
