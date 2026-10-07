@@ -2528,6 +2528,9 @@ body.on-start .pomo{display:none}
             <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe">
               <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 5.2l7.4-1v7.2H3zM11.3 4.1L21 2.7v8.7h-9.7zM3 12.5h7.4v7.3L3 18.8zM11.3 12.5H21v8.8l-9.7-1.4z"/></svg>
               <span><small>Pobierz na</small><b>Windows</b></span></a>
+            <a class="dl lp-and" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.apk">
+              <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.6 9.5l1.7-3a.4.4 0 00-.7-.4l-1.7 3a10.4 10.4 0 00-9.8 0l-1.7-3a.4.4 0 00-.7.4l1.7 3A9.6 9.6 0 002 17.5h20a9.6 9.6 0 00-4.4-8zM7.5 15a1 1 0 110-2 1 1 0 010 2zm9 0a1 1 0 110-2 1 1 0 010 2z"/></svg>
+              <span><small>Pobierz na</small><b>Androida</b></span></a>
             <button class="dl" onclick="lpPhone()">
               <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="6.5" y="2.5" width="11" height="19" rx="2.8"/><path d="M10.5 18.5h3" stroke-linecap="round"/></svg>
               <span><small>Zainstaluj na</small><b>telefonie</b></span></button>
@@ -2618,6 +2621,9 @@ body.on-start .pomo{display:none}
             <a class="dl lp-win" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe">
               <svg viewBox="0 0 24 24" fill="#fff"><path d="M3 5.2l7.4-1v7.2H3zM11.3 4.1L21 2.7v8.7h-9.7zM3 12.5h7.4v7.3L3 18.8zM11.3 12.5H21v8.8l-9.7-1.4z"/></svg>
               <span><small>Pobierz na</small><b>Windows</b></span></a>
+            <a class="dl lp-and" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.apk">
+              <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.6 9.5l1.7-3a.4.4 0 00-.7-.4l-1.7 3a10.4 10.4 0 00-9.8 0l-1.7-3a.4.4 0 00-.7.4l1.7 3A9.6 9.6 0 002 17.5h20a9.6 9.6 0 00-4.4-8zM7.5 15a1 1 0 110-2 1 1 0 010 2zm9 0a1 1 0 110-2 1 1 0 010 2z"/></svg>
+              <span><small>Pobierz na</small><b>Androida</b></span></a>
           </div></div>
         <footer class="lp-foot">Asystent studenta · plan, notatki, quizy i zadania w jednym miejscu</footer>
       </div>
@@ -3041,6 +3047,9 @@ async function lpRelease(){
   const ver=(_lpRel.tag_name||'').replace(/^v/,''), mb=Math.round(a.size/1048576);
   $$('.lp-win').forEach(w=>{w.href=a.browser_download_url;w.setAttribute('download','');w.querySelector('small').textContent=`Pobierz ${ver} · ${mb} MB`;});
   $('#lp-meta').textContent=`Za darmo · Asystent ${ver} dla Windows 10 i 11 · iPhone i Android z ekranu głównego`;
+  const k=(_lpRel.assets||[]).find(x=>x.name==='Asystent.apk');
+  if(k)$$('.lp-and').forEach(w=>{w.href=k.browser_download_url;w.querySelector('small').textContent=`Pobierz ${ver} · ${Math.max(1,Math.round(k.size/1048576))} MB`;});
+  $('#lp-meta').textContent=`Za darmo · Asystent ${ver} dla Windows 10 i 11${k?' oraz Androida':''} · iPhone z ekranu głównego`;
 }
 let _lgN=0;
 function logoSVG(){
@@ -3072,6 +3081,7 @@ addEventListener('mouseup',e=>{if(e.button===3&&document.body.classList.contains
 function lpBack(){ const prev=lpBack.from; if(prev&&prev.v&&prev.v!=='start'){history.back();setTimeout(()=>{if(document.body.classList.contains('on-start'))go(prev.v);},150);} else go('pulpit'); }
 function startLanding(){
   const v=$('#view-start'); paintLogos(v); lpRelease();
+  if(/AsystentAndroid/.test(navigator.userAgent))$$('.lp-and',v).forEach(w=>{w.classList.add('done');w.removeAttribute('href');w.querySelector('small').textContent='Używasz już aplikacji';w.querySelector('b').textContent='Android ✓';});
   if(APP.desktop)$$('.lp-win',v).forEach(w=>{w.classList.add('done');w.removeAttribute('href');w.querySelector('small').textContent='Używasz już aplikacji';w.querySelector('b').textContent='Windows ✓';});
   // pasek uczelni: dwa rzędy, każdy zdublowany (płynna pętla)
   const box=$('#lp-unis');

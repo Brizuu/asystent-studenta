@@ -30,3 +30,9 @@ dist/
 cloud/cloud.db*
 cloud/.env
 cloud/app/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
