@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Asystent</title>
 <link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0b0b14">
@@ -39,24 +41,29 @@
 :root{color-scheme:dark}
 /* ---------- tokeny ---------- */
 :root{
-  --bg:#111115;
-  --ink:#f3f0ea; --ink-soft:#c9c3b9; --ink-dim:#8e887f;
-  --line:rgba(255,255,255,.09);
+  /* paleta „Grafit” (redesign 2.0) */
+  --bg:#0B0E14; --glow-1:#24457F; --glow-2:#164E4C;
+  --ink:#EEF1F6; --ink-soft:#9AA3B2; --ink-dim:#7A8394;
+  --line:rgba(255,255,255,.08);
   --glass:rgba(255,255,255,.045);
-  --glass-2:rgba(255,255,255,.07);
-  --accent:#9fabff; --accent-2:#80dcc2;
-  --pos:#74dc9e; --neg:#ff9088;
-  --hi:#ffb98c;
-  --peach:#ffb98c; --rose:#ff9db4; --sky:#8fc8ff; --lilac:#c3b5ff;
-  --r:20px; --r-sm:12px;
+  --glass-2:rgba(255,255,255,.065);
+  --track:rgba(255,255,255,.08);
+  --accent:#5A96F2; --accent-text:#8DB6FF; --accent-2:#4FD1B8; --live:#4FD1B8;
+  --pos:#4FD1B8; --neg:#E5675F; --danger:#E5675F;
+  --hi:#E3B25C;
+  --cat-past:#4A5468; --cat-study:#8DB6FF; --cat-work:#E3B25C; --cat-extra:#B59CF0; --tram:#E5534B;
+  --peach:#E3B25C; --rose:#E58AA0; --sky:#8DB6FF; --lilac:#B59CF0;
+  --btn-bg:#E6EDF9; --btn-ink:#0B0E14;
+  --progress:linear-gradient(90deg,var(--accent),var(--live));
+  --r:16px; --r-sm:12px;
   /* skala odstępów 8px */
   --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px;
   /* skala typografii */
   --fs-eyebrow:12px; --fs-body:15px; --fs-lead:17px;
   --fs-h3:20px; --fs-h2:28px; --fs-h1:clamp(34px,5vw,56px); --fs-num:clamp(30px,4vw,44px);
   /* font systemowy: SF na Apple, Segoe UI Variable na Windows (optical sizing w pakiecie) */
-  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
-  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --font-text:Manrope,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  --font-display:Manrope,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
   /* materiały: górna jasna krawędź = światło na materiale; większa powierzchnia = głębszy cień */
   --edge:inset 0 1px 0 rgba(255,255,255,.07);
   --press:scale(.97);
@@ -126,7 +133,7 @@ h3{font-size:var(--fs-h3);font-weight:600;line-height:1.2;letter-spacing:-.012em
 .bell~.bell{margin-top:0}
 .bell[hidden]{display:none}
 #nav-sync.busy svg{animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
-#nav-sync.ok svg{color:#7ee2b8} #nav-sync .bell-n{background:#9fabff;color:#14152a}
+#nav-sync.ok svg{color:#4FD1B8} #nav-sync .bell-n{background:#8DB6FF;color:#14152a}
 @media(max-width:820px){#nav-sync{display:none}}
 .rail>.navlist{margin-bottom:auto}
 /* dolna grupa (admin, synchronizacja, konto, ustawienia, powiadomienia): ciasno jak menu, oddzielona od głównych zakładek */
@@ -537,8 +544,8 @@ body.on-pulpit .sky{opacity:1}   /* niebo tylko na pulpicie; wejście/wyjście =
 body.on-social .aura{opacity:1}
 /* zorza: miękkie wstęgi w kolorach aplikacji zamiast przypadkowych plam */
 .au-ribbon{position:absolute;left:-20%;right:-20%;top:18%;height:46%;border-radius:50%;filter:blur(70px);opacity:.55;transform:rotate(-12deg);
-  background:linear-gradient(90deg,transparent 2%,#9fabff 22%,#c3b5ff 38%,#ffb98c 58%,#ff9db4 72%,transparent 96%)}
-.au-ribbon.r2{top:52%;height:34%;opacity:.32;transform:rotate(8deg);background:linear-gradient(90deg,transparent 8%,#80dcc2 30%,#8fc8ff 55%,#9fabff 75%,transparent 98%)}
+  background:linear-gradient(90deg,transparent 2%,#8DB6FF 22%,#B59CF0 38%,#E3B25C 58%,#ff9db4 72%,transparent 96%)}
+.au-ribbon.r2{top:52%;height:34%;opacity:.32;transform:rotate(8deg);background:linear-gradient(90deg,transparent 8%,#4FD1B8 30%,#8DB6FF 55%,#8DB6FF 75%,transparent 98%)}
 .au-grid{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.22) 1px,transparent 1.2px);background-size:26px 26px;
   mask-image:radial-gradient(70% 60% at 50% 45%,transparent 18%,#000 60%,transparent 92%);-webkit-mask-image:radial-gradient(70% 60% at 50% 45%,transparent 18%,#000 60%,transparent 92%)}
 /* szklane kafelki z elementami aplikacji — tylko przy ekranie logowania, lekko podążają za kursorem */
@@ -552,13 +559,13 @@ body.on-auth .au-cards{opacity:1}
 .au-cal-h{font-size:11px;font-weight:700;color:#ff5f57;letter-spacing:.04em} .au-cal-d{font-size:40px;font-weight:300;line-height:1.1}
 .au-dots{display:flex;gap:4px;justify-content:center} .au-dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
 .c-note{left:8%;bottom:16%;--r:5deg;width:210px}
-.au-note-t{font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px} .au-note-t i{width:8px;height:8px;border-radius:50%;background:#80dcc2}
+.au-note-t{font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px} .au-note-t i{width:8px;height:8px;border-radius:50%;background:#4FD1B8}
 .au-line{height:6px;border-radius:4px;background:rgba(255,255,255,.22);margin-top:7px}
 .c-fr{right:11%;top:14%;--r:6deg;display:flex;align-items:center;gap:10px}
 .au-avs{display:flex} .au-avs span{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--c);border:2px solid rgba(255,255,255,.7);margin-left:-8px}
 .au-avs span:first-child{margin-left:0} .au-fr-t{font-weight:600}
 .c-share{right:8%;bottom:20%;--r:-5deg;display:flex;align-items:center;gap:12px}
-.au-sh-ic{width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,#ffb98c,#ff9db4)} .au-sh-t{font-weight:600} .au-sh-s{font-size:11.5px;color:rgba(255,255,255,.7)}
+.au-sh-ic{width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,#E3B25C,#ff9db4)} .au-sh-t{font-weight:600} .au-sh-s{font-size:11.5px;color:rgba(255,255,255,.7)}
 .c-time{left:24%;top:58%;--r:-3deg;opacity:.85} .au-time{font-size:22px;font-weight:300;letter-spacing:-.02em}
 @media(max-width:1000px){.au-cards{display:none}}
 @media(prefers-reduced-motion:reduce){.au-card{transition:none}}
@@ -749,10 +756,10 @@ a.btn{display:inline-block}
 .td-item .m{flex:1;min-width:0} .td-item b{display:block;font-size:15px;font-weight:500;line-height:1.35}
 .td-item small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .td-item.is-done b{color:var(--ink-dim);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.3)}
-.td-cb{width:22px;height:22px;border-radius:50%;flex:none;margin-top:1px;border:2px solid color-mix(in srgb,var(--c,#9fabff) 70%,transparent);background:transparent;cursor:pointer;
+.td-cb{width:22px;height:22px;border-radius:50%;flex:none;margin-top:1px;border:2px solid color-mix(in srgb,var(--c,#8DB6FF) 70%,transparent);background:transparent;cursor:pointer;
   display:grid;place-items:center;padding:0;transition:background .15s,transform .2s var(--spring,ease)}
 .td-cb .td-ico{width:13px;height:13px;stroke:#fff;stroke-width:3;opacity:0;transition:opacity .15s}
-.td-cb:hover .td-ico{opacity:.45} .td-cb.on{background:var(--c,#9fabff);border-color:var(--c,#9fabff)} .td-cb.on .td-ico{opacity:1} .td-cb:active{transform:scale(.88)}
+.td-cb:hover .td-ico{opacity:.45} .td-cb.on{background:var(--c,#8DB6FF);border-color:var(--c,#8DB6FF)} .td-cb.on .td-ico{opacity:1} .td-cb:active{transform:scale(.88)}
 .td-cb.sm{width:18px;height:18px} .td-cb.sm .td-ico{width:11px;height:11px}
 .td-ico{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .td-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
@@ -1059,7 +1066,7 @@ body.on-fin .fin-bg{opacity:1}
 .goal-mark{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px rgba(15,16,26,.9)}
 .fin-legend .lg-left::before{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 3px,rgba(255,255,255,.15) 3px 6px)}
 .fin-legend .lg-goal::before{width:2px;border-radius:1px;background:#fff}
-.fin-legend .lg-over::before{background:#ff9088}
+.fin-legend .lg-over::before{background:#E5675F}
 .fin-foot{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--line)}
 .fin-foot .fin-days{margin:0}
 .fin-spent{flex:1;min-width:200px;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--ink-soft)} .fin-spent b{color:var(--ink)}
@@ -1084,7 +1091,7 @@ body.on-fin .fin-bg{opacity:1}
 .fin-month .v{font-size:28px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .fin-month .v span{font-size:14px;font-weight:500;color:var(--ink-dim);letter-spacing:0}
 .fin-prog{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
-.fin-prog i{display:block;height:100%;border-radius:inherit;background:var(--pc,#74dc9e);transition:width .9s var(--spring,ease)}
+.fin-prog i{display:block;height:100%;border-radius:inherit;background:var(--pc,#4FD1B8);transition:width .9s var(--spring,ease)}
 .fin-month .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 /* wykres: jeden pasek części całości, 2 px przerwy, zaokrąglone końce */
 .fin-chart{grid-column:1/-1}
@@ -1152,7 +1159,7 @@ body.on-fin .fin-bg{opacity:1}
 .fin-sec>.lbl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px}
 /* dzwonek: liczba przypomnień + panel */
 .bell{position:relative}
-.bell-n{position:absolute;left:26px;top:5px;min-width:17px;height:17px;padding:0 5px;border-radius:99px;background:#ff9088;color:#1b0f12;font-size:10.5px;font-weight:700;
+.bell-n{position:absolute;left:26px;top:5px;min-width:17px;height:17px;padding:0 5px;border-radius:99px;background:#E5675F;color:#1b0f12;font-size:10.5px;font-weight:700;
   display:flex;align-items:center;justify-content:center;font-style:normal;box-shadow:0 0 0 2px rgba(13,14,21,.9)}
 .bell-n[hidden]{display:none}
 .bell-pop{position:fixed;z-index:300;width:330px;max-width:calc(100vw - 24px);padding:14px;border-radius:20px;background:rgba(28,28,42,.95)!important}
@@ -2412,6 +2419,64 @@ body.on-start .pomo{display:none}
 @media(max-width:720px){.lps-map{grid-template-columns:1fr;gap:6px}.lps-line{width:2px;height:34px;margin:4px auto;background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}.lps-line em{display:none}.lp-steps .st::after{display:none}.lps{padding:22px}}
 @media(prefers-reduced-motion:reduce){.lps-line em{animation:none;display:none}}
 
+/* ===================== REDESIGN „Grafit” — paleta i komponenty z projektu F ===================== */
+body{background:radial-gradient(circle at 85% 0%,color-mix(in srgb,var(--glow-1) 60%,transparent),transparent 45%),radial-gradient(circle at 45% 100%,color-mix(in srgb,var(--glow-2) 60%,transparent),transparent 45%),var(--bg);background-attachment:fixed;letter-spacing:-.003em}
+/* stare dekoracyjne tła (zorza, niebo, miękkie plamy) — zastąpione dwiema spokojnymi poświatami */
+.aurora,.soft-bg,.sky,.fin-bg{display:none!important}
+body.on-dojazd .dj-bg{opacity:.5!important}
+body.on-social .glass{background:var(--glass);border-color:var(--line)}
+body.on-social .fr-row{background:var(--glass);border-color:var(--line)}
+body:not(.on-start) .aura{display:none}
+h1{font-weight:800;letter-spacing:-.03em}
+h2,h3{font-weight:700}
+.eyebrow{font-weight:700;letter-spacing:.08em;color:var(--ink-dim)}
+/* karty: szkło 16 px */
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);box-shadow:none;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.panel{border-radius:var(--r)}
+/* przyciski */
+.btn{background:var(--btn-bg);color:var(--btn-ink);border-radius:12px;font-weight:700}
+.btn:hover{filter:none;background:#fff}
+.btn.ghost{background:var(--glass);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--glass-2);color:var(--ink)}
+.btn.danger{background:color-mix(in srgb,var(--danger) 16%,transparent);color:#ffd9d6;border:1px solid color-mix(in srgb,var(--danger) 45%,transparent)}
+/* pola */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{border-radius:12px}
+input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--accent) 70%,transparent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)!important;outline:none}
+/* kafelki Pulpitu: spokojne szkło zamiast kolorowych plam */
+.portal{background:var(--glass)!important;border:1px solid var(--line)!important;border-radius:20px!important;box-shadow:none!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.portal::before{opacity:.1!important}
+.portal::after{display:none}
+.portal:hover{background:var(--glass-2)!important;transform:translateY(-2px);box-shadow:none!important}
+.portal:hover::before{opacity:.16!important}
+/* tramwaj w Dojeździe */
+.dj-line.tram{background:var(--tram)!important;box-shadow:none}
+/* pasek przewijania */
+*{scrollbar-color:rgba(255,255,255,.14) transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.24);background-clip:padding-box}
+
+/* komputer: stałe menu boczne z podpisami (szklany panel) */
+@media(min-width:821px){
+  .app{padding-left:264px}
+  .rail{left:16px;top:16px;height:calc(100vh - 32px);width:232px;border-radius:20px;padding:18px 12px;gap:2px;
+    background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:none}
+  .rail:hover{width:232px;box-shadow:none}
+  .rail .btxt,.rail .navlist .lbl,.rail .foot,.rail .bell span{opacity:1}
+  .brand{padding:4px 10px 16px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .brand .mark{width:34px;height:34px}
+  .navlist{margin-top:0;gap:2px}
+  .navlist button,.rail-bottom .bell{height:42px;padding:0 12px;border-radius:12px;font-weight:600;font-size:14.5px;color:var(--ink-soft);gap:12px}
+  .navlist button:hover,.rail-bottom .bell:hover{background:var(--glass);color:var(--ink)}
+  .navlist button.active,.rail .bell.active,#nav-settings.active{background:var(--glass-2);color:var(--ink)}
+  .navlist button.active svg,.rail .bell.active svg{stroke:var(--accent)}
+  .rail-bottom{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+  .rail .foot{display:none}
+  /* Pulpit od góry, jak w projekcie: powitanie, potem kafelki */
+  #view-pulpit{padding-top:8px;max-width:1200px}
+  #view-pulpit.active{justify-content:flex-start;min-height:0}
+  .welcome{padding:18px 0 28px}
+}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -2571,6 +2636,14 @@ body.on-start .pomo{display:none}
   .note-item .acts{opacity:1;pointer-events:auto}
   .note-item:hover .nt-side .tybadge{opacity:1}
 }
+
+@media(max-width:820px){
+  .rail{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:22px;border:1px solid var(--line);
+    background:rgba(16,20,28,.88);padding:6px 8px;max-width:calc(100vw - 20px)}
+  .navlist button.active,.rail .bell.active{background:rgba(90,150,242,.18);color:#fff}
+  .navlist button.active svg,.rail .bell.active svg{stroke:var(--accent-text)}
+  .main{padding-bottom:110px}
+}
 </style>
 </head>
 <body class="on-pulpit">
@@ -2609,7 +2682,7 @@ body.on-start .pomo{display:none}
 <div class="aura" aria-hidden="true">
   <div class="au-ribbon"></div><div class="au-ribbon r2"></div><div class="au-grid"></div>
   <div class="au-cards">
-    <div class="au-card c-cal" style="--d:18"><div class="au-cal-h">PIĄTEK</div><div class="au-cal-d">3</div><div class="au-dots"><i style="--c:#80dcc2"></i><i style="--c:#9fabff"></i><i style="--c:#ffb98c"></i></div></div>
+    <div class="au-card c-cal" style="--d:18"><div class="au-cal-h">PIĄTEK</div><div class="au-cal-d">3</div><div class="au-dots"><i style="--c:#4FD1B8"></i><i style="--c:#8DB6FF"></i><i style="--c:#E3B25C"></i></div></div>
     <div class="au-card c-note" style="--d:28"><div class="au-note-t"><i></i>Całki oznaczone</div><div class="au-line" style="width:88%"></div><div class="au-line" style="width:72%"></div><div class="au-line" style="width:80%"></div><div class="au-line" style="width:46%"></div></div>
     <div class="au-card c-fr" style="--d:22"><div class="au-avs"><span style="--c:#d0568f">OK</span><span style="--c:#3f86e0">MW</span><span style="--c:#2fa37c">JN</span></div><div class="au-fr-t">3 znajomych</div></div>
     <div class="au-card c-share" style="--d:34"><div class="au-sh-ic"></div><div><div class="au-sh-t">Mikroekonomia</div><div class="au-sh-s">Zeszyt · udostępniony</div></div></div>
@@ -2839,7 +2912,7 @@ body.on-start .pomo{display:none}
             <button class="btn ghost sm" onclick="event.stopPropagation();go('zadania');setTimeout(()=>openTodo(),300)">+ Zadanie</button>
           </div>
         </div>
-        <div class="portal p-fin" style="--pc:#74dc9e;--pc2:var(--sky)" role="button" tabindex="0" onclick="go('finanse')" onkeydown="if(event.key==='Enter')go('finanse')">
+        <div class="portal p-fin" style="--pc:#4FD1B8;--pc2:var(--sky)" role="button" tabindex="0" onclick="go('finanse')" onkeydown="if(event.key==='Enter')go('finanse')">
           <div class="portal-art" id="art-fin" aria-hidden="true"></div>
           <div class="portal-txt">
             <h2>Finanse</h2>
@@ -3594,7 +3667,7 @@ async function renderFinPortal(){
 }
 /* ilustracja: stos okładek w kolorach Twoich zeszytów */
 function renderNbArt(nbs){
-  const c=[...nbs.map(x=>x.color),'#ffb98c','#9fabff','#80dcc2'].slice(0,3);
+  const c=[...nbs.map(x=>x.color),'#E3B25C','#8DB6FF','#4FD1B8'].slice(0,3);
   const book=(cls,x,y,col,rot)=>`<g class="lift ${cls}"><g transform="rotate(${rot} ${x+45} ${y+120})">
     <rect x="${x}" y="${y}" width="90" height="118" rx="12" fill="${col}"/><rect x="${x}" y="${y}" width="16" height="118" rx="8" fill="rgba(0,0,0,.18)"/>
     <rect x="${x+30}" y="${y+22}" width="44" height="7" rx="3.5" fill="rgba(255,255,255,.55)"/><rect x="${x+30}" y="${y+36}" width="30" height="7" rx="3.5" fill="rgba(255,255,255,.35)"/></g></g>`;
@@ -3606,18 +3679,18 @@ function setToday(){$('#plan-date').value=todayISO();loadPlan();}
 $('#plan-date').addEventListener('change',loadPlan);
 /* typy wpisów: [nazwa, ikona (ścieżki svg 24x24, obrys), kolor]; własny typ = etykieta, szary */
 const KINDS=[
-  ['Zadanie','<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.2l2.8 2.8L16.5 9"/>','#5eafff'],
+  ['Zadanie','<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.2l2.8 2.8L16.5 9"/>','#5A96F2'],
   ['Spotkanie','<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0M15.5 5.3a3 3 0 010 5.4M17 14a5 5 0 013.5 5"/>','#8b7cff'],
-  ['Wykład','<path d="M2.5 9L12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11.2v4.3c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-4.3M21.5 9v5"/>','#5eead4'],
+  ['Wykład','<path d="M2.5 9L12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11.2v4.3c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-4.3M21.5 9v5"/>','#8DB6FF'],
   ['Ćwiczenia','<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 013 3L8 18.5z"/><path d="M13.5 7l3 3"/>','#60a5fa'],
-  ['Laboratorium','<path d="M9.5 3.5h5M10 3.5V9L5 18.5a1.4 1.4 0 001.2 2h11.6a1.4 1.4 0 001.2-2L14 9V3.5M7.3 14.5h9.4"/>','#22d3ee'],
+  ['Laboratorium','<path d="M9.5 3.5h5M10 3.5V9L5 18.5a1.4 1.4 0 001.2 2h11.6a1.4 1.4 0 001.2-2L14 9V3.5M7.3 14.5h9.4"/>','#B59CF0'],
   ['Kolokwium','<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>','#f59e0b'],
-  ['Egzamin','<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>','#ef4444'],
+  ['Egzamin','<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/>','#E5675F'],
   ['Projekt','<path d="M3 7a2 2 0 012-2h4l2 2.5h8a2 2 0 012 2V17a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>','#a78bfa'],
   ['Termin oddania','<path d="M6.5 3.5h11M6.5 20.5h11M7.5 3.5c0 4.5 4.5 5.5 4.5 8.5s-4.5 4-4.5 8.5M16.5 3.5c0 4.5-4.5 5.5-4.5 8.5s4.5 4 4.5 8.5"/>','#f97316'],
   ['Nauka',ICONS.nauka,'#34d399'],
   ['Konsultacje','<path d="M4 5.5a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2h-7l-4.5 4v-4H6a2 2 0 01-2-2z"/>','#38bdf8'],
-  ['Praca','<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5a2 2 0 012-2h3a2 2 0 012 2V7M3 12.5h18"/>','#94a3b8'],
+  ['Praca','<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5a2 2 0 012-2h3a2 2 0 012 2V7M3 12.5h18"/>','#E3B25C'],
   ['Trening','<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>','#84cc16'],
   ['Lekarz','<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.3 4.3 4.3 0 0119.5 10c0 5.4-7.5 10-7.5 10z"/><path d="M8 12.5h2.2l1.1-2 1.6 4 1-2H16"/>','#f43f5e'],
   ['Urodziny','<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20M12 8.5S8 8.3 7.5 7.2C6.5 5 10 4 12 8.5zM12 8.5s4-.2 4.5-1.3C17.5 5 14 4 12 8.5z"/>','#ec4899'],
@@ -3976,7 +4049,7 @@ function renderFin(){
         <div class="fin-days">Zajęcia <b>${D.settings.study_days} ${plural(D.settings.study_days,'dzień','dni','dni')}</b> w tygodniu
           <button onclick="finDays(-1)" aria-label="Mniej dni">−</button><button onclick="finDays(1)" aria-label="Więcej dni">+</button></div>
         <div class="fin-spent"><span>Wydane w tym miesiącu <b>${zl(s.spent_month)}</b>${tot?` z ~${zl0(tot)}`:''}</span>
-          <div class="fin-prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" style="--pc:${pct>=100?'#ff9088':pct>=80?'#ffb98c':'#74dc9e'}"><i style="width:${pct}%"></i></div></div>
+          <div class="fin-prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" style="--pc:${pct>=100?'#E5675F':pct>=80?'#E3B25C':'#4FD1B8'}"><i style="width:${pct}%"></i></div></div>
         <div class="btns"><button class="btn sm" onclick="openEntry()">+ Wydatek</button><button class="btn ghost sm" onclick="openCost()">+ Koszt</button><button class="btn ghost sm" onclick="openIncome()">+ Dochód</button></div>
       </div>
     </div>
@@ -4551,7 +4624,7 @@ async function noteTodoChip(nid){
 }
 /* ================= ZADANIA: listy, checklisty, przypomnienia w planie, powiązania z notatkami ================= */
 let TD={lists:[],items:[]}, tdSel='today', tdDoneOpen=false;
-const PRIO={high:['Wysoki','#ff8f8a'],normal:['Normalny','#9fabff'],low:['Niski','#8d8f99']};
+const PRIO={high:['Wysoki','#ff8f8a'],normal:['Normalny','#8DB6FF'],low:['Niski','#8d8f99']};
 const TD_COLORS=['#8b7cff','#5eafff','#3fcf8e','#ffb454','#ff7a90','#c27cff'];
 const TD_IC={
   check:'<path d="M5 12.5l4.2 4.2L19 7"/>', bell:'<path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/>',
@@ -4574,7 +4647,7 @@ function renderTodo(){
   const lists=TD.lists, items=TD.items, nToday=items.filter(tdToday).length, nAll=items.filter(i=>!i.done).length;
   setHTML($('#td-side'),`
     <button class="td-smart${tdSel==='today'?' on':''}" onclick="tdPick('today')" style="--c:#5eafff">${tdIco('today')}<span>Dziś</span><b>${nToday||''}</b></button>
-    <button class="td-smart${tdSel==='all'?' on':''}" onclick="tdPick('all')" style="--c:#9fabff">${tdIco('all')}<span>Wszystkie</span><b>${nAll||''}</b></button>
+    <button class="td-smart${tdSel==='all'?' on':''}" onclick="tdPick('all')" style="--c:#8DB6FF">${tdIco('all')}<span>Wszystkie</span><b>${nAll||''}</b></button>
     <div class="td-lh"><span>Moje listy</span><button class="td-add" onclick="openTodoList()" title="Nowa lista">+</button></div>
     ${lists.map(l=>`<button class="td-list${tdSel===l.id?' on':''}" onclick="tdPick(${l.id})" style="--c:${l.color}">
       <i class="td-dot"></i><span>${esc(l.name)}</span>${l.priority!=='normal'?`<em class="pr-${l.priority}" title="Priorytet: ${PRIO[l.priority][0].toLowerCase()}">${l.priority==='high'?'!!':'↓'}</em>`:''}<b>${l.open||''}</b></button>`).join('')}`);
@@ -4582,7 +4655,7 @@ function renderTodo(){
   const pool=tdSel==='today'?items.filter(i=>tdToday(i)||(i.done&&i.remind_date===TD.today)):tdSel==='all'?items:items.filter(i=>i.list_id===tdSel);
   const open=pool.filter(i=>!i.done), done=pool.filter(i=>i.done);
   const title=tdSel==='today'?'Dziś':tdSel==='all'?'Wszystkie':L?L.name:'';
-  const col=L?L.color:tdSel==='today'?'#5eafff':'#9fabff';
+  const col=L?L.color:tdSel==='today'?'#5eafff':'#8DB6FF';
   const kb=tdView()==='kanban';
   const head=`<div class="td-head" style="--c:${col}"><div><h2>${esc(title)}</h2><small>${open.length} ${plural(open.length,'zadanie','zadania','zadań')} do zrobienia${L&&L.priority!=='normal'?' · priorytet '+PRIO[L.priority][0].toLowerCase():''}</small></div>
       <div class="td-hacts"><div class="seg td-viewseg"><button class="${kb?'':'on'}" onclick="tdSetView('list')" title="Lista">${tdIco('list')}Lista</button><button class="${kb?'on':''}" onclick="tdSetView('kanban')" title="Tablica Kanban">${KB_ICO}Kanban</button></div>
@@ -4596,7 +4669,7 @@ function renderTodo(){
       ${tdDoneOpen?`<div class="td-items done">${done.map(tdRow).join('')}</div>`:''}`:''}`;
 }
 function tdRow(it){
-  const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#9fabff',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
+  const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#8DB6FF',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
   const when=it.remind_date?(it.remind_date===TD.today?'Dziś':dShort(it.remind_date))+(it.remind_time?' '+it.remind_time:''):'';
   const chips=[
     when?`<span class="td-chip${it.overdue?' late':''}">${tdIco('bell')}${when}${it.anchor_title?' · przy: '+esc(it.anchor_title):''}</span>`:'',
@@ -4612,12 +4685,12 @@ function tdRow(it){
 function tdPick(s){tdSel=s;tdDoneOpen=false;renderTodo();}
 /* ---------- KANBAN: Do zrobienia / W trakcie / Zrobione, przeciąganie kart między kolumnami ---------- */
 const KB_ICO='<svg class="td-ico" viewBox="0 0 24 24"><rect x="3.5" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="15.5" y="4" width="5" height="13" rx="1.5"/></svg>';
-const KB_COLS=[['todo','Do zrobienia','#9fabff'],['doing','W trakcie','#ffb454'],['done','Zrobione','#54d996']];
+const KB_COLS=[['todo','Do zrobienia','#8DB6FF'],['doing','W trakcie','#ffb454'],['done','Zrobione','#54d996']];
 const tdView=()=>{try{return localStorage.getItem('td_view')||'list';}catch(_){return 'list';}};
 function tdSetView(v){try{localStorage.setItem('td_view',v);}catch(_){}renderTodo();}
 const kbStatus=it=>it.done?'done':(it.status==='doing'?'doing':'todo');
 function renderKanban(pool,col){
-  const card=it=>{const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#9fabff',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
+  const card=it=>{const L=TD.lists.find(l=>l.id===it.list_id)||{color:'#8DB6FF',name:''}, ch=it.checks, chd=ch.filter(c=>c.done).length;
     const when=it.remind_date?(it.remind_date===TD.today?'Dziś':dShort(it.remind_date))+(it.remind_time?' '+it.remind_time:''):'';
     return `<div class="kb-card${it.done?' is-done':''}" draggable="true" data-id="${it.id}" style="--c:${L.color}" onclick="openTodo(${it.id})">
       <b>${it.priority==='high'?'<em class="pr-high">!!</em> ':it.priority==='low'?'<em class="pr-low">↓</em> ':''}${esc(it.title)}</b>
@@ -5617,7 +5690,7 @@ async function importShare(sid){
       for(const n of (P.notes||[]))await mkNote(nbId,n);
     }else{
       nbId=cb.get();
-      if(nbId==='new')nbId=(await api('/notebooks',{method:'POST',body:JSON.stringify({name:'Udostępnione',color:'#80dcc2'})})).id;
+      if(nbId==='new')nbId=(await api('/notebooks',{method:'POST',body:JSON.stringify({name:'Udostępnione',color:'#4FD1B8'})})).id;
       noteId=await mkNote(nbId,P,name);
     }
     closeModal(); await loadNauka();
@@ -5815,7 +5888,7 @@ async function paintWinPrefs(){
 async function setWinPrefs(v){await api('/desktop/window',{method:'POST',body:JSON.stringify({frameless:v})});paintWinPrefs();}
 async function loadSettings(){AIS=await api('/settings/ai'); renderSettings(); loadUsage(); paintUpdate(); paintWinPrefs(); if((APP.desktop||AND_UPD)&&!UPD)checkUpdate();}
 const fmtTok=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+' mln':n>=1e3?(n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+' tys.':String(n);
-const usageTone=p=>p>=100?['#ff9088','#ff6b6b']:p>=80?['#ffd08a','#ffb98c']:['#9be8b9','#74dc9e'];
+const usageTone=p=>p>=100?['#E5675F','#ff6b6b']:p>=80?['#ffd08a','#E3B25C']:['#9be8b9','#4FD1B8'];
 let _usageTimer=null, _usagePrev={};
 async function loadUsage(){
   let U; try{U=await api('/settings/ai/usage');}catch(_){return;}
