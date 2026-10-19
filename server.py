@@ -963,7 +963,10 @@ FIGURE_RULE = ("- Elementy graficzne z dokumentu, których nie da się dobrze od
                "jako osobny akapit dokładnie w formie: <p>[[RYSUNEK strona=N ramka=ymin,xmin,ymax,xmax | krótki podpis]]</p> — "
                "N to numer strony PDF (od 1), ramka to współrzędne 0–1000 względem tej strony, ciasno obejmujące cały element z opisami osi "
                "i legendą (bez sąsiedniego tekstu). Pomijaj logotypy, ozdobniki, zdjęcia tytułowe i zwykłe tabele z tekstem (te przepisz jako <table>). "
-               "Najwyżej 12 elementów, a pod każdym jedno zdanie, co z niego wynika.\n")
+               "Najwyżej 12 elementów, a pod każdym jedno zdanie, co z niego wynika. "
+               "Gdy rysunek jest niewielki lub pionowy, a obok przyda się jego krótkie omówienie (2–5 zdań lub punktów, np. opis osi, etapów, części), "
+               "dopisz na końcu znacznika „| obok”: <p>[[RYSUNEK strona=N ramka=... | podpis | obok]]</p> — wtedy obraz stanie po prawej, "
+               "a omówienie napisz zaraz po znaczniku (zanim zaczniesz kolejny nagłówek). Duże, szerokie wykresy zostaw bez „obok”.\n")
 
 
 READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja kluczowych treści, dzielenie na małe porcje, "
