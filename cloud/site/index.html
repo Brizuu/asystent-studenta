@@ -2775,6 +2775,12 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text li:has(>ul,>ol){margin-bottom:1.7em}
 .b-text h4{margin-bottom:10px}
 
+/* 1.9.9: menu „Dodaj blok” pełne i nad notatką (szkło było za przezroczyste i treść przebijała) */
+.blockmenu,.blockmenu.glass{background:rgba(17,21,30,.97)!important;backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 18px 50px rgba(0,0,0,.55)!important}
+.addblock.open{z-index:60}
+.addblock .blockmenu{z-index:60}
+.blockmenu button{color:var(--ink)}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
