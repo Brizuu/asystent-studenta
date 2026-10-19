@@ -88,6 +88,43 @@ class WindowApi:
         fix = (FixPoint.EAST if "w" in edges else FixPoint.WEST) | (FixPoint.SOUTH if "n" in edges else FixPoint.NORTH)
         self._win.resize(max(900, int(width)), max(600, int(height)), fix)
 
+    def start_resize(self, edge):
+        """Natywna zmiana rozmiaru okna bez ramki: Windows prowadzi przeciąganie sam (płynnie, bez pętli JS↔Python)."""
+        if self._max or os.name != "nt":
+            return False
+        ht = {"w": 10, "e": 11, "n": 12, "nw": 13, "ne": 14, "s": 15, "sw": 16, "se": 17}.get(edge)
+        if not ht:
+            return False
+        try:
+            import ctypes
+            from System import Action   # pythonnet (backend WinForms pywebview)
+            form = self._win.native
+
+            def go():
+                ctypes.windll.user32.ReleaseCapture()
+                ctypes.windll.user32.SendMessageW(int(form.Handle.ToInt64()), 0xA1, ht, 0)   # WM_NCLBUTTONDOWN
+            form.BeginInvoke(Action(go))
+            return True
+        except Exception:
+            return False
+
+    def start_move(self):
+        """Przeciąganie okna za własny pasek tytułu — natywnie, jak zwykłe okno Windows."""
+        if os.name != "nt":
+            return False
+        try:
+            import ctypes
+            from System import Action
+            form = self._win.native
+
+            def go():
+                ctypes.windll.user32.ReleaseCapture()
+                ctypes.windll.user32.SendMessageW(int(form.Handle.ToInt64()), 0xA1, 2, 0)   # HTCAPTION
+            form.BeginInvoke(Action(go))
+            return True
+        except Exception:
+            return False
+
     def close(self):
         self._win.destroy()
 
