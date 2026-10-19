@@ -2697,21 +2697,6 @@ a{transition:color .15s}
 .dt-ck,.td-cb,.tik{transition:background .2s,border-color .2s,transform .2s cubic-bezier(.2,.8,.3,1.6)}
 .dt-ck:active,.td-cb:active,.tik:active{transform:scale(.85)}
 .dt-i.done .dt-ck svg{animation:popIn .25s cubic-bezier(.2,.8,.3,1.6)}
-/* belka notatki: tytuł, metadane jako etykiety, akcje w jednym rzędzie */
-.nhead{padding:24px var(--s4) 16px!important;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)!important;align-items:flex-start}
-.editor .ntitle{font-size:27px;font-weight:800;letter-spacing:-.025em}
-.nhead .nctx{gap:6px;margin-top:10px}
-.nhead .nctx span{padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);font-size:12.5px}
-.nhead .nmade{margin-top:8px;font-size:12px;color:var(--ink-dim)}
-.nhead-acts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:14px}
-.nhead-acts .btn{height:32px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--ink-soft);opacity:1;display:inline-flex;align-items:center;gap:6px}
-.nhead-acts .saved{margin-left:8px;font-size:12px;color:var(--ink-dim);opacity:.8;align-self:center;margin-top:0}
-.rail-tg[hidden]{display:none!important}
-.nhead-side{align-self:flex-start}
-.modeswitch{border-radius:12px;padding:3px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);box-shadow:none;gap:2px}
-.modeswitch button{border-radius:9px;padding:8px 16px;font-size:13.5px;transition:background .2s,color .2s}
-.modeswitch button:not(.on):hover{color:var(--ink);background:rgba(255,255,255,.05)}
-
 /* notatka: szkło tylko subtelnie, belka tytułowa ciemniejsza (jak wcześniej) */
 #pane-note.glass{background:rgba(255,255,255,.028)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 #pane-note .nhead{background:rgba(6,8,13,.42)!important;border-bottom:1px solid rgba(255,255,255,.07)}
@@ -3442,10 +3427,6 @@ a{transition:color .15s}
                 <div class="nhead-acts">
                   <button class="btn ghost xs nexport" onclick="shareCurrent('note')" title="Udostępnij notatkę znajomym"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg> Udostępnij</button>
                   <button class="btn ghost xs nexport" onclick="exportNotePdf()" title="Eksportuj notatkę do PDF"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 21h14"/></svg> PDF</button>
-                
-                  <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
-                  <button class="btn ghost xs nexport nquiz" onclick="openQuiz({note_id:noteActive})" title="Quiz z tej notatki: pytania od AI, odpowiedź do odsłonięcia, „Umiem” / „Pomiń”"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.6 9.6a2.4 2.4 0 114 1.8c-.9.7-1.6 1.1-1.6 2.3M12 16.6h.01"/></svg> Quiz</button>
-                  <span class="saved" id="note-saved"></span>
                 </div>
               </div>
               <div class="nhead-side">
@@ -3453,6 +3434,12 @@ a{transition:color .15s}
                   <button data-m="edit" class="on" onclick="setMode('edit')">✎ Edycja</button>
                   <button data-m="study" onclick="setMode('study')">◉ Nauka</button>
                 </div>
+                <div class="nhead-row2">
+                  <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
+                  <button class="btn ghost xs nexport nquiz" onclick="openQuiz({note_id:noteActive})" title="Quiz z tej notatki: pytania od AI, odpowiedź do odsłonięcia, „Umiem” / „Pomiń”"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.6 9.6a2.4 2.4 0 114 1.8c-.9.7-1.6 1.1-1.6 2.3M12 16.6h.01"/></svg> Quiz</button>
+
+                </div>
+                <span class="saved" id="note-saved"></span>
               </div>
             </div>
             <div class="recbar" id="recbar" style="display:none"></div>
