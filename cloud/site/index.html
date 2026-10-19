@@ -2011,7 +2011,7 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .btn,.navlist button,.bell,.tile,.item .body,.ev,.chip,.cal .d,.mini-tab,.tab{transition:transform .1s ease-out}
 .btn:active,.navlist button:active,.bell:active,.tile:active,.item .body:active,.ev:active,.chip:active,.mini-tab:active,.tab:active{transform:var(--press)}
 .cal .d:active{transform:scale(.985)}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}:root{--press:none}}
+@media(prefers-reduced-motion:reduce){.dj-bg .veh,.lg .sheen,.lg .tassel{animation:none!important}}
 @media(prefers-reduced-transparency:reduce){
   .ck-tod{backdrop-filter:none}
   .glass,.modal,.rail,.combo-list,.spoti-panel,.portal{background:#151622!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -2595,6 +2595,96 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--acc
   .na-txt small{display:none}
 }
 
+/* ===================== 1.9.1: mocniejsze szkło, akcenty, animacje ===================== */
+/* tło: trzy spokojne poświaty — szkło ma przez co prześwitywać */
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(38% 42% at 12% 38%,rgba(90,150,242,.16),transparent 70%),radial-gradient(30% 34% at 62% 58%,rgba(79,209,184,.07),transparent 70%)}
+/* szkło: delikatny gradient światła, jasna krawędź u góry, rozmycie tła */
+.glass,.panel,.dc,.portal,.pane,.td-side,.td-main,.fin-hero,.nbcard,.note-item,.item,.td-item.card,.kb-col{
+  background:linear-gradient(150deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.035) 45%,rgba(255,255,255,.02) 100%)!important;
+  border-color:rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.015),0 22px 44px -30px rgba(0,0,0,.8)!important;
+  backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%)}
+.note-item,.item,.nbcard{background:linear-gradient(150deg,rgba(255,255,255,.06),rgba(255,255,255,.02))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important}
+.pane.glass{border-top-color:transparent!important}
+.editor{background-color:transparent}
+.cal .d{background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.018))!important;border:1px solid rgba(255,255,255,.07)!important;transition:transform .18s cubic-bezier(.2,.8,.3,1),border-color .18s,background .18s}
+.cal .d:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent)!important;background:linear-gradient(160deg,rgba(90,150,242,.12),rgba(255,255,255,.03))!important}
+.cal .d.today{border-color:color-mix(in srgb,var(--live) 55%,transparent)!important}
+.cal .d.sel{border-color:var(--accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.cal .d.out{opacity:.45}
+/* wyszukiwarka: bez podwójnej obwódki, kursor w kolorze akcentu */
+.dh-search input:focus,.dh-search input:focus-visible{box-shadow:none!important;border:0!important;outline:none!important}
+.dh-search input{caret-color:var(--accent-text);height:100%}
+/* zwinięte menu: logo równo na środku */
+@media(min-width:821px){
+  body.rail-min .brand{width:52px;height:52px;padding:0!important;justify-content:center;margin:0 auto 10px}
+  body.rail-min .brand .mark{width:40px;height:40px}
+  .brand .mark{display:block;flex:none}
+  /* uchwyt zwijania: cała prawa krawędź menu */
+  .rail{overflow:visible}
+  .rail-edge{position:absolute;top:18px;bottom:18px;right:-8px;width:16px;border:0;background:transparent;cursor:pointer;padding:0;z-index:2}
+  .rail-edge::before{content:"";position:absolute;top:0;bottom:0;left:7px;width:2px;border-radius:2px;background:var(--accent);opacity:0;transition:opacity .2s}
+  .rail-edge i{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(22,27,38,.9);border:1px solid rgba(255,255,255,.14);color:var(--ink);opacity:0;transform:scale(.7);transition:opacity .2s,transform .25s cubic-bezier(.2,.8,.3,1.4)}
+  .rail-edge svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s}
+  .rail-edge:hover::before{opacity:.75}
+  .rail-edge:hover i{opacity:1;transform:scale(1)}
+  body.rail-min .rail-edge svg{transform:scaleX(-1)}
+}
+.rail-edge{display:none}
+@media(min-width:821px){.rail-edge{display:block}}
+/* w trakcie zmiany rozmiaru okna: bez rozmyć i przejść (płynnie na słabszym komputerze) */
+body.resizing *{transition:none!important;animation-play-state:paused!important}
+body.resizing .glass,body.resizing .panel,body.resizing .dc,body.resizing .rail,body.resizing .pane{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* Pulpit wyśrodkowany */
+.dash{max-width:1320px;margin:0 auto;width:100%}
+/* przyciski i elementy: wyraźniejsze podświetlenie akcentem po najechaniu */
+.btn{transition:background .18s,border-color .18s,color .18s,box-shadow .2s,transform .15s cubic-bezier(.2,.8,.3,1.4)}
+.btn:hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent),0 8px 22px -10px color-mix(in srgb,var(--accent) 70%,transparent);transform:translateY(-1px)}
+.btn.ghost:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)!important;border-color:color-mix(in srgb,var(--accent) 50%,transparent)!important;color:#fff!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}
+.btn:active{transform:translateY(0) scale(.97)}
+.navlist button,.rail-bottom .bell{transition:background .18s,color .18s,transform .15s}
+@media(min-width:821px){
+  .navlist button:hover,.rail-bottom .bell:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)!important;color:var(--ink)!important}
+  .navlist button:hover svg,.rail-bottom .bell:hover svg{stroke:var(--accent-text);transform:scale(1.08)}
+  .navlist button svg,.rail-bottom .bell svg{transition:transform .2s cubic-bezier(.2,.8,.3,1.4),stroke .18s}
+  .navlist button.active{box-shadow:inset 3px 0 0 var(--accent)}
+}
+.tab:hover{color:var(--ink)!important;background:color-mix(in srgb,var(--accent) 10%,transparent)!important}
+.dc,.portal,.nbcard,.note-item,.dp-i,.dtr-i,.item{transition:transform .22s cubic-bezier(.2,.8,.3,1),border-color .2s,box-shadow .25s,background .2s}
+.dc:hover{border-color:rgba(255,255,255,.14)!important;transform:translateY(-2px)}
+.nbcard:hover,.note-item:hover{border-color:color-mix(in srgb,var(--accent) 40%,transparent)!important;transform:translateY(-2px)}
+.dp-i:hover,.dtr-i:hover{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+a{transition:color .15s}
+/* animacje wejścia: widoki, karty Pulpitu po kolei, okna rozwijane */
+@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:none}}
+.view.active{animation:rise .35s cubic-bezier(.2,.8,.3,1)}
+.view.active .dg>.dc{animation:rise .45s cubic-bezier(.2,.8,.3,1) both}
+.view.active .dg>.dc:nth-child(2){animation-delay:.05s}.view.active .dg>.dc:nth-child(3){animation-delay:.1s}
+.view.active .dg>.dc:nth-child(4){animation-delay:.14s}.view.active .dg>.dc:nth-child(5){animation-delay:.18s}
+.dh-res:not([hidden]),.rtb-menu,.colorpop,.ctxmenu,.dj-sug:not([hidden]),.bell-pop{animation:popIn .18s cubic-bezier(.2,.8,.3,1)}
+.dn-bar i,.df-bar i{animation:grow .8s cubic-bezier(.2,.8,.3,1) both;transform-origin:left}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+.dt-ck,.td-cb,.tik{transition:background .2s,border-color .2s,transform .2s cubic-bezier(.2,.8,.3,1.6)}
+.dt-ck:active,.td-cb:active,.tik:active{transform:scale(.85)}
+.dt-i.done .dt-ck svg{animation:popIn .25s cubic-bezier(.2,.8,.3,1.6)}
+/* belka notatki: tytuł, metadane jako etykiety, akcje w jednym rzędzie */
+.nhead{padding:24px var(--s4) 16px!important;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)!important;align-items:flex-start}
+.editor .ntitle{font-size:27px;font-weight:800;letter-spacing:-.025em}
+.nhead .nctx{gap:6px;margin-top:10px}
+.nhead .nctx span{padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);font-size:12.5px}
+.nhead .nmade{margin-top:8px;font-size:12px;color:var(--ink-dim)}
+.nhead-acts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:14px}
+.nhead-acts .btn{height:32px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--ink-soft);opacity:1;display:inline-flex;align-items:center;gap:6px}
+.nhead-acts .saved{margin-left:8px;font-size:12px;color:var(--ink-dim);opacity:.8;align-self:center;margin-top:0}
+.rail-tg[hidden]{display:none!important}
+.nhead-side{align-self:flex-start}
+.modeswitch{border-radius:12px;padding:3px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);box-shadow:none;gap:2px}
+.modeswitch button{border-radius:9px;padding:8px 16px;font-size:13.5px;transition:background .2s,color .2s}
+.modeswitch button:not(.on):hover{color:var(--ink);background:rgba(255,255,255,.05)}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -2884,20 +2974,13 @@ const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelect
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let _lgN=0;
 function logoSVG(){
-  // logo: biała czapka absolwenta na niebieskim (paleta „Grafit”)
+  // logo: cienka biała czapka na płaskim niebieskim (minimalistycznie, jak w projekcie)
   const n=++_lgN, id=x=>`lg${x}${n}`;
   return `<svg class="lg" viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><defs>
-    <linearGradient id="${id('a')}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FA6F7"/><stop offset=".55" stop-color="#4D88E8"/><stop offset="1" stop-color="#2C5FB8"/></linearGradient>
-    <linearGradient id="${id('b')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <linearGradient id="${id('s')}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <clipPath id="${id('c')}"><rect width="64" height="64" rx="15"/></clipPath></defs>
-    <g clip-path="url(#${id('c')})"><rect width="64" height="64" fill="url(#${id('a')})"/><rect width="64" height="64" fill="url(#${id('b')})"/>
-      <g transform="rotate(22 32 32)"><rect class="sheen" x="21" y="-30" width="20" height="124" fill="url(#${id('s')})"/></g></g>
-    <rect x=".5" y=".5" width="63" height="63" rx="14.5" fill="none" stroke="#fff" stroke-opacity=".22"/>
-    <path d="M19.5 31.5v7.5c0 3.6 5.6 6.4 12.5 6.4s12.5-2.8 12.5-6.4v-7.5L32 37z" fill="#fff" fill-opacity=".9"/>
-    <path d="M32 16l23 10-23 10L9 26z" fill="#fff"/>
-    <g class="tassel"><path d="M47.5 27.2v11" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><path d="M45.6 38h3.8l1.1 6.2h-6z" fill="#fff"/></g>
-    <circle cx="32" cy="26" r="1.9" fill="#2C5FB8"/></svg>`;
+    <linearGradient id="${id('a')}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5E9BF4"/><stop offset="1" stop-color="#3F7BE0"/></linearGradient></defs>
+    <rect width="64" height="64" rx="16" fill="url(#${id('a')})"/>
+    <g fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 26.5L32 17l20 9.5L32 36z"/><path d="M20.5 31v8.5c6.5 5 16.5 5 23 0V31"/><path class="tassel" d="M52 26.5v11"/></g></svg>`;
 }
 function paintLogos(root=document){ root.querySelectorAll('[data-logo]').forEach(e=>{if(!e.firstElementChild)e.innerHTML=logoSVG();}); }
 // przycisk: bezpośredni link do najnowszego instalatora z GitHuba + wersja i rozmiar
