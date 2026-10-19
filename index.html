@@ -75,7 +75,7 @@ body{
   font-size:var(--fs-body); font-weight:400; line-height:1.5;
   color:var(--ink); background:var(--bg); min-height:100vh;
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-  letter-spacing:0;   /* tekst podstawowy ~0; duże nagłówki ujemnie, drobny tekst lekko dodatnio */
+  letter-spacing:normal;   /* tekst podstawowy ~0; duże nagłówki ujemnie, drobny tekst lekko dodatnio */
 }
 /* customowy pasek przewijania (globalnie, też Firefox) */
 *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 55%,var(--line)) transparent}
@@ -1301,11 +1301,11 @@ body.on-fin .fin-bg{opacity:1}
 .themesw span{font-size:10px;color:#fff;padding:3px 6px;background:rgba(0,0,0,.35);width:100%;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
 .themesw.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
 /* motywy tła edytora */
-.editor[data-theme=graphite]{background:linear-gradient(135deg,#14151a,#1c1e26)}
-.editor[data-theme=aurora]{background:radial-gradient(120% 90% at 15% 0%,rgba(124,58,237,.28),transparent 55%),radial-gradient(100% 80% at 100% 100%,rgba(13,148,136,.25),transparent 55%),#0d0f1a}
-.editor[data-theme=forest]{background:radial-gradient(120% 90% at 100% 0%,rgba(16,120,80,.25),transparent 55%),#0c1a14}
-.editor[data-theme=rose]{background:radial-gradient(120% 90% at 0% 0%,rgba(244,114,150,.22),transparent 55%),#1c1017}
-.editor[data-theme=ocean]{background:radial-gradient(120% 90% at 100% 0%,rgba(56,150,230,.25),transparent 55%),#0b1626}
+.editor[data-theme=graphite]{background:transparent}
+.editor[data-theme=aurora]{background:radial-gradient(120% 90% at 15% 0%,rgba(90,150,242,.16),transparent 55%),radial-gradient(100% 80% at 100% 100%,rgba(79,209,184,.12),transparent 55%)}
+.editor[data-theme=forest]{background:radial-gradient(120% 90% at 100% 0%,rgba(79,209,184,.14),transparent 55%)}
+.editor[data-theme=rose]{background:radial-gradient(120% 90% at 0% 0%,rgba(229,138,160,.14),transparent 55%)}
+.editor[data-theme=ocean]{background:radial-gradient(120% 90% at 100% 0%,rgba(90,150,242,.18),transparent 55%)}
 .editor[data-theme=paper]{background:linear-gradient(135deg,#f5f6f9,#e9ebf1)}
 .editor[data-theme=paper] .b-text,.editor[data-theme=paper] .b-h,.editor[data-theme=paper] .ntitle,.editor[data-theme=paper] .cobody,.editor[data-theme=paper] .tgbody,.editor[data-theme=paper] .tgsum{color:#1a1b22}
 .editor[data-theme=paper] .b-text b,.editor[data-theme=paper] .b-text strong{color:#000}
@@ -1786,8 +1786,8 @@ table.grid tr:first-child td{background:rgba(255,255,255,.04);font-weight:600;co
 .block .rtb{display:none}
 .block.editing .rtb{display:flex}
 .rtb{flex-wrap:wrap;gap:2px;margin-bottom:10px;align-items:center;padding:6px;
-  background:rgba(18,19,27,.82);border:1px solid var(--line);border-radius:12px;
-  box-shadow:0 10px 26px -14px rgba(0,0,0,.65);backdrop-filter:blur(10px);position:sticky;top:0;z-index:15}
+  background:var(--glass-pop);border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  box-shadow:0 10px 26px -14px rgba(0,0,0,.65);backdrop-filter:var(--blur-pop);-webkit-backdrop-filter:var(--blur-pop);position:sticky;top:0;z-index:15}
 .block.editing{border-color:var(--line);background:rgba(255,255,255,.015)}
 .b-text{transition:background .15s}
 .rtb-b{min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;background:transparent;
@@ -2420,7 +2420,7 @@ body.on-start .pomo{display:none}
 @media(prefers-reduced-motion:reduce){.lps-line em{animation:none;display:none}}
 
 /* ===================== REDESIGN „Grafit” — paleta i komponenty z projektu F ===================== */
-body{background:radial-gradient(circle at 85% 0%,color-mix(in srgb,var(--glow-1) 60%,transparent),transparent 45%),radial-gradient(circle at 45% 100%,color-mix(in srgb,var(--glow-2) 60%,transparent),transparent 45%),var(--bg);background-attachment:fixed;letter-spacing:-.003em}
+body{background:radial-gradient(circle at 85% 0%,color-mix(in srgb,var(--glow-1) 60%,transparent),transparent 45%),radial-gradient(circle at 45% 100%,color-mix(in srgb,var(--glow-2) 60%,transparent),transparent 45%),var(--bg);background-attachment:fixed}
 /* stare dekoracyjne tła (zorza, niebo, miękkie plamy) — zastąpione dwiema spokojnymi poświatami */
 .aurora,.soft-bg,.sky,.fin-bg{display:none!important}
 body.on-dojazd .dj-bg{opacity:.5!important}
@@ -2454,6 +2454,63 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--acc
 *{scrollbar-color:rgba(255,255,255,.14) transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);background-clip:padding-box}
 ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.24);background-clip:padding-box}
+
+/* szkło dla okien, menu i podpowiedzi + rozmyte tło za oknami */
+:root{--glass-pop:rgba(22,27,38,.6);--blur-pop:blur(28px) saturate(150%)}
+.modal,.pop,.dj-sug,.dj-pick,.bell-pop,.toast-pay,.ctxmenu,.imgpop,.pn-pop,.gramm-pop,.calc-suggest,.rtb-menu,.colorpop,.dh-res,.pomo-panel,.spoti-panel,.mention,.cdlang-menu,.ai-prog,.fin-tip{
+  background:var(--glass-pop)!important;backdrop-filter:var(--blur-pop)!important;-webkit-backdrop-filter:var(--blur-pop)!important;
+  border:1px solid rgba(255,255,255,.1)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 70px -30px rgba(0,0,0,.75)!important}
+.modal{border-radius:20px}
+.modal-bd{background:rgba(6,9,15,.32);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
+.pop-bd{background:rgba(6,9,15,.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.pdfv{background:rgba(8,11,17,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+/* Nauka: zakładki stykają się z panelem (bez zaokrągleń u góry panelu), aktywna zakładka = to samo szkło co panel */
+.pane.glass{border-radius:0 0 16px 16px;border-top-color:transparent}
+#pane-note .editor{border-radius:0 0 16px 16px}
+.tab{border-radius:12px 12px 0 0}
+.tab.on{background:var(--glass);color:var(--ink);position:relative;z-index:1}
+.tab:not(.on){background:rgba(255,255,255,.02)}
+
+/* Pomodoro i Spotify: szklane okrągłe przyciski w palecie (ikona w kolorze tekstu, akcent tylko gdy coś gra/liczy) */
+.spoti-logo,.pomo-btn{background:var(--glass-pop)!important;border:1px solid rgba(255,255,255,.1)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px -14px rgba(0,0,0,.7)!important}
+.spoti-logo:hover,.pomo-btn:hover{background:rgba(40,48,64,.62)!important;transform:translateY(-1px)}
+.spoti-logo svg{width:22px;height:22px;filter:none}
+.spoti-logo .sp-glyph{fill:var(--ink)}
+.spoti.on .spoti-logo .sp-glyph,.spoti.open .spoti-logo .sp-glyph{fill:#1DB954}
+.spoti.open .spoti-logo{border-color:rgba(29,185,84,.45)!important;box-shadow:0 0 0 3px rgba(29,185,84,.14)!important}
+.pomo-ico{color:var(--ink)}
+.pomo.open .pomo-btn{box-shadow:0 0 0 3px color-mix(in srgb,var(--pc,#E5675F) 22%,transparent)!important}
+
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.rail-tg{display:none}
+@media(min-width:821px){
+  .rail-tg{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border:0;border-radius:10px;background:transparent;color:var(--ink-dim);cursor:pointer;margin-bottom:12px}
+  .rail-tg:hover{background:var(--glass-2);color:var(--ink)}
+  .rail-tg svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .rail,.app{transition:width .25s cubic-bezier(.4,0,.2,1),padding-left .25s cubic-bezier(.4,0,.2,1)}
+  body.rail-min .app{padding-left:108px}
+  body.rail-min .rail,body.rail-min .rail:hover{width:76px;padding-left:10px;padding-right:10px}
+  body.rail-min .brand-row{flex-direction:column;align-items:center;gap:6px}
+  body.rail-min .brand{padding:4px 0 6px}
+  body.rail-min .rail-tg{margin-bottom:8px}
+  body.rail-min .rail-tg svg{transform:scaleX(-1)}
+  body.rail-min .btxt,body.rail-min .navlist .lbl,body.rail-min .rail .bell>span:not(.nav-av),body.rail-min .na-txt,body.rail-min .nav-badge{display:none!important}
+  body.rail-min .navlist button,body.rail-min .rail-bottom .bell{justify-content:center;padding:0!important;width:54px;margin:0 auto}
+  body.rail-min #nav-account{width:54px;padding:8px 0!important;justify-content:center;background:transparent}
+}
+
+/* typografia notatek „do czytania” (jak w Google Docs / materiałach): sekcje, podsekcje, listy z pojęciami */
+.b-text h3{font-size:19px;font-weight:700;margin:26px 0 10px;line-height:1.35}
+.b-text h3:first-child{margin-top:4px}
+.b-text h4{font-size:13.5px;font-weight:800;letter-spacing:.05em;margin:20px 0 6px;color:var(--ink)}
+.b-text p{margin:0 0 8px}
+.b-text ul,.b-text ol{margin:4px 0 10px}
+.b-text li{margin:5px 0;padding-left:2px}
+.b-text li::marker{color:var(--ink-dim)}
+.b-text strong,.b-text b{color:var(--ink);font-weight:700}
+.b-text em,.b-text i{color:var(--ink)}
 
 /* komputer: stałe menu boczne z podpisami (szklany panel) */
 @media(min-width:821px){
@@ -2783,7 +2840,7 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--acc
 
 <div class="app">
   <aside class="rail">
-    <button class="brand" onclick="brandClick()" title="Pulpit"><span class="mark" data-logo></span><span class="btxt">Asystent</span></button>
+    <div class="brand-row"><button class="brand" onclick="brandClick()" title="Pulpit"><span class="mark" data-logo></span><span class="btxt">Asystent</span></button><button class="rail-tg" id="rail-tg" onclick="railToggle()" title="Zwiń menu" aria-label="Zwiń menu"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.5 4.5v15M15.5 10l-2 2 2 2"/></svg></button></div>
     <nav class="navlist" id="nav">
       <button data-v="pulpit" class="active">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -3361,7 +3418,7 @@ input:focus,select:focus,textarea:focus{border-color:color-mix(in srgb,var(--acc
 </div>
 <div id="spoti" class="spoti">
   <button class="spoti-logo" onclick="spotiToggle()" title="Spotify">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.2" fill="#121212"/><path fill="#1ED760" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.2" fill="transparent"/><path class="sp-glyph" fill="#1ED760" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
   </button>
   <div class="spoti-panel glass" id="spoti-panel"></div>
 </div>
@@ -3392,26 +3449,34 @@ async function lpRelease(){
 }
 let _lgN=0;
 function logoSVG(){
+  // logo: biała czapka absolwenta na niebieskim (paleta „Grafit”)
   const n=++_lgN, id=x=>`lg${x}${n}`;
   return `<svg class="lg" viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><defs>
-    <linearGradient id="${id('a')}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ab9bff"/><stop offset=".55" stop-color="#7a86ff"/><stop offset="1" stop-color="#47aeff"/></linearGradient>
-    <linearGradient id="${id('b')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".52" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <linearGradient id="${id('s')}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id('a')}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FA6F7"/><stop offset=".55" stop-color="#4D88E8"/><stop offset="1" stop-color="#2C5FB8"/></linearGradient>
+    <linearGradient id="${id('b')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id('s')}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <clipPath id="${id('c')}"><rect width="64" height="64" rx="15"/></clipPath></defs>
     <g clip-path="url(#${id('c')})"><rect width="64" height="64" fill="url(#${id('a')})"/><rect width="64" height="64" fill="url(#${id('b')})"/>
       <g transform="rotate(22 32 32)"><rect class="sheen" x="21" y="-30" width="20" height="124" fill="url(#${id('s')})"/></g></g>
-    <rect x=".5" y=".5" width="63" height="63" rx="14.5" fill="none" stroke="#fff" stroke-opacity=".28"/>
-    <path d="M19 31v8c0 3.7 5.8 6.5 13 6.5s13-2.8 13-6.5v-8l-13 5.6z" fill="#fff" fill-opacity=".82"/>
-    <path d="M32 15.5l24 10.2-24 10.3L8 25.7z" fill="#fff"/>
-    <path d="M32 25.7l15 1.4" stroke="#ffd36e" stroke-width="1.9" stroke-linecap="round"/>
-    <g class="tassel"><path d="M47 27.1v11.4" stroke="#ffd36e" stroke-width="1.9" stroke-linecap="round"/><path d="M45 38.2h4l1.2 6.6h-6.4z" fill="#ffd36e"/></g>
-    <circle cx="32" cy="25.7" r="2" fill="#ffd36e"/></svg>`;
+    <rect x=".5" y=".5" width="63" height="63" rx="14.5" fill="none" stroke="#fff" stroke-opacity=".22"/>
+    <path d="M19.5 31.5v7.5c0 3.6 5.6 6.4 12.5 6.4s12.5-2.8 12.5-6.4v-7.5L32 37z" fill="#fff" fill-opacity=".9"/>
+    <path d="M32 16l23 10-23 10L9 26z" fill="#fff"/>
+    <g class="tassel"><path d="M47.5 27.2v11" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><path d="M45.6 38h3.8l1.1 6.2h-6z" fill="#fff"/></g>
+    <circle cx="32" cy="26" r="1.9" fill="#2C5FB8"/></svg>`;
 }
 function paintLogos(root=document){ root.querySelectorAll('[data-logo]').forEach(e=>{if(!e.firstElementChild)e.innerHTML=logoSVG();}); }
 paintLogos($('.rail'));
 let _installEvt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_installEvt=e;});
 // logo: w aplikacji (okno na Windows / wersja webowa) prowadzi na Pulpit — strona opisowa jest tylko w przeglądarce lokalnej
+/* menu boczne: zwijane kliknięciem do samych ikon (zapamiętane) */
+function railToggle(force){
+  const on=force!=null?force:!document.body.classList.contains('rail-min');
+  document.body.classList.toggle('rail-min',on); try{localStorage.setItem('rail_min',on?'1':'0');}catch(_){}
+  const b=$('#rail-tg'); if(b){b.title=on?'Rozwiń menu':'Zwiń menu'; b.setAttribute('aria-label',b.title);}
+  $$('.rail .navlist button, .rail .bell').forEach(x=>{const l=x.querySelector('.lbl,span:not(.nav-av):not(.na-txt)'); if(l&&!x.title)x.title=l.textContent.trim();});
+}
+try{if(localStorage.getItem('rail_min')==='1')railToggle(true);}catch(_){}
 function brandClick(){ if(APP.desktop||APP.web)go('pulpit'); else go('start'); }
 // ze strony opisowej zawsze da się wrócić: Esc / Backspace / przycisk myszy „wstecz" (okno desktop nie ma paska przeglądarki)
 addEventListener('keydown',e=>{if(!document.body.classList.contains('on-start'))return;
@@ -6931,6 +6996,40 @@ function blockEl(b){
 }
 
 /* ===== BLOK TEKSTU: menu formatowania, aktywne stany, skróty, rozmiar, link-dialog ===== */
+/* czyszczenie wklejanego HTML: zostaje znaczenie (pogrubienie, kursywa, listy, nagłówki, linki, tabele), znikają czcionki, kolory i tła */
+function cleanPaste(html){
+  const doc=new DOMParser().parseFromString(html,'text/html'), root=doc.body;
+  root.querySelectorAll('meta,style,script,title,link,o\\:p,xml').forEach(n=>n.remove());
+  const KEEP={STRONG:'strong',B:'strong',EM:'em',I:'em',U:'u',S:'s',STRIKE:'s',DEL:'s',SUP:'sup',SUB:'sub',A:'a',UL:'ul',OL:'ol',LI:'li',
+    H1:'h2',H2:'h2',H3:'h3',H4:'h4',H5:'h4',H6:'h4',P:'p',DIV:'div',BLOCKQUOTE:'blockquote',CODE:'code',PRE:'pre',BR:'br',
+    TABLE:'table',THEAD:'thead',TBODY:'tbody',TR:'tr',TD:'td',TH:'th',IMG:'img',HR:'hr'};
+  const walk=n=>{[...n.childNodes].forEach(c=>{
+    if(c.nodeType===8){c.remove();return;} if(c.nodeType!==1)return;
+    walk(c);
+    const st=c.getAttribute('style')||'', tag=c.tagName.toUpperCase();
+    // Google Docs: <b style="font-weight:normal" id="docs-internal-guid…"> opakowuje wszystko — to nie pogrubienie
+    if(tag==='B'&&/font-weight:\s*(normal|400)/.test(st)){c.replaceWith(...c.childNodes);return;}
+    let inner=[...c.childNodes];
+    const wrapIn=t=>{const w=doc.createElement(t);inner.forEach(x=>w.appendChild(x));inner=[w];};
+    if(!/^(STRONG|B|H\d)$/.test(tag)&&/font-weight:\s*(bold|[6-9]00)/.test(st))wrapIn('strong');
+    if(!/^(EM|I)$/.test(tag)&&/font-style:\s*italic/.test(st))wrapIn('em');
+    if(tag!=='U'&&tag!=='A'&&/text-decoration[^;]*underline/.test(st))wrapIn('u');
+    if(!/^(S|STRIKE|DEL)$/.test(tag)&&/line-through/.test(st))wrapIn('s');
+    if(/vertical-align:\s*super/.test(st))wrapIn('sup'); else if(/vertical-align:\s*sub/.test(st))wrapIn('sub');
+    const k=KEEP[tag];
+    if(!k||(tag==='IMG'&&!/^(https?:|data:image\/)/i.test(c.getAttribute('src')||''))){c.replaceWith(...inner);return;}
+    const el=doc.createElement(k);
+    if(k==='a'){const h=c.getAttribute('href')||'';if(/^(https?:|mailto:)/i.test(h)){el.setAttribute('href',h);el.setAttribute('target','_blank');el.setAttribute('rel','noopener');}else{c.replaceWith(...inner);return;}}
+    if(k==='img'){el.setAttribute('src',c.getAttribute('src'));el.className='noteimg al-center';el.style.width='60%';}
+    if((k==='td'||k==='th')){['colspan','rowspan'].forEach(a=>{if(c.getAttribute(a))el.setAttribute(a,c.getAttribute(a));});}
+    inner.forEach(x=>el.appendChild(x)); c.replaceWith(el);
+  });};
+  walk(root);
+  root.querySelectorAll('li>p:only-child,li>div:only-child').forEach(p=>p.replaceWith(...p.childNodes));   // Docs: <li><p>tekst</p></li>
+  root.querySelectorAll('p,div').forEach(p=>{if(!p.textContent.trim()&&!p.querySelector('img,br,table'))p.remove();});
+  if(root.children.length===1&&/^(P|DIV)$/.test(root.firstElementChild.tagName)&&!root.firstElementChild.querySelector('p,div,ul,ol,table'))root.firstElementChild.replaceWith(...root.firstElementChild.childNodes);   // jeden akapit = wstaw w linii
+  return root.innerHTML.replace(/\u00a0/g,' ').trim();
+}
 function buildTextBlock(d,b){
   d.innerHTML=ctl(b.id);
   const ed=document.createElement('div');
@@ -6961,10 +7060,13 @@ function buildTextBlock(d,b){
     remember(); updateActive(); lastType=0;
   }
   const save=(typing)=>{b.html=stripDecor(ed);scheduleSave();hist(typing===true);};
-  let lastRange=null, enterStreak=0;
+  let lastRange=null, enterStreak=0, plainPaste=false;
   const remember=()=>{const s=window.getSelection(); if(s.rangeCount && ed.contains(s.anchorNode)) lastRange=s.getRangeAt(0).cloneRange();};
   const restore=()=>{ed.focus(); if(lastRange){const s=window.getSelection(); s.removeAllRanges(); s.addRange(lastRange);}};
-  const execRaw=(cmd,val)=>{histMark();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,val);remember();save();updateActive();};
+  // Chrome przy poleceniach (listy, wyrównanie) dokleja <span style="letter-spacing…"> — sprzątamy takie puste style
+  const tidy=()=>{ed.querySelectorAll('span[style]').forEach(sp=>{const st=sp.style;['letter-spacing','font-family','line-height','font-weight','font-style'].forEach(p=>{if(p==='letter-spacing'||p==='font-family'||p==='line-height')st.removeProperty(p);});
+    if(!sp.getAttribute('style').trim()){sp.replaceWith(...sp.childNodes);}});};
+  const execRaw=(cmd,val)=>{histMark();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,val);tidy();remember();save();updateActive();};
   // przyciski paska i skróty: żywe zaznaczenie (mousedown preventDefault je trzyma) — bez skoków karetki
   const run=(cmd,val=null)=>{ed.focus();execRaw(cmd,val);};
   // popupy (kolor, rozmiar, link): najpierw przywróć zapamiętane zaznaczenie
@@ -7000,8 +7102,9 @@ function buildTextBlock(d,b){
     bold:el=>/^(B|STRONG)$/.test(el.tagName)||(el.tagName==='SPAN'&&/bold|[6-9]00/.test(el.style.fontWeight)),
     italic:el=>/^(I|EM)$/.test(el.tagName)||(el.tagName==='SPAN'&&el.style.fontStyle==='italic'),
     underline:el=>el.tagName==='U', strike:el=>/^(S|STRIKE|DEL)$/.test(el.tagName),
-    superscript:el=>el.tagName==='SUP', subscript:el=>el.tagName==='SUB', mark:el=>el.tagName==='MARK'};
-  const SPAN_CSS={bold:'fontWeight',italic:'fontStyle'};
+    superscript:el=>el.tagName==='SUP', subscript:el=>el.tagName==='SUB', mark:el=>el.tagName==='MARK',
+    size:el=>el.tagName==='SPAN'&&!!el.style.fontSize, color:el=>el.tagName==='FONT'||(el.tagName==='SPAN'&&!!el.style.color)};
+  const SPAN_CSS={bold:'fontWeight',italic:'fontStyle',size:'fontSize',color:'color'};
   function fmtAnc(n,test){let el=n.nodeType===3?n.parentElement:n;while(el&&el!==ed){if(test(el))return el;el=el.parentElement;}return null;}
   function textNodesIn(r){const out=[];const w=document.createTreeWalker(r.commonAncestorContainer.nodeType===3?r.commonAncestorContainer.parentNode:r.commonAncestorContainer,NodeFilter.SHOW_TEXT);
     let n;while(n=w.nextNode()){if(!r.intersectsNode(n)||!n.textContent.length)continue;
@@ -7025,8 +7128,8 @@ function buildTextBlock(d,b){
   function applyFmt(kind,make,mode){
     ed.focus(); histMark(); const s=getSelection(); if(!s.rangeCount)return;
     let r=s.getRangeAt(0); if(!ed.contains(r.commonAncestorContainer))return;
-    if(r.collapsed){const w=wordRange(r);if(!w)return;r=w;}
     const test=FMT_EL[kind];
+    if(r.collapsed){typingFmt(kind,make,mode,r,test);return;}
     const nodes=textNodesIn(r), nt=nodes.filter(t=>t.textContent.trim()), chk=nt.length?nt:nodes;
     const allOn=chk.length>0&&chk.every(t=>fmtAnc(t,test));
     const off=mode==='off'||(mode==='toggle'&&allOn);
@@ -7048,13 +7151,33 @@ function buildTextBlock(d,b){
     if(tn.length){fin.setStart(tn[0],0);fin.setEnd(tn[tn.length-1],tn[tn.length-1].length);}else{fin.setStartAfter(m1);fin.collapse(true);}
     m1.remove(); m2.remove();
     // scal sąsiednie takie same znaczniki (po nałożeniu i po zdjęciu formatu), pomijając puste węzły tekstu
-    ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark').forEach(e=>{if(!e.isConnected)return;let n=e.nextSibling;
+    ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark,span[style]').forEach(e=>{if(!e.isConnected)return;let n=e.nextSibling;
       for(;;){while(n&&n.nodeType===3&&!n.length){const nx=n.nextSibling;n.remove();n=nx;}
         if(!(n&&n.nodeType===1&&n.tagName===e.tagName&&n.getAttribute('style')===e.getAttribute('style')&&n.className===e.className))break;
         while(n.firstChild)e.appendChild(n.firstChild);const nx=n.nextSibling;n.remove();n=nx;}});
     ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark').forEach(e=>{if(!e.textContent&&!e.querySelector('img,br'))e.remove();});
     s.removeAllRanges(); s.addRange(fin); remember(); save(); updateActive();
   }
+  // format „dla dalszego pisania”: włącz = pusty znacznik z kursorem w środku; wyłącz = kursor za znacznikiem
+  function typingFmt(kind,make,mode,r,test){
+    const s=getSelection(), anc=fmtAnc(r.startContainer,test);
+    const off=mode==='off'||(mode==='toggle'&&anc), Z='\u200b';
+    const put=(node,off2)=>{const n=document.createRange();n.setStart(node,off2);n.collapse(true);s.removeAllRanges();s.addRange(n);};
+    if(off){ if(!anc)return;
+      // rozetnij element w miejscu kursora i wstaw kursor pomiędzy częściami (bez formatu)
+      const m=document.createElement('span'); r.insertNode(m); splitAt(m,test);
+      let a=fmtAnc(m,test); while(a){ // m jest na początku elementu → wyjdź przed niego
+        a.before(m); a=fmtAnc(m,test);}
+      const t=document.createTextNode(Z); m.replaceWith(t); put(t,1);
+      ed.querySelectorAll('strong,b,em,i,u,s,sup,sub,mark,span').forEach(e=>{if(!e.textContent&&!e.querySelector('img,br,.itex'))e.remove();});
+    } else if(make){
+      if(anc&&mode!=='on')return;
+      const el=make(); el.appendChild(document.createTextNode(Z)); r.insertNode(el); put(el.firstChild,1);
+    }
+    remember(); updateActive(); b.html=stripDecor(ed); scheduleSave();
+  }
+  function clearFormat(){ed.focus();const s=getSelection();if(!s.rangeCount||s.isCollapsed)return;
+    run('removeFormat'); run('unlink'); ['mark','size','color','bold','italic','underline','strike','superscript','subscript'].forEach(k=>applyFmt(k,null,'off'));}
   function fmtInline(kind){const f=FMT[kind]; applyFmt(kind,()=>document.createElement(f.tag),'toggle');}
   // ZAKREŚLACZ jako <mark> z ciemnym tekstem (czytelny): ten sam kolor = zdejmij, inny = przemaluj, ⌀ = usuń
   function highlight(color){
@@ -7108,6 +7231,7 @@ function buildTextBlock(d,b){
     while(el&&el!==ed){if(el.nodeType===1&&test(el))return true;el=el.parentElement;}return false;}
   function updateActive(){
     const s=window.getSelection(), inEd=s.rangeCount&&ed.contains(s.anchorNode);
+    if(inEd&&typeof fsIn!=='undefined'&&document.activeElement!==fsIn){try{const el=s.anchorNode.nodeType===3?s.anchorNode.parentElement:s.anchorNode;fsIn.value=Math.round(parseFloat(getComputedStyle(el).fontSize));}catch(_){}}
     for(const c in cmdBtns) cmdBtns[c].classList.toggle('on', inEd && CHK[c] ? hasFmt(s.anchorNode,CHK[c]) : false);
     let tag=''; if(inEd){let el=s.anchorNode.nodeType===3?s.anchorNode.parentElement:s.anchorNode;
       while(el&&el!==ed){const t=el.tagName?el.tagName.toLowerCase():'';if(['h1','h2','h3','h4','blockquote'].includes(t)){tag=t;break;}el=el.parentElement;}}
@@ -7120,11 +7244,9 @@ function buildTextBlock(d,b){
     }catch(_){}
   }
   function setFontSize(px){
-    restore(); if(!px)return; const s=window.getSelection();
-    if(s.isCollapsed||!ed.contains(s.anchorNode)){ed.style.fontSize=px+'px';b.fontSize=+px;save();return;}
-    const r=s.getRangeAt(0); const div=document.createElement('div'); div.appendChild(r.cloneContents());
-    document.execCommand('insertHTML',false,'<span style="font-size:'+px+'px">'+div.innerHTML+'</span>');
-    remember(); save();
+    restore(); if(!px)return;
+    const base=parseFloat(getComputedStyle(ed).fontSize)||16;
+    applyFmt('size',+px===Math.round(base)?null:()=>{const sp=document.createElement('span');sp.style.fontSize=px+'px';return sp;},+px===Math.round(base)?'off':'on');
   }
   function openLinkDialog(){
     const s=window.getSelection(); const selText=(s&&ed.contains(s.anchorNode))?s.toString():'';
@@ -7231,7 +7353,7 @@ function buildTextBlock(d,b){
     btn('<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>','Wstaw zdjęcie',()=>insertImage()),
     btn('∑','Wzór w linii (LaTeX)',()=>insertInlineTex()),
     btn('†','Przypis dolny',()=>insertFootnote()),
-    btn('⌫','Wyczyść format',()=>{run('removeFormat');run('unlink');}),
+    btn('⌫','Wyczyść format · '+mod+'+\\',()=>clearFormat()),
   );
   tb.appendChild(sep());
   const micBtn=btn('<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3a3 3 0 013 3v6a3 3 0 01-6 0V6a3 3 0 013-3z"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>','Dyktowanie głosowe (Chrome/Edge)','','mic');
@@ -7325,12 +7447,23 @@ function buildTextBlock(d,b){
     document.querySelectorAll('.block.editing').forEach(x=>{if(x!==d)x.classList.remove('editing');});
     d.classList.add('editing'); activeEditable=ed; setTimeout(updateActive,0);
   });
+  ed.addEventListener('paste',e=>{
+    const cd=e.clipboardData; if(!cd)return; const html=plainPaste?'':cd.getData('text/html'), txt=cd.getData('text/plain'); plainPaste=false;
+    if([...(cd.files||[])].some(f=>f.type.startsWith('image/'))&&!html)return;   // samo zdjęcie — domyślnie
+    e.preventDefault(); histMark();
+    if(html){const mk='p'+Date.now();document.execCommand('insertHTML',false,'<span data-pm="'+mk+'"></span>'+cleanPaste(html)+'<span data-pm="'+mk+'e"></span>');
+      const a=ed.querySelector('[data-pm="'+mk+'"]'),z=ed.querySelector('[data-pm="'+mk+'e"]');
+      if(a&&z){const rr=document.createRange();rr.setStartAfter(a);rr.setEndBefore(z);ed.querySelectorAll('[style]').forEach(el=>{if(rr.intersectsNode(el)&&!el.classList.contains('noteimg'))el.removeAttribute('style');});
+        const c=document.createRange();c.setStartAfter(z);c.collapse(true);a.remove();z.remove();getSelection().removeAllRanges();getSelection().addRange(c);}}
+    else if(txt){document.execCommand('insertText',false,txt);}
+    remember(); save(); updateActive();
+  });
   ed.addEventListener('input',()=>{save(true);handleMention(ed);calcSuggest(ed);scheduleGrammar(ed);});
   ed.addEventListener('keyup',()=>{remember();updateActive();});
   ed.addEventListener('mouseup',()=>{remember();updateActive();});
   ed.addEventListener('focus',()=>scheduleGrammar(ed,600));
   ed.addEventListener('blur',()=>setTimeout(()=>{if(!d.contains(document.activeElement))d.classList.remove('editing');hideMention();closeCalcSuggest();},200));
-  document.addEventListener('selectionchange',()=>{if(document.activeElement===ed)updateActive();});
+  document.addEventListener('selectionchange',()=>{if(document.activeElement===ed){remember();updateActive();}});
 
   ed.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'){e.preventDefault();histGo(-1);}else if(e.inputType==='historyRedo'){e.preventDefault();histGo(1);}});
   ed.addEventListener('keydown',e=>{
@@ -7339,8 +7472,15 @@ function buildTextBlock(d,b){
       if(k==='y'||(k==='z'&&e.shiftKey)){e.preventDefault();histGo(1);return;}}
     mentionKeydown(e);
     if(mentionEl.style.display!=='none')return;
-    // listy: Tab = wcięcie (punkt podrzędny, inna kropka), Shift+Tab = poziom wyżej
-    if(e.key==='Tab'&&!e.ctrlKey&&!e.altKey){const li=curLi(); if(li){e.preventDefault(); e.shiftKey?outdentLi(li):indentLi(li); return;}}
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='v')plainPaste=true;
+    // listy: Tab = wcięcie (punkt podrzędny, inna kropka), Shift+Tab = poziom wyżej; poza listą Tab = wcięcie tekstu (jak w Docs), nie wyjście z edytora
+    if(e.key==='Tab'&&!e.ctrlKey&&!e.altKey){const li=curLi(); e.preventDefault(); if(li){e.shiftKey?outdentLi(li):indentLi(li);} else if(!e.shiftKey){histMark();document.execCommand('insertText',false,'\u00a0\u00a0\u00a0\u00a0');save();} return;}
+    // Backspace na początku punktu listy: zdejmij punktor (zagnieżdżony → poziom wyżej), tekst zostaje
+    if(e.key==='Backspace'&&!e.shiftKey){const li=curLi(); const s0=getSelection();
+      if(li&&s0.isCollapsed&&!isEmptyLi(li)&&caretAtStart(li)){e.preventDefault();
+        if(li.parentElement.parentElement&&li.parentElement.parentElement.tagName==='LI')outdentLi(li);
+        else run(li.parentElement.tagName==='OL'?'insertOrderedList':'insertUnorderedList');
+        return;}}
     // listy: Enter (albo Backspace) w PUSTYM punkcie → wyjście z listy (zagnieżdżona → poziom wyżej)
     if((e.key==='Enter'&&!e.shiftKey)||e.key==='Backspace'){
       const li=curLi();
@@ -7374,6 +7514,8 @@ function buildTextBlock(d,b){
     if(simple[k]&&!e.shiftKey&&!e.altKey){e.preventDefault();fmtInline(simple[k]);}
     else if(k==='e'&&!e.shiftKey&&!e.altKey){e.preventDefault();const t=window.getSelection().toString();wrap('<code>'+(t?esc(t):'kod')+'</code>&nbsp;');}
     else if(k==='k'&&!e.shiftKey){e.preventDefault();openLinkDialog();}
+    else if(k==='\\'&&!e.shiftKey){e.preventDefault();clearFormat();}
+    else if(e.shiftKey&&!e.altKey&&['l','e','r','j'].includes(k)){e.preventDefault();run({l:'justifyLeft',e:'justifyCenter',r:'justifyRight',j:'justifyFull'}[k]);}
     else if(e.shiftKey&&k==='s'){e.preventDefault();fmtInline('strike');}
     else if(e.shiftKey&&(k==='8'||k==='*')){e.preventDefault();run('insertUnorderedList');}
     else if(e.shiftKey&&(k==='7'||k==='&')){e.preventDefault();run('insertOrderedList');}
@@ -7673,11 +7815,14 @@ async function aiImproveBlock(id,btn){
     catch(err){stop(); popout({icon:'warn',title:'Nie udało się poprawić notatki',text:err.message});}
     finally{stop(); aiBusy(btn,false);}}
   if(!html)return;
-  html=aiUnpackImages(html,imgs);
+  html=aiFormat(aiUnpackImages(html,imgs));
   if(r.mode==='new'){insertAiBlock(id,html);return;}
   pushVersion(b,'Przed poprawką AI'); b.html=html; renderBlocks(); scheduleSave();
   verToast(id);
 }
+/* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
+function aiFormat(html){const d=document.createElement('div'); d.innerHTML=html||'';
+  d.querySelectorAll('h3').forEach(h=>{h.style.textAlign='center';}); return d.innerHTML;}
 function pushVersion(b,label){b.versions=[{html:b.html||'',at:new Date().toISOString(),label}].concat(b.versions||[]).slice(0,5);}
 function verToast(id){
   document.querySelector('.toast-ver')?.remove();
@@ -7707,7 +7852,7 @@ function openVersions(id){
   const c=$('#ver-clear'); if(c)c.onclick=async()=>{closeModal();if(await confirmPop('Usunąć stare wersje?','Zostanie tylko obecna treść bloku.','Usuń')){delete b.versions;renderBlocks();scheduleSave();}};
 }
 function insertAiBlock(id,html){
-    const nb={id:uid(),type:'text',html};
+    const nb={id:uid(),type:'text',html:aiFormat(html)};
     const idx=noteData.content.findIndex(x=>x.id===id);
     noteData.content.splice(idx+1,0,nb);
     renderBlocks(); scheduleSave();
@@ -7822,7 +7967,7 @@ addEventListener('keydown',e=>{
 });
 /* ===== POMODORO: skupienie / krótka / długa przerwa, licznik w przycisku, statystyki dnia ===== */
 const PM_DEF={focus:25,short:5,long:15,every:4,auto:true,sound:true};
-const PM_MODES={focus:['Skupienie','#ff6b5e'],short:['Krótka przerwa','#4ade80'],long:['Długa przerwa','#5eafff']};
+const PM_MODES={focus:['Skupienie','#E5675F'],short:['Krótka przerwa','#4FD1B8'],long:['Długa przerwa','#5A96F2']};
 const pmLoad=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(_){return d;}}, pmSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}};
 let PMS=Object.assign({},PM_DEF,pmLoad('pomo_set',{}));
 let PM=pmLoad('pomo_state',{mode:'focus',end:null,left:null,done:0,task:''});
@@ -8792,7 +8937,8 @@ async function spotiCtrl(a){
 try{spotiHandleRedirect();}catch(_){}
 
 /* ===== usuwanie dekoracji (gramatyka) przy zapisie treści ===== */
-function stripDecor(ed){const c=ed.cloneNode(true);c.querySelectorAll('.gramm').forEach(s=>{s.replaceWith(document.createTextNode(s.textContent));});return c.innerHTML;}
+function stripDecor(ed){const c=ed.cloneNode(true);c.querySelectorAll('.gramm').forEach(s=>{s.replaceWith(document.createTextNode(s.textContent));});
+  return c.innerHTML.replace(/\u200b/g,'').replace(/<(strong|b|em|i|u|s|sup|sub|mark|span)(\s[^>]*)?><\/\1>/g,'');}
 
 /* ===== #9 AUTOUZUPEŁNIANIE KALKULATORA W TEKŚCIE ===== */
 function closeCalcSuggest(){document.getElementById('calc-suggest')?.remove();}
