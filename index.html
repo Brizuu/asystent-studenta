@@ -2817,11 +2817,31 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text .noteimg.al-right{margin:4px 0 10px 20px}
 .b-text .noteimg.al-left{margin:4px 20px 10px 0}
 @media (max-width:560px){.b-text .noteimg.al-left,.b-text .noteimg.al-right{float:none;margin:8px auto;max-width:100%}}
-/* Pomodoro i Spotify (stałe w prawym górnym rogu) nie zasłaniają spisu i kalkulatora */
+/* Pomodoro i Spotify: mniejsze i wyżej, żeby nie nachodziły na spis treści i kalkulator w prawym rogu zakładek */
 @media (min-width:821px){
-  #tabbar{padding-right:130px}
-  body:has(#pomo-mini:not(:empty)) #tabbar{padding-right:210px}
+  .spoti,.pomo{top:6px}
+  body.has-tbar .spoti,body.has-tbar .pomo{top:33px}
+  .pomo-btn,.spoti-logo{transform:scale(.82);transform-origin:top right}
+  .spoti-logo:hover,.pomo-btn:hover{transform:scale(.86)}
+  .pomo{right:62px}
+  .spoti-panel{right:48px}
+  .pomo-panel{top:46px}
 }
+
+/* 1.9.12: odstępy w notatkach AI — jedna wolna, klikalna linia między grupami (bez dodatkowych marginesów) */
+.b-text p:has(>br:only-child){margin:0}
+.b-text p:has(>br:only-child)+h3,.b-text p:has(>br:only-child)+h4{margin-top:4px}
+.b-text li:has(>ul,>ol){margin-bottom:.9em}
+.b-text p:has(>img.al-right:only-child),.b-text p:has(>img.al-left:only-child){margin:0}
+/* rodzaj calloutu: własna lista w stylu aplikacji */
+.cokind{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 10px!important;border-radius:9px!important;border:1px solid color-mix(in srgb,var(--cc) 35%,transparent)!important;background:color-mix(in srgb,var(--cc) 10%,transparent)!important;transition:background .15s}
+.cokind:hover{background:color-mix(in srgb,var(--cc) 18%,transparent)!important}
+.kindmenu{position:fixed;z-index:260;min-width:190px;padding:6px;border-radius:14px;background:rgba(17,21,30,.98);border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 46px rgba(0,0,0,.6);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:2px;animation:pop .13s ease}
+.kindmenu button{display:flex;align-items:center;gap:11px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
+.kindmenu button:hover{background:rgba(255,255,255,.06)}
+.kindmenu button.on{background:color-mix(in srgb,var(--cc) 14%,transparent)}
+.kindmenu .ki{width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--cc);background:color-mix(in srgb,var(--cc) 16%,transparent);flex:none}
+.kindmenu .kc{margin-left:auto;color:var(--cc)}
 
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
@@ -6975,7 +6995,7 @@ function addBlock(type){
   if(type==='toggle'){b.summary='';b.html='';b.open=true;}
   if(type==='latex')b.tex='';
   if(type==='embed')b.url='';
-  noteData.content.push(b); closeAddMenu();
+  const at=addAfterIndex(); noteData.content.splice(at,0,b); closeAddMenu();
   renderBlocks(); scheduleSave();
   // od razu w tryb edycji nowego bloku — widoczne wszystkie opcje
   const el=[...$('#blocks').children].find(x=>x.dataset.bid===b.id);
@@ -6984,14 +7004,14 @@ function addBlock(type){
     const f=el.querySelector('[contenteditable=true]')||el.querySelector('input:not(.fsin),textarea,select'); if(f)setTimeout(()=>f.focus(),30);}
 }
 const addMenuEl=()=>document.querySelector('.blockmenu');
-function closeAddMenu(){const box=$('#addblock'); const menu=addMenuEl(); if(!box)return;
+function closeAddMenu(){ADD_AT=null;const box=$('#addblock'); const menu=addMenuEl(); if(!box)return;
   box.classList.remove('open');
   if(menu){menu.classList.remove('floating'); menu.removeAttribute('style'); if(menu.parentElement!==box)box.appendChild(menu);}
   document.removeEventListener('mousedown',addMenuOutside);}
 function toggleAddMenu(ev){
   const box=$('#addblock'), menu=addMenuEl();
   if(box.classList.contains('open')){closeAddMenu();return;}
-  box.classList.add('open');
+  ADD_AT=null; box.classList.add('open');
   const anchor=ev&&(ev.currentTarget||ev.target);
   // menu do <body> — panel ma backdrop-filter i psuje position:fixed
   document.body.appendChild(menu); menu.classList.add('floating'); menu.style.visibility='hidden';
@@ -7213,10 +7233,19 @@ function showBlockMenu(x,y,bid){
   m.style.left=Math.max(8,Math.min(x,innerWidth-m.offsetWidth-8))+'px';
   m.style.top=Math.max(8,Math.min(y,innerHeight-m.offsetHeight-8))+'px';
   m.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.a;closeCtx();
-    if(a==='add')openAddMenuAt(x,y); else if(a==='half')toggleWidth(bid); else if(a==='up')moveBlock(bid,-1); else if(a==='down')moveBlock(bid,1); else if(a==='del')removeBlock(bid);});
+    if(a==='add')openAddMenuAt(x,y,bid); else if(a==='half')toggleWidth(bid); else if(a==='up')moveBlock(bid,-1); else if(a==='down')moveBlock(bid,1); else if(a==='del')removeBlock(bid);});
   setTimeout(()=>document.addEventListener('mousedown',ctxOutside),0);
 }
-function openAddMenuAt(x,y){const box=$('#addblock'),menu=addMenuEl();box.classList.add('open');document.body.appendChild(menu);menu.classList.add('floating');menu.style.visibility='hidden';const mh=menu.offsetHeight,mw=menu.offsetWidth;menu.style.top=Math.max(8,Math.min(y,innerHeight-mh-8))+'px';menu.style.left=Math.max(8,Math.min(x,innerWidth-mw-8))+'px';menu.style.visibility='';setTimeout(()=>document.addEventListener('mousedown',addMenuOutside),0);}
+/* PPM → „Dodaj blok…”: nowy blok ląduje pod klikniętym blokiem (a rząd obok siebie zostaje w całości) */
+let ADD_AT=null;
+function addAfterIndex(){const arr=noteData.content; if(!ADD_AT)return arr.length;
+  let i=-1; if(ADD_AT.bid)i=arr.findIndex(b=>b.id===ADD_AT.bid);
+  if(i<0){const els=[...document.querySelectorAll('#blocks .block[data-bid]')]; let last=null;
+    els.forEach(el=>{const r=el.getBoundingClientRect(); if(r.top+r.height/2<ADD_AT.y)last=el.dataset.bid;});
+    if(!last)return 0; i=arr.findIndex(b=>b.id===last);}
+  if(i<0)return arr.length; const row=arr[i].row; if(row)while(arr[i+1]&&arr[i+1].row===row)i++;
+  return i+1;}
+function openAddMenuAt(x,y,bid){ADD_AT={x,y,bid};const box=$('#addblock'),menu=addMenuEl();box.classList.add('open');document.body.appendChild(menu);menu.classList.add('floating');menu.style.visibility='hidden';const mh=menu.offsetHeight,mw=menu.offsetWidth;menu.style.top=Math.max(8,Math.min(y,innerHeight-mh-8))+'px';menu.style.left=Math.max(8,Math.min(x,innerWidth-mw-8))+'px';menu.style.visibility='';setTimeout(()=>document.addEventListener('mousedown',addMenuOutside),0);}
 function ctl(id){return `<span class="bgrip" data-grip title="Przeciągnij, aby przenieść (na bok = obok siebie)">⠿</span><span class="edit-hint">✎ kliknij, aby edytować</span><div class="bctl">
   <button class="bmove" data-grip title="Przeciągnij, aby przenieść">⠿</button>
   <button title="Szerokość: pełna / połowa" onclick="toggleWidth('${id}')">◨</button>
@@ -8148,6 +8177,12 @@ function aiFormat(html){const d=document.createElement('div'); d.innerHTML=html|
   const blank=e=>e&&e.tagName==='P'&&!e.textContent.trim()&&!e.querySelector('img');
   [...d.children].forEach(el=>{if(!/^H[2-4]$/.test(el.tagName))return; const pr=el.previousElementSibling;
     if(!pr||/^H[1-4]$/.test(pr.tagName)||blank(pr))return; const sp=document.createElement('p'); sp.innerHTML='<br>'; el.before(sp);});
+  // obraz „obok” zaczyna się zaraz pod podtytułem swojej części — tekst sekcji opływa go od góry i nie zostaje pusta dziura pod spodem
+  d.querySelectorAll(':scope>p>img.noteimg.al-right,:scope>p>img.noteimg.al-left').forEach(img=>{
+    const host=img.parentElement; let pr=host.previousElementSibling, n=0;
+    while(pr&&!/^H[1-4]$/.test(pr.tagName)){if(pr.tagName==='TABLE'||pr.querySelector('img,table')||++n>3)return; pr=pr.previousElementSibling;}
+    if(!pr||n===0)return; const np=document.createElement('p'); np.appendChild(img); pr.after(np);
+    if(!host.textContent.trim()&&!host.querySelector('img'))host.remove();});
   return d.innerHTML;}
 function pushVersion(b,label){b.versions=[{html:b.html||'',at:new Date().toISOString(),label}].concat(b.versions||[]).slice(0,5);}
 function verToast(id){
@@ -8465,14 +8500,33 @@ async function renderNotePdf(mode){
     const seg=els.map(el=>{const r=el.getBoundingClientRect();return {top:(r.top-wrapTop)*scaleY, bottom:(r.bottom-wrapTop)*scaleY, el};});
     const pxPerPt=canvas.width/usableW;
     const pageHpx=usableH*pxPerPt;
+    // miejsca, których nie wolno przeciąć: każda linia tekstu, obraz, wzór, wiersz tabeli, nagłówek (+ obraz z tekstem obok jako całość)
+    const occ=[], heads=[];
+    const addR=(r,h)=>{if(r.height<1)return; const t=(r.top-wrapTop)*scaleY-2, b=(r.bottom-wrapTop)*scaleY+2; occ.push([t,b]); if(h)heads.push([t,b]);};
+    {const tw=document.createTreeWalker(wrap,NodeFilter.SHOW_TEXT); const rg=document.createRange(); let n;
+      while((n=tw.nextNode())){if(!n.textContent.trim())continue; rg.selectNodeContents(n); for(const r of rg.getClientRects())addR(r);}}
+    wrap.querySelectorAll('img,svg,canvas,tr,hr,pre,.katex-display,.b-latex,.toggle summary,.cohead').forEach(e=>addR(e.getBoundingClientRect()));
+    wrap.querySelectorAll('h1,h2,h3,h4,.b-heading,.pdf-title').forEach(e=>addR(e.getBoundingClientRect(),true));
+    occ.sort((a,b)=>a[0]-b[0]); const merged=[];
+    occ.forEach(([t,b])=>{const L=merged[merged.length-1]; if(L&&t<=L[1])L[1]=Math.max(L[1],b); else merged.push([t,b]);});
+    // najniższe bezpieczne miejsce cięcia ≤ end (środek przerwy między zajętymi pasami); tytuł nie zostaje sam na dole strony
+    const safeCut=(start,end)=>{const min=start+pageHpx*.35; let idx=-1, cut=null;
+      for(let i=0;i<merged.length&&merged[i][1]<=end;i++){if(merged[i][1]<=start)continue; const nx=merged[i+1];
+        idx=i; cut=(!nx||nx[0]>end)?end:(merged[i][1]+nx[0])/2;}
+      // tytuł nie zostaje sam na dole strony — przenosimy go razem z treścią na następną
+      for(let k=0;k<2&&idx>0&&cut!=null;k++){const pr=merged[idx]; if(!heads.some(h=>Math.abs(h[1]-pr[1])<3))break;
+        const c2=(merged[idx-1][1]+pr[0])/2; if(c2<=min)break; cut=c2; idx--;}
+      return cut!=null&&cut>min?cut:null;};
     const clean=t=>String(t||'').split(String.fromCharCode(160)).join(' ').replace(new RegExp('[ '+String.fromCharCode(9)+']+','g'),' ').replace(new RegExp(String.fromCharCode(10)+'{2,}','g'),String.fromCharCode(10)).trim();
     const addSearch=(txt,x,y,w)=>{try{txt=clean(txt);if(!txt)return;pdf.setFont(font);pdf.setTextColor(0,0,0);pdf.setFontSize(9);const lines=pdf.splitTextToSize(txt,w);pdf.text(lines,x,y+9,{renderingMode:'invisible',lineHeightFactor:1.25,baseline:'top'});}catch(_){}};
     let start=0, first=true;
     while(start<canvas.height-1){
       let end=Math.min(start+pageHpx, canvas.height);
       if(end<canvas.height){
-        const cut=seg.filter(sg=>sg.bottom>start+12 && sg.bottom<=end+0.5).map(sg=>sg.bottom).pop();
-        if(cut && cut>start+12) end=cut;
+        const fine=safeCut(start,end);
+        if(fine)end=fine;
+        else{const cut=seg.filter(sg=>sg.bottom>start+12 && sg.bottom<=end+0.5).map(sg=>sg.bottom).pop();
+          if(cut && cut>start+12) end=cut;}
       }
       const sliceH=Math.max(1,Math.round(end-start));
       const tmp=document.createElement('canvas'); tmp.width=canvas.width; tmp.height=sliceH;
@@ -8714,6 +8768,18 @@ function makeLangDropdown(cur,onChange){
 }
 
 /* ===== CALLOUT (Ważne / Uwaga / Definicja) ===== */
+function openKindMenu(anchor,cur,pick){
+  document.querySelector('.kindmenu')?.remove();
+  const m=document.createElement('div'); m.className='kindmenu'; m.setAttribute('role','listbox');
+  m.innerHTML=Object.entries(CALLOUTS).map(([v,o])=>`<button type="button" role="option" data-v="${v}" class="${v===cur?'on':''}" style="--cc:${o.c}"><span class="ki">${o.i}</span><span>${o.t}</span>${v===cur?'<svg class="kc" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':''}</button>`).join('');
+  document.body.appendChild(m); const r=anchor.getBoundingClientRect();
+  let top=r.bottom+6; if(top+m.offsetHeight>innerHeight-8)top=Math.max(8,r.top-m.offsetHeight-6);
+  m.style.top=top+'px'; m.style.left=Math.max(8,Math.min(r.left-8,innerWidth-m.offsetWidth-8))+'px';
+  const close=()=>{m.remove();document.removeEventListener('mousedown',out,true);document.removeEventListener('keydown',esc_);};
+  const out=e=>{if(!m.contains(e.target))close();}, esc_=e=>{if(e.key==='Escape')close();};
+  setTimeout(()=>{document.addEventListener('mousedown',out,true);document.addEventListener('keydown',esc_);},0);
+  m.querySelectorAll('button').forEach(x=>x.onclick=()=>{close(); if(x.dataset.v!==cur)pick(x.dataset.v);});
+}
 const CALLOUTS={info:{i:'ℹ',t:'Informacja',c:'#5eafff'},warn:{i:'▲',t:'Uwaga',c:'#ffb454'},important:{i:'★',t:'Ważne',c:'#ff7a90'},def:{i:'§',t:'Definicja',c:'#8b7cff'},tip:{i:'✓',t:'Wskazówka',c:'#54d996'}};
 function buildCallout(d,b){
   b.kind=b.kind||'info';
@@ -8722,13 +8788,13 @@ function buildCallout(d,b){
     <div class="callout" style="--cc:${k.c}">
       <div class="cohead"><span class="coic">${k.i}</span>
         <span class="colabel">${k.t}</span>
-        <select class="cokind">${Object.entries(CALLOUTS).map(([v,o])=>`<option value="${v}" ${b.kind===v?'selected':''}>${o.t}</option>`).join('')}</select>
+        <button type="button" class="cokind" aria-haspopup="listbox" title="Rodzaj">${k.t}<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
       </div>
       <div class="cobody" contenteditable="true" data-ph="Treść…">${b.html||''}</div>
     </div>`;
   const body=d.querySelector('.cobody'), sel=d.querySelector('.cokind');
   body.addEventListener('input',()=>{b.html=body.innerHTML;scheduleSave();});
-  sel.addEventListener('change',()=>{b.kind=sel.value;renderBlocks();scheduleSave();});
+  sel.addEventListener('click',e=>{e.stopPropagation(); openKindMenu(sel,b.kind,v=>{b.kind=v;renderBlocks();scheduleSave();});});
 }
 
 /* ===== TOGGLE / SPOILER (Active Recall) ===== */
