@@ -2798,6 +2798,10 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text mark:not(.hl){background:color-mix(in srgb,var(--accent) 24%,transparent);color:#fff;padding:1px 4px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 #pane-note.glass{border-bottom-left-radius:0!important;border-bottom-right-radius:0!important;border-bottom:0!important}
 
+/* notatki do nauki: cała wolna linia między grupami (punkt z podpunktami, przed podtytułem) */
+.b-text li:has(>ul,>ol){margin-bottom:1.7em}
+.b-text h4{margin-bottom:10px}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -8041,6 +8045,28 @@ function aiProgAttach(){
     (el.closest('.brow')||el).after(sk); });
 }
 async function aiBusy(btn,on,label){if(!btn)return;if(on){btn._h=btn.innerHTML;btn.classList.add('busy');btn.innerHTML=label||'⏳ AI…';}else{btn.classList.remove('busy');if(btn._h!=null)btn.innerHTML=btn._h;}}
+/* rysunki wskazane przez AI ([[RYSUNEK strona=N ramka=y0,x0,y1,x1 | podpis]]) wycinamy ze strony PDF i wstawiamy jako obraz */
+async function aiFigures(html,url){
+  const re=/(?:<p>\s*)?\[\[\s*RYSUNEK\s+strona\s*=\s*(\d+)\s+ramka\s*=\s*([\d.\s,]+?)\s*(?:\|\s*([^\]]*?))?\]\](?:\s*<\/p>)?/gi;
+  const found=[...html.matchAll(re)]; if(!found.length)return html;
+  let pdf=null; try{if(window.pdfjsLib)pdf=await pdfjsLib.getDocument(url).promise;}catch(_){}
+  const cache={};
+  const cut=async(n,box)=>{if(!pdf||n<1||n>pdf.numPages)return null;
+    if(!cache[n]){const pg=await pdf.getPage(n), vp=pg.getViewport({scale:2.2}), c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
+      await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise; cache[n]=c;}
+    const c=cache[n]; let [y0,x0,y1,x1]=box; if(!(y1>y0&&x1>x0)){y0=0;x0=0;y1=1000;x1=1000;}
+    const pad=12, sx=Math.max(0,x0/1000*c.width-pad), sy=Math.max(0,y0/1000*c.height-pad), sw=Math.min(c.width-sx,(x1-x0)/1000*c.width+2*pad), sh=Math.min(c.height-sy,(y1-y0)/1000*c.height+2*pad);
+    if(sw<40||sh<40)return null;
+    const k=Math.min(1,1400/sw), o=document.createElement('canvas'); o.width=Math.round(sw*k); o.height=Math.round(sh*k);
+    const g=o.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,o.width,o.height); g.drawImage(c,sx,sy,sw,sh,0,0,o.width,o.height);
+    return o.toDataURL('image/jpeg',.88);};
+  let out=html;
+  for(const m of found){let rep='';
+    try{const box=m[2].split(/[\s,]+/).filter(Boolean).map(Number).slice(0,4); const src=await cut(+m[1],box);
+      if(src)rep=`<div><img class="noteimg al-center" style="width:72%" src="${src}"></div>`+(m[3]&&m[3].trim()?`<p style="text-align:center"><em>${esc(m[3].trim())}</em></p>`:'');}catch(_){}
+    out=out.replace(m[0],rep);}
+  return out;
+}
 async function aiPdfNote(url,bid,btn){
   if(!url)return;
   const r=await aiInstrDialog({title:'Notatka AI z PDF',sub:'AI przeczyta cały plik (także wzory, tabele i skany) i zrobi z niego notatkę do nauki pod tym blokiem.',
@@ -8056,7 +8082,7 @@ async function aiPdfNote(url,bid,btn){
   aiBusy(btn,true,'⏳ AI czyta PDF…');
   const stop=aiProgress({title:'Gemini robi notatkę z PDF',stages:['Wysyłam plik','Gemini czyta dokument','Wyszukuję najważniejsze treści','Układam notatkę do nauki'],bid});
   try{const res=await fetch('api/ai/pdf-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,instructions:r.instructions,topic:r.topic})});
-    const data=await res.json(); if(!res.ok)throw new Error(data.detail||('Błąd '+res.status)); stop(); insertAiBlock(bid,data.html);}
+    const data=await res.json(); if(!res.ok)throw new Error(data.detail||('Błąd '+res.status)); const html=await aiFigures(data.html,url); stop(); insertAiBlock(bid,html);}
   catch(err){stop(); popout({icon:'warn',title:'Nie udało się utworzyć notatki',text:err.message});}
   finally{stop(); aiBusy(btn,false);}
 }
@@ -8090,7 +8116,12 @@ async function aiImproveBlock(id,btn){
 }
 /* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
 function aiFormat(html){const d=document.createElement('div'); d.innerHTML=html||'';
-  d.querySelectorAll('h3').forEach(h=>{h.style.textAlign='center';}); return d.innerHTML;}
+  d.querySelectorAll('h3').forEach(h=>{h.style.textAlign='center';});
+  // cała wolna linia przed każdym (pod)tytułem — grupy treści wyraźnie oddzielone, da się ją potem usunąć jak zwykłą linię
+  const blank=e=>e&&e.tagName==='P'&&!e.textContent.trim()&&!e.querySelector('img');
+  [...d.children].forEach(el=>{if(!/^H[2-4]$/.test(el.tagName))return; const pr=el.previousElementSibling;
+    if(!pr||/^H[1-4]$/.test(pr.tagName)||blank(pr))return; const sp=document.createElement('p'); sp.innerHTML='<br>'; el.before(sp);});
+  return d.innerHTML;}
 function pushVersion(b,label){b.versions=[{html:b.html||'',at:new Date().toISOString(),label}].concat(b.versions||[]).slice(0,5);}
 function verToast(id){
   document.querySelector('.toast-ver')?.remove();

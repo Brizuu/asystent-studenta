@@ -949,13 +949,21 @@ def ai_pdf_note(a: AIDocNote):
               "- Przejdź przez CAŁY dokument — od pierwszej do ostatniej strony, każdą sekcję i każdy slajd. Niczego nie pomijaj "
               "i nie kończ wcześniej; kolejność sekcji jak w dokumencie.\n"
               "- Jeśli w dokumencie są pytania (kontrolne, egzaminacyjne, zadania) — wypisz je wyraźnie i podaj odpowiedzi lub rozwiązania.\n"
-              + READABLE_RULE + HTML_RULE)
+              + READABLE_RULE + FIGURE_RULE + HTML_RULE)
     out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf",
                    max_tokens=32768, timeout=420, complete=True)
     return {"html": _clean_ai_html(out)}
 
 
 # układ notatki do czytania: numerowane sekcje (nagłówek na środku), podsekcje WERSALIKAMI, listy „pojęcie – wyjaśnienie”
+# rysunki z PDF: AI wskazuje stronę i ramkę, aplikacja wycina obraz ze strony i wstawia go do notatki
+FIGURE_RULE = ("- Jeśli w dokumencie są WAŻNE wykresy, schematy, diagramy, mapy lub rysunki potrzebne do zrozumienia tematu "
+               "(nie logotypy, nie ozdobniki, nie zdjęcia tytułowe), wstaw w odpowiednim miejscu notatki osobny akapit dokładnie w formie: "
+               "<p>[[RYSUNEK strona=N ramka=ymin,xmin,ymax,xmax | krótki podpis]]</p> — N to numer strony PDF (od 1), "
+               "ramka to współrzędne 0–1000 względem tej strony obejmujące cały rysunek z opisami osi. Najwyżej 8 rysunków, "
+               "a pod każdym jedno zdanie, co z niego wynika.\n")
+
+
 READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja kluczowych treści, dzielenie na małe porcje, "
                  "aktywne przypominanie) — trzymaj się go dokładnie:\n"
                  "- Każda główna sekcja zaczyna się nagłówkiem <h3> z numerem, np. <h3>1. Pojęcie rynku</h3>.\n"

@@ -2771,6 +2771,10 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text mark:not(.hl){background:color-mix(in srgb,var(--accent) 24%,transparent);color:#fff;padding:1px 4px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 #pane-note.glass{border-bottom-left-radius:0!important;border-bottom-right-radius:0!important;border-bottom:0!important}
 
+/* notatki do nauki: cała wolna linia między grupami (punkt z podpunktami, przed podtytułem) */
+.b-text li:has(>ul,>ol){margin-bottom:1.7em}
+.b-text h4{margin-bottom:10px}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
