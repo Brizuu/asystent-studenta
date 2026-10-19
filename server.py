@@ -644,7 +644,7 @@ def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "
     fmt_rule = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
                 "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>. "
                 "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
-                "Nie dodawaj komentarzy, wstępu ani znaczników ```.\n\n") if fmt == "html" else (
+                "Nie dodawaj komentarzy, wstępu ani znaczników ```.\n" + READABLE_RULE + "\n") if fmt == "html" else (
                "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (nagłówki ###, listy -, **pogrubienia**). "
                "Bez wstępu i komentarzy.\n\n")
     topic = topic.strip()
@@ -940,17 +940,28 @@ def ai_pdf_note(a: AIDocNote):
               "Zasady:\n- Pisz po polsku, rzeczowo i zrozumiale.\n"
               "- Opieraj się na treści dokumentu; nie zmyślaj faktów. Zachowaj definicje, wzory, daty, nazwiska i przykłady.\n"
               "- Jeśli w dokumencie są pytania (kontrolne, egzaminacyjne, zadania) — wypisz je wyraźnie i podaj odpowiedzi lub rozwiązania.\n"
-              "- Uporządkuj: tytuł, sekcje tematyczne, listy, pogrubione kluczowe pojęcia, na końcu „Najważniejsze do zapamiętania”.\n"
-              + HTML_RULE)
+              + READABLE_RULE + HTML_RULE)
     out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf")
     return {"html": _clean_ai_html(out)}
 
 
+# układ notatki do czytania: numerowane sekcje (nagłówek na środku), podsekcje WERSALIKAMI, listy „pojęcie – wyjaśnienie”
+READABLE_RULE = ("Układ (bardzo ważne, trzymaj się go):\n"
+                 "- Każda główna sekcja zaczyna się nagłówkiem <h3> z numerem, np. <h3>1. Pojęcie rynku</h3>, <h3>2. Popyt</h3>.\n"
+                 "- Pod nią krótki akapit <p> wprowadzenia, w którym kluczowe pojęcie jest w <strong>.\n"
+                 "- Podsekcje jako <h4> pisane WERSALIKAMI, krótkie, np. <h4>DEFINICJE I PRAWO</h4>, <h4>WZORY I FUNKCJE</h4>.\n"
+                 "- Treść głównie jako listy <ul>: każdy punkt zaczyna się pogrubionym pojęciem, potem półpauza i wyjaśnienie, "
+                 "np. <li><strong>Prawo popytu</strong> – określa odwrotną zależność…</li>. Doprecyzowania i składniki wzoru jako lista zagnieżdżona.\n"
+                 "- Wzory w zwykłym tekście (np. Qd = f(P)), cytaty i terminy obcojęzyczne w <em>.\n"
+                 "- Ostatnia sekcja: <h3>Najważniejsze do zapamiętania</h3> z 3–6 punktami.\n")
+
+
 def _improve_prompt(html: str, instructions: str, fmt: str = "html") -> str:
     return ("Jesteś doświadczonym korepetytorem akademickim i redaktorem. Ulepsz poniższą notatkę studenta, tak żeby była "
-            "lepsza do nauki: czytelniejsza struktura (nagłówki, listy), poprawiony język i błędy, uzupełnione oczywiste luki i "
-            "skróty myślowe, wyróżnione kluczowe pojęcia, na końcu krótkie podsumowanie, jeśli go brakuje.\n"
-            + _instr_line(instructions) +
+            "lepsza do nauki i przyjemna w czytaniu: przejrzysta struktura, poprawiony język i błędy, uzupełnione oczywiste luki i "
+            "skróty myślowe, wyróżnione kluczowe pojęcia.\n"
+            + _instr_line(instructions)
+            + (READABLE_RULE if fmt == "html" else "") +
             "Zasady:\n- Zachowaj WSZYSTKIE fakty, definicje, wzory, daty i przykłady — nic merytorycznego nie usuwaj.\n"
             "- Nie zmyślaj nowych faktów; dopowiedzenia tylko oczywiste i zgodne z treścią.\n"
             "- Znaczniki w postaci [[OBRAZ 1]], [[OBRAZ 2]]… to obrazy — zostaw je bez zmian, każdy w osobnym akapicie, w sensownym miejscu.\n"
