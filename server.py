@@ -444,6 +444,7 @@ def upload_file(u: Upload):
     name = uuid.uuid4().hex[:10] + "_" + safe
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     (UPLOAD_DIR / name).write_bytes(blob)
+    sync.push_file_soon(name)   # od razu na konto: inne urządzenia otworzą plik bez czekania na synchronizację
     return {"url": "uploads/" + name, "name": u.filename}   # względny: działa pod / i pod /asystent/app/
 
 
@@ -626,6 +627,7 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
         text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts") or [] if not p.get("thought"))
         if text:
             _last_model["name"] = model
+            _last_model["finish"] = cand.get("finishReason") or ""
             return text
         if cand.get("finishReason") == "MAX_TOKENS":   # myślenie modelu zjadło cały limit tokenów odpowiedzi
             raise GeminiError(502, "Gemini nie zdążył odpowiedzieć — za mały limit tokenów odpowiedzi.")
@@ -642,7 +644,7 @@ def _instr_line(instructions: str) -> str:
 
 def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "") -> str:
     fmt_rule = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
-                "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>. "
+                "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <mark>. "
                 "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
                 "Nie dodawaj komentarzy, wstępu ani znaczników ```.\n" + READABLE_RULE + "\n") if fmt == "html" else (
                "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (nagłówki ###, listy -, **pogrubienia**). "
@@ -873,25 +875,30 @@ def ai_note(a: AINote):
 
     prompt = _note_prompt(a.text, a.topic)
 
-    try:
-        out = gemini([{"text": prompt}], max_tokens=4096, temperature=0.4, kind="note")
-    except GeminiError as e:
-        if e.status in (429, 503):
-            raise HTTPException(503, "Model Gemini jest chwilowo przeciążony. Spróbuj ponownie za chwilę.")
-        raise HTTPException(400 if e.status == 400 else 502, e.msg)
+    out = _ai_call([{"text": prompt}], kind="note", max_tokens=16384, timeout=240, complete=True)
 
     return {"html": _clean_ai_html(out)}
 
 
 HTML_RULE = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: <h3>, <h4>, <p>, <ul>, <ol>, <li>, "
-             "<strong>, <em>. Bez atrybutów style/class, bez komentarzy, wstępu i znaczników ```.")
+             "<strong>, <em>, <mark>. Bez atrybutów style/class, bez komentarzy, wstępu i znaczników ```.")
 
 
-def _ai_call(parts: list, kind: str, max_tokens: int = 8192, timeout: int = 180) -> str:
+def _ai_call(parts: list, kind: str, max_tokens: int = 8192, timeout: int = 180, complete: bool = False) -> str:
+    """complete=True: gdy odpowiedź urwie się na limicie tokenów, prosimy o ciąg dalszy (do 6 razy) — notatka obejmuje całość materiału."""
     if not _gemini_key():
         raise HTTPException(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
     try:
-        return gemini(parts, max_tokens=max_tokens, temperature=0.4, timeout=timeout, kind=kind)
+        out = gemini(parts, max_tokens=max_tokens, temperature=0.4, timeout=timeout, kind=kind)
+        for _ in range(6 if complete else 0):
+            if _last_model.get("finish") != "MAX_TOKENS":
+                break
+            more = gemini(parts + [{"text": "\n\nPoniżej jest początek Twojej notatki, który urwał się na limicie długości:\n<<<\n"
+                                    + out[-12000:] + "\n>>>\nKontynuuj DOKŁADNIE od miejsca urwania (bez powtarzania tego, co już jest, "
+                                    "bez wstępu), w tym samym formacie HTML, aż do końca materiału."}],
+                          max_tokens=max_tokens, temperature=0.4, timeout=timeout, kind=kind)
+            out += more
+        return out
     except GeminiError as e:
         if e.status in (429, 503):
             raise HTTPException(503, "Model Gemini jest chwilowo przeciążony albo wyczerpano limit. Spróbuj ponownie za chwilę.")
@@ -939,21 +946,29 @@ def ai_pdf_note(a: AIDocNote):
               + _instr_line(a.instructions) +
               "Zasady:\n- Pisz po polsku, rzeczowo i zrozumiale.\n"
               "- Opieraj się na treści dokumentu; nie zmyślaj faktów. Zachowaj definicje, wzory, daty, nazwiska i przykłady.\n"
+              "- Przejdź przez CAŁY dokument — od pierwszej do ostatniej strony, każdą sekcję i każdy slajd. Niczego nie pomijaj "
+              "i nie kończ wcześniej; kolejność sekcji jak w dokumencie.\n"
               "- Jeśli w dokumencie są pytania (kontrolne, egzaminacyjne, zadania) — wypisz je wyraźnie i podaj odpowiedzi lub rozwiązania.\n"
               + READABLE_RULE + HTML_RULE)
-    out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf")
+    out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf",
+                   max_tokens=32768, timeout=420, complete=True)
     return {"html": _clean_ai_html(out)}
 
 
 # układ notatki do czytania: numerowane sekcje (nagłówek na środku), podsekcje WERSALIKAMI, listy „pojęcie – wyjaśnienie”
-READABLE_RULE = ("Układ (bardzo ważne, trzymaj się go):\n"
-                 "- Każda główna sekcja zaczyna się nagłówkiem <h3> z numerem, np. <h3>1. Pojęcie rynku</h3>, <h3>2. Popyt</h3>.\n"
-                 "- Pod nią krótki akapit <p> wprowadzenia, w którym kluczowe pojęcie jest w <strong>.\n"
-                 "- Podsekcje jako <h4> pisane WERSALIKAMI, krótkie, np. <h4>DEFINICJE I PRAWO</h4>, <h4>WZORY I FUNKCJE</h4>.\n"
-                 "- Treść głównie jako listy <ul>: każdy punkt zaczyna się pogrubionym pojęciem, potem półpauza i wyjaśnienie, "
-                 "np. <li><strong>Prawo popytu</strong> – określa odwrotną zależność…</li>. Doprecyzowania i składniki wzoru jako lista zagnieżdżona.\n"
-                 "- Wzory w zwykłym tekście (np. Qd = f(P)), cytaty i terminy obcojęzyczne w <em>.\n"
-                 "- Ostatnia sekcja: <h3>Najważniejsze do zapamiętania</h3> z 3–6 punktami.\n")
+READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja kluczowych treści, dzielenie na małe porcje, "
+                 "aktywne przypominanie) — trzymaj się go dokładnie:\n"
+                 "- Każda główna sekcja zaczyna się nagłówkiem <h3> z numerem, np. <h3>1. Pojęcie rynku</h3>.\n"
+                 "- Pod nią 1–2 zdania wprowadzenia <p>, w których najważniejsze pojęcie jest w <strong>.\n"
+                 "- Podsekcje jako krótkie <h4> pisane WERSALIKAMI (np. <h4>DEFINICJE</h4>, <h4>WZORY</h4>, <h4>PRZYKŁADY</h4>).\n"
+                 "- Treść jako listy <ul>; JEDNA myśl na punkt. Punkt zaczyna się pogrubionym pojęciem, potem półpauza i krótkie, "
+                 "jasne wyjaśnienie: <li><strong>Prawo popytu</strong> – …</li>. Szczegóły i składniki wzoru jako lista zagnieżdżona.\n"
+                 "- Najważniejsze frazy do zapamiętania (kluczowa zależność, wynik, wyjątek, częsty błąd) zaznacz <mark>…</mark> — "
+                 "oszczędnie, 1–3 na sekcję. Terminy obce i cytaty w <em>.\n"
+                 "- Do trudniejszych pojęć dodaj krótki przykład z życia (punkt zaczynający się od <strong>Przykład:</strong>).\n"
+                 "- Wzory zapisuj w zwykłym tekście (np. Qd = f(P)) i od razu objaśnij każdy symbol.\n"
+                 "- Na końcu: <h3>Najważniejsze do zapamiętania</h3> (3–7 punktów), a potem <h3>Sprawdź się</h3> — 4–8 pytań "
+                 "kontrolnych jako lista, każde z odpowiedzią w zagnieżdżonym punkcie (do samodzielnego przepytania się).\n")
 
 
 def _improve_prompt(html: str, instructions: str, fmt: str = "html") -> str:
@@ -978,7 +993,7 @@ class AIImprove(BaseModel):
 def ai_improve(a: AIImprove):
     if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):
         raise HTTPException(400, "Ta notatka jest pusta — nie ma czego poprawiać.")
-    out = _ai_call([{"text": _improve_prompt(a.html[:200_000], a.instructions)}], kind="improve")
+    out = _ai_call([{"text": _improve_prompt(a.html[:200_000], a.instructions)}], kind="improve", max_tokens=24576, timeout=300, complete=True)
     return {"html": _clean_ai_html(out)}
 
 

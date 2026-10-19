@@ -329,6 +329,26 @@ def fetch_file(name: str, cloud: str | None = None, token: str | None = None) ->
     return True
 
 
+def push_file_soon(name: str) -> None:
+    """Wyślij świeżo wgrany plik na konto w tle (gdy synchronizacja jest skonfigurowana)."""
+    import contextvars
+    import threading
+    ctx = contextvars.copy_context()   # wersja webowa: katalog danych konta siedzi w kontekście żądania
+
+    def go():
+        try:
+            with get_conn() as c:
+                st = _state(c)
+            if not (st.get("cloud") and st.get("token")):
+                return
+            f = _uploads() / os.path.basename(name)
+            if f.is_file() and f.stat().st_size <= MAX_FILE:
+                _cloud_raw(st["cloud"], st["token"], "PUT", "/files/" + urllib.parse.quote(f.name), f.read_bytes())
+        except Exception:
+            pass
+    threading.Thread(target=lambda: ctx.run(go), daemon=True).start()
+
+
 @router.post("/api/sync/files")
 def push_files(p: SyncRun):
     """Przed udostępnieniem: pliki z notatek muszą być na koncie, żeby odbiorca mógł je pobrać."""
