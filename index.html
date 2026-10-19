@@ -2698,8 +2698,11 @@ a{transition:color .15s}
 .dt-ck:active,.td-cb:active,.tik:active{transform:scale(.85)}
 .dt-i.done .dt-ck svg{animation:popIn .25s cubic-bezier(.2,.8,.3,1.6)}
 /* notatka: szkło tylko subtelnie, belka tytułowa ciemniejsza (jak wcześniej) */
-#pane-note.glass{background:rgba(255,255,255,.028)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-#pane-note .nhead{background:rgba(6,8,13,.42)!important;border-bottom:1px solid rgba(255,255,255,.07)}
+/* czytelność: notatka na jednolitym, ciemnym tle (poświaty i szkło nie przeszkadzają w pisaniu) */
+#pane-note.glass{background:linear-gradient(160deg,rgba(22,27,37,.86),rgba(14,18,26,.9))!important;border-color:rgba(255,255,255,.08)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 22px 44px -30px rgba(0,0,0,.8)!important;backdrop-filter:blur(24px) saturate(120%);-webkit-backdrop-filter:blur(24px) saturate(120%)}
+#pane-note .b-text{color:#C9D0DB;font-size:16px}
+#pane-note .b-text b,#pane-note .b-text strong,#pane-note .b-text h3,#pane-note .b-text h4{color:#F1F4F9}
+#pane-note .nhead{background:rgba(9,12,18,.72)!important;border-bottom:1px solid rgba(255,255,255,.07)}
 #pane-note .editor .block.editing{background:rgba(255,255,255,.012)}
 
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
