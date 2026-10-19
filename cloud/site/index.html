@@ -2790,11 +2790,31 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text .noteimg.al-right{margin:4px 0 10px 20px}
 .b-text .noteimg.al-left{margin:4px 20px 10px 0}
 @media (max-width:560px){.b-text .noteimg.al-left,.b-text .noteimg.al-right{float:none;margin:8px auto;max-width:100%}}
-/* Pomodoro i Spotify (stałe w prawym górnym rogu) nie zasłaniają spisu i kalkulatora */
+/* Pomodoro i Spotify: mniejsze i wyżej, żeby nie nachodziły na spis treści i kalkulator w prawym rogu zakładek */
 @media (min-width:821px){
-  #tabbar{padding-right:130px}
-  body:has(#pomo-mini:not(:empty)) #tabbar{padding-right:210px}
+  .spoti,.pomo{top:6px}
+  body.has-tbar .spoti,body.has-tbar .pomo{top:33px}
+  .pomo-btn,.spoti-logo{transform:scale(.82);transform-origin:top right}
+  .spoti-logo:hover,.pomo-btn:hover{transform:scale(.86)}
+  .pomo{right:62px}
+  .spoti-panel{right:48px}
+  .pomo-panel{top:46px}
 }
+
+/* 1.9.12: odstępy w notatkach AI — jedna wolna, klikalna linia między grupami (bez dodatkowych marginesów) */
+.b-text p:has(>br:only-child){margin:0}
+.b-text p:has(>br:only-child)+h3,.b-text p:has(>br:only-child)+h4{margin-top:4px}
+.b-text li:has(>ul,>ol){margin-bottom:.9em}
+.b-text p:has(>img.al-right:only-child),.b-text p:has(>img.al-left:only-child){margin:0}
+/* rodzaj calloutu: własna lista w stylu aplikacji */
+.cokind{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 10px!important;border-radius:9px!important;border:1px solid color-mix(in srgb,var(--cc) 35%,transparent)!important;background:color-mix(in srgb,var(--cc) 10%,transparent)!important;transition:background .15s}
+.cokind:hover{background:color-mix(in srgb,var(--cc) 18%,transparent)!important}
+.kindmenu{position:fixed;z-index:260;min-width:190px;padding:6px;border-radius:14px;background:rgba(17,21,30,.98);border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 46px rgba(0,0,0,.6);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:2px;animation:pop .13s ease}
+.kindmenu button{display:flex;align-items:center;gap:11px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
+.kindmenu button:hover{background:rgba(255,255,255,.06)}
+.kindmenu button.on{background:color-mix(in srgb,var(--cc) 14%,transparent)}
+.kindmenu .ki{width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--cc);background:color-mix(in srgb,var(--cc) 16%,transparent);flex:none}
+.kindmenu .kc{margin-left:auto;color:var(--cc)}
 
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
