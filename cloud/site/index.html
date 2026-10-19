@@ -2783,6 +2783,19 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 /* wyśrodkowane tytuły działów (notatki AI) ciut większe */
 .b-text h3[style*="center"]{font-size:22px;letter-spacing:-.02em}
 
+/* 1.9.11: tekst obok obrazu — nagłówki zawsze pod obrazem, listy nie wchodzą pod obraz, blok domyka opływanie */
+.b-text h1,.b-text h2,.b-text h3,.b-text h4{clear:both}
+.b-text ul,.b-text ol{display:flow-root}
+.b-text::after{content:"";display:block;clear:both}
+.b-text .noteimg.al-right{margin:4px 0 10px 20px}
+.b-text .noteimg.al-left{margin:4px 20px 10px 0}
+@media (max-width:560px){.b-text .noteimg.al-left,.b-text .noteimg.al-right{float:none;margin:8px auto;max-width:100%}}
+/* Pomodoro i Spotify (stałe w prawym górnym rogu) nie zasłaniają spisu i kalkulatora */
+@media (min-width:821px){
+  #tabbar{padding-right:130px}
+  body:has(#pomo-mini:not(:empty)) #tabbar{padding-right:210px}
+}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
