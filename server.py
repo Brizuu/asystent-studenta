@@ -957,11 +957,13 @@ def ai_pdf_note(a: AIDocNote):
 
 # układ notatki do czytania: numerowane sekcje (nagłówek na środku), podsekcje WERSALIKAMI, listy „pojęcie – wyjaśnienie”
 # rysunki z PDF: AI wskazuje stronę i ramkę, aplikacja wycina obraz ze strony i wstawia go do notatki
-FIGURE_RULE = ("- Jeśli w dokumencie są WAŻNE wykresy, schematy, diagramy, mapy lub rysunki potrzebne do zrozumienia tematu "
-               "(nie logotypy, nie ozdobniki, nie zdjęcia tytułowe), wstaw w odpowiednim miejscu notatki osobny akapit dokładnie w formie: "
-               "<p>[[RYSUNEK strona=N ramka=ymin,xmin,ymax,xmax | krótki podpis]]</p> — N to numer strony PDF (od 1), "
-               "ramka to współrzędne 0–1000 względem tej strony obejmujące cały rysunek z opisami osi. Najwyżej 8 rysunków, "
-               "a pod każdym jedno zdanie, co z niego wynika.\n")
+FIGURE_RULE = ("- Elementy graficzne z dokumentu, których nie da się dobrze oddać samym tekstem lub tabelą, a pomagają w nauce — "
+               "wykresy, schematy, diagramy, rysunki techniczne i poglądowe, ilustracje zjawisk, mapy, zdjęcia preparatów lub urządzeń, "
+               "skomplikowane wzory i przekształcenia zapisane jako obraz, oś czasu, drzewo pojęć — wstaw w odpowiednim miejscu notatki "
+               "jako osobny akapit dokładnie w formie: <p>[[RYSUNEK strona=N ramka=ymin,xmin,ymax,xmax | krótki podpis]]</p> — "
+               "N to numer strony PDF (od 1), ramka to współrzędne 0–1000 względem tej strony, ciasno obejmujące cały element z opisami osi "
+               "i legendą (bez sąsiedniego tekstu). Pomijaj logotypy, ozdobniki, zdjęcia tytułowe i zwykłe tabele z tekstem (te przepisz jako <table>). "
+               "Najwyżej 12 elementów, a pod każdym jedno zdanie, co z niego wynika.\n")
 
 
 READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja kluczowych treści, dzielenie na małe porcje, "

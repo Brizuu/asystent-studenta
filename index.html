@@ -2802,6 +2802,12 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 .b-text li:has(>ul,>ol){margin-bottom:1.7em}
 .b-text h4{margin-bottom:10px}
 
+/* 1.9.9: menu „Dodaj blok” pełne i nad notatką (szkło było za przezroczyste i treść przebijała) */
+.blockmenu,.blockmenu.glass{background:rgba(17,21,30,.97)!important;backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 18px 50px rgba(0,0,0,.55)!important}
+.addblock.open{z-index:60}
+.addblock .blockmenu{z-index:60}
+.blockmenu button{color:var(--ink)}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -8059,11 +8065,13 @@ async function aiFigures(html,url){
     if(sw<40||sh<40)return null;
     const k=Math.min(1,1400/sw), o=document.createElement('canvas'); o.width=Math.round(sw*k); o.height=Math.round(sh*k);
     const g=o.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,o.width,o.height); g.drawImage(c,sx,sy,sw,sh,0,0,o.width,o.height);
-    return o.toDataURL('image/jpeg',.88);};
+    return {url:o.toDataURL('image/jpeg',.88),w:sw,h:sh};};
+  // wielkość jak w podręczniku: niski rysunek ~ 280 px wysokości, szerokie wykresy do 62% szerokości, wąskie odpowiednio mniej
+  const figWidth=(w,h)=>{const px=Math.round(Math.max(200,Math.min(560,280*w/h))); return `min(${px}px,62%)`;};
   let out=html;
   for(const m of found){let rep='';
     try{const box=m[2].split(/[\s,]+/).filter(Boolean).map(Number).slice(0,4); const src=await cut(+m[1],box);
-      if(src)rep=`<div><img class="noteimg al-center" style="width:72%" src="${src}"></div>`+(m[3]&&m[3].trim()?`<p style="text-align:center"><em>${esc(m[3].trim())}</em></p>`:'');}catch(_){}
+      if(src)rep=`<div><img class="noteimg al-center" style="width:${figWidth(src.w,src.h)}" src="${src.url}"></div>`+(m[3]&&m[3].trim()?`<p style="text-align:center"><em>${esc(m[3].trim())}</em></p>`:'');}catch(_){}
     out=out.replace(m[0],rep);}
   return out;
 }
