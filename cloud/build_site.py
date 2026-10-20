@@ -1,25 +1,20 @@
 """Buduje cloud/site/index.html — samodzielną stronę pobierania Asystenta (serwowaną przez serwer kont
-pod https://zenfix.pl/asystent/). Wygląd, logo i sekcje są brane wprost ze strony startowej aplikacji
-(index.html), więc po zmianach w aplikacji wystarczy uruchomić:  python cloud/build_site.py"""
+pod https://zenfix.pl/asystent/). Układ „I2 · Wybierz urządzenie”: po lewej trzy sposoby na start
+(Windows, Android, przeglądarka), po prawej podgląd aplikacji, niżej trzy najważniejsze rzeczy i krótkie pytania.
+Logo bierzemy wprost z aplikacji (index.html), wersję i rozmiar plików strona dociąga sama z GitHuba.
+Po zmianach uruchom:  python cloud/build_site.py"""
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = (ROOT / "index.html").read_text(encoding="utf-8")
-SETUP = "https://github.com/Brizuu/asystent-studenta/releases/latest/download/AsystentSetup.exe"
-WEB_BTN = ('<a class="dl" href="app/"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/>'
-           '<path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg>'
-           '<span><small>Otwórz w</small><b>przeglądarce</b></span></a>')
-
-
-def between(start: str, end: str, s: str = SRC, inclusive_end: bool = False) -> str:
-    i = s.index(start)
-    j = s.index(end, i)
-    return s[i:j + (len(end) if inclusive_end else 0)]
+VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+REL = "https://github.com/Brizuu/asystent-studenta/releases/latest/download/"
+SETUP, APK, WEB = REL + "AsystentSetup.exe", REL + "Asystent.apk", "app/"
 
 
 def func(name: str) -> str:
-    """Wycina funkcję najwyższego poziomu `function name(...){...}` (albo `async function`)."""
+    """Wycina funkcję najwyższego poziomu `function name(...){...}`."""
     m = re.search(r"^(async )?function " + re.escape(name) + r"\(", SRC, re.M)
     i, depth, k = m.start(), 0, SRC.index("{", m.start())
     for k in range(k, len(SRC)):
@@ -29,71 +24,238 @@ def func(name: str) -> str:
     raise ValueError(name)
 
 
-style = between("<style>", "</style>", inclusive_end=True)
-aura = between('<div class="aura" aria-hidden="true">', '\n<div class="sky"')
-landing = between('    <section class="view" id="view-start">', '    <section class="view active" id="view-pulpit">')
+I = {  # ikony (stroke = currentColor)
+    "win": '<svg viewBox="0 0 24 24" class="ic fill"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>',
+    "and": '<svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg>',
+    "web": '<svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg>',
+}
 
-# --- treść strony: bez wersji przeglądarkowej i telefonu (wymagają lokalnej aplikacji), bez paska uczelni ---
-landing = landing.replace('class="view" id="view-start"', 'class="view active" id="view-start"')
-landing = re.sub(r'<button class="lp-go" onclick="go\(\'pulpit\'\)">Otwórz w przeglądarce(<svg.*?</svg>)</button>',
-                 lambda m: f'<a class="lp-go lp-win-main" href="{SETUP}" download>Pobierz na Windows{m.group(1)}</a>' + WEB_BTN, landing, flags=re.S)
-landing = re.sub(r'\s*<a class="dl lp-win" href="[^"]*">.*?</a>', '', landing, flags=re.S)
-landing = re.sub(r'\s*<button class="dl" onclick="lpPhone\(\)">.*?</button>', '', landing, flags=re.S)
-landing = re.sub(r'<div class="lp-sec" style="max-width:none;padding-left:0;padding-right:0">.*?<div class="unis lp-reveal" id="lp-unis"></div>\s*</div>\s*',
-                 '', landing, flags=re.S)
-landing = landing.replace('<p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · iPhone i Android z ekranu głównego</p>',
-                          '<p class="lp-meta" id="lp-meta">Za darmo · Windows 10 i 11 · albo w przeglądarce, także na telefonie</p>')
-landing = landing.replace("Otwórz albo pobierz</h3><p>Działa od razu w przeglądarce. Możesz też pobrać aplikację na Windows albo dodać ją na telefonie.",
-                          "Pobierz i zainstaluj</h3><p>Instalator zajmuje kilka sekund. Aplikacja sama się aktualizuje, gdy wyjdzie nowa wersja.")
-assert "lp-win-main" in landing and "lpPhone" not in landing and "lp-unis" not in landing, "zmienił się układ strony startowej"
 
-js = "\n".join([
+def tile(cls: str, href: str, icon: str, title: str, desc: str, cta: str, extra: str = "") -> str:
+    return (f'<a class="tile {cls}" href="{href}"{extra}><span class="mk">{I[icon]}</span>'
+            f'<span class="tt"><b>{title}</b><small class="{cls}-meta">{desc}</small></span><span class="cta">{cta} →</span></a>')
+
+
+DASH = """<div class="dash"><div class="d-side"><div class="d-brand"><span class="lg-s"></span><b>Asystent</b></div>
+  <span class="on">Pulpit</span><span>Nauka</span><span>Plan dnia</span><span>Zadania</span><span>Finanse</span></div>
+ <div class="d-main"><div><div class="lab sm">Poniedziałek · 20 października</div><div class="d-hi">Miłego dnia, Ola</div></div>
+  <div class="d-grid">
+   <div class="g c"><span class="lab xs">Teraz · zostało 33 min</span><b class="d-now">Mikroekonomia — wykład</b><span class="mut">s. 233 · do 11:15</span><i class="bar"><i></i></i></div>
+   <div class="g c"><span class="lab xs">Dojazd</span><div class="d-tram"><span class="ln">16</span><b>Os. Sobieskiego</b><b class="mn">4′</b></div></div>
+   <div class="g c wide"><span class="lab xs">Notatka AI z PDF</span><b class="d-h3">3. Krzywa popytu</b>
+    <div class="d-note"><div>• <b>Prawo popytu</b> – wyższa cena, mniejszy popyt<br>• <b>Przesunięcie D</b> – czynniki pozacenowe<br>• <mark>Q<sub>d</sub> = f(P)</mark></div>
+    <span class="fig"><svg viewBox="0 0 80 56"><path d="M6 2v50h72" fill="none" stroke="#111" stroke-width="2"/><path d="M14 6C24 34 44 46 74 48" fill="none" stroke="#111" stroke-width="2.4"/></svg></span></div></div>
+   <div class="g c"><span class="lab xs">Zadania</span><div class="d-todo"><span>☐ Projekt z baz danych</span><span>☐ Mail do promotora</span><s>☑ Bilet miesięczny</s></div></div>
+  </div></div></div>"""
+
+PHONE = """<div class="phone"><div class="lab xs">Pn · 20 października</div><b class="p-h">Twój dzień</b>
+ <div class="p-ev now"><b>Mikroekonomia</b><small>teraz · do 11:15</small></div>
+ <div class="p-ev"><span class="ln">16</span> za 4 min</div>
+ <div class="p-ev work"><b>Praca</b><small>12:00 – 18:00</small></div></div>"""
+
+ROWS = [
+    ("#B59CF0", "AI, które robi notatki do nauki",
+     "Wrzucasz PDF albo nagranie wykładu — Gemini układa notatkę z nagłówkami, wyróżnieniami, pytaniami „Sprawdź się” i wykresami wyciętymi ze slajdów.",
+     """<b class="m-h">2. Prawo popytu</b><div class="m-note"><div>• <b>Popyt</b> – ilość, jaką kupujący chcą nabyć<br>• <b>Prawo popytu</b> – <mark>cena ↑ → popyt ↓</mark><br><br><span class="lab xs">Sprawdź się</span><br>Co przesuwa krzywą popytu?</div>
+     <span class="fig big"><svg viewBox="0 0 130 98"><path d="M8 2v90h120" fill="none" stroke="#111" stroke-width="2"/><path d="M20 8C36 56 70 80 122 84" fill="none" stroke="#111" stroke-width="2.6"/><text x="110" y="76" font-size="11">D</text></svg></span></div>"""),
+    ("#8DB6FF", "Dzień ułożony za Ciebie",
+     "Plan z USOS jednym linkiem. Pulpit pokazuje, co trwa teraz, co dalej i kiedy wyjść na tramwaj.",
+     """<div class="m-plan"><div class="past"><b>8:00</b><span>Analiza matematyczna II</span></div><div class="now"><b>9:45</b><span><b>Mikroekonomia</b> · teraz</span></div>
+     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min</span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div></div>"""),
+    ("#4FD1B8", "Te same dane wszędzie",
+     "Jedno konto na komputerze, w przeglądarce i na telefonie. PDF dodany w domu otwierasz na uczelni.",
+     '<div class="m-dev">' + "".join(f'<div><span class="mk">{I[k]}</span><small>{t}</small></div>' for k, t in
+                                     [("win", "Windows"), ("web", "Przeglądarka"), ("and", "Android")]) + "</div>"),
+]
+rows = "".join(f'<div class="row rv"><div class="r-txt"><i class="acc" style="background:{c}"></i><h3>{t}</h3><p>{d}</p></div>'
+               f'<div class="g r-mock">{m}</div></div>' for c, t, d, m in ROWS)
+
+FAQ = [
+    ("Czy to jest za darmo?", "Tak — aplikacja, konto i synchronizacja. Funkcje AI działają na Twoim darmowym kluczu Gemini z Google AI Studio albo przez zwykły czat."),
+    ("Czy działa na iPhonie?", "Tak, w przeglądarce: zaloguj się w wersji webowej i dodaj ją do ekranu głównego."),
+    ("Skąd wziąć plan z USOS?", "W USOSweb skopiuj link do kalendarza (eksport iCalendar) i wklej go w planie — zajęcia z salami pojawią się od razu."),
+    ("Czy moje notatki są na każdym urządzeniu?", "Tak. Po zalogowaniu notatki, plan, zadania i pliki z notatek synchronizują się między komputerem, przeglądarką i telefonem."),
+]
+faq = "".join(f'<details class="g q rv"><summary>{q}<span class="pm"></span></summary><p>{a}</p></details>' for q, a in FAQ)
+
+CSS = """
+:root{--bg:#0B0E14;--ink:#EEF1F6;--soft:#9AA3B2;--dim:#7A8394;--acc:#5A96F2;--acc2:#8DB6FF;--live:#4FD1B8;--btn:#E6EDF9}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(60% 40% at 85% 0%,rgba(36,69,127,.65),transparent 70%),radial-gradient(45% 35% at 5% 35%,rgba(22,78,76,.5),transparent 70%),var(--bg);background-repeat:no-repeat;color:var(--ink);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc2);text-decoration:none}
+.wrap{max-width:1312px;margin:0 auto;padding:0 32px}
+.g{background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
+.lab{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.lab.sm{font-size:10.5px}.lab.xs{font-size:10px}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.ic.fill{fill:currentColor;stroke:none}
+.mk{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none;background:rgba(255,255,255,.06)}
+.mut{color:var(--soft)}
+mark{background:rgba(227,178,92,.25);color:#F3D9A4;border-radius:4px;padding:0 3px}
+.ln{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 6px;border-radius:7px;background:#E5534B;color:#fff;font-weight:800;font-style:normal;font-size:12.5px}
+/* nagłówek */
+header{display:flex;align-items:center;gap:12px;height:76px}
+.brand{white-space:nowrap;display:flex;align-items:center;gap:12px;color:var(--ink);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.brand .lg{width:34px;height:34px;display:block}
+nav{margin-left:auto;display:flex;gap:28px;align-items:center}
+nav a{color:var(--soft);font-weight:600;font-size:14.5px;transition:color .15s}nav a:hover{color:var(--ink)}
+nav a.login{white-space:nowrap;height:40px;padding:0 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--ink);display:inline-flex;align-items:center}
+nav a.login:hover{background:rgba(255,255,255,.1)}
+/* hero */
+.hero{display:flex;gap:64px;align-items:center;padding:64px 0 0}
+.h-txt{flex:1;max-width:560px}
+.h-txt .lab{color:var(--acc2)}
+h1{margin:14px 0 0;font-size:62px;line-height:1.04;font-weight:800;letter-spacing:-.04em}
+.lead{margin:20px 0 30px;font-size:18px;line-height:1.6;color:var(--soft)}
+.tiles{display:flex;flex-direction:column;gap:10px}
+.tile{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;color:var(--ink);background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);transition:transform .2s cubic-bezier(.2,.8,.3,1),border-color .2s,background .2s}
+.tile:hover{transform:translateY(-2px);border-color:rgba(141,182,255,.35);background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03))}
+.tile .tt{flex:1;min-width:0}.tile b{font-size:16.5px;display:block}.tile small{display:block;color:var(--soft);font-size:13.5px;margin-top:2px}
+.tile .cta{color:var(--acc2);font-weight:700;font-size:14px;white-space:nowrap}
+.tile.win{background:linear-gradient(120deg,rgba(90,150,242,.22),rgba(90,150,242,.06));border-color:rgba(141,182,255,.4)}
+.tile.win .mk{background:var(--btn);color:var(--bg)}
+.tile.and .mk{color:var(--live)}.tile.web .mk{color:#B59CF0}
+.meta{margin:16px 0 0;color:var(--dim);font-size:13px}
+.h-vis{flex:1;position:relative;height:560px;min-width:0}
+.h-vis .glow{position:absolute;inset:60px 0 0 40px;background:radial-gradient(50% 50% at 50% 50%,rgba(90,150,242,.4),transparent 70%);filter:blur(40px)}
+.h-vis .win{position:absolute;left:0;top:30px;width:660px;height:440px;border-radius:20px;background:linear-gradient(160deg,rgba(22,27,37,.94),rgba(14,18,26,.96));overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)}
+.phone{position:absolute;right:-6px;top:170px;width:210px;height:400px;border-radius:32px;background:linear-gradient(160deg,rgba(26,31,42,.97),rgba(14,18,26,.98));border:6px solid #1A1F2A;box-shadow:0 30px 70px -20px rgba(0,0,0,.85);padding:22px 14px;font-size:12px}
+.p-h{display:block;font-size:18px;font-weight:800;margin:4px 0 12px}
+.p-ev{padding:10px;border-radius:12px;background:rgba(255,255,255,.05);margin-top:8px;display:flex;flex-direction:column;gap:2px}
+.p-ev:not(.now):not(.work){flex-direction:row;align-items:center;gap:8px}
+.p-ev small{font-size:11px}
+.p-ev.now{background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.4)}.p-ev.now small{color:#B5CEFF}
+.p-ev.work{background:rgba(227,178,92,.13);border:1px solid rgba(227,178,92,.35)}.p-ev.work small{color:#E3B25C}
+/* mini pulpit */
+.dash{display:flex;height:100%;font-size:13px}
+.d-side{width:150px;border-right:1px solid rgba(255,255,255,.07);padding:16px 10px;display:flex;flex-direction:column;gap:4px;color:var(--soft)}
+.d-side span{padding:8px 10px;border-radius:9px}.d-side .on{background:rgba(90,150,242,.14);box-shadow:inset 3px 0 0 var(--acc);color:var(--ink)}
+.d-brand{display:flex;align-items:center;gap:8px;padding:0 6px 12px;color:var(--ink)}.d-side .lg-s{width:22px;height:22px;display:block;padding:0;flex:none}
+.d-main{flex:1;padding:22px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.d-hi{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.d-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;flex:1}
+.c{padding:14px;border-radius:14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.c.wide{grid-row:span 1}
+.d-now{font-size:16px;margin-top:6px}.bar{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:auto}.bar i{display:block;width:64%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--live))}
+.d-tram{display:flex;align-items:center;gap:8px;margin-top:10px}.d-tram b{flex:1;font-size:12.5px}.d-tram .mn{flex:none;font-size:18px}
+.d-h3{text-align:center;font-size:14px;margin-top:6px}
+.d-note{display:flex;gap:12px;margin-top:8px;color:#B9C1CF;line-height:1.65;font-size:12px}.d-note b{color:var(--ink)}.d-note>div{flex:1}
+.fig{width:84px;height:62px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;flex:none}.fig svg{width:72px;height:50px}
+.fig.big{width:150px;height:118px;border-radius:10px}.fig.big svg{width:130px;height:98px}
+.d-todo{display:flex;flex-direction:column;gap:7px;font-size:12.5px;margin-top:8px}.d-todo s{color:var(--dim)}
+/* trzy rzeczy */
+.rows{padding:130px 88px 0;display:flex;flex-direction:column;gap:90px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:60px}
+.row:nth-child(even){flex-direction:row-reverse}
+.r-txt{flex:1;max-width:460px}.acc{display:block;width:36px;height:4px;border-radius:2px}
+.r-txt h3{margin:16px 0 10px;font-size:32px;font-weight:800;letter-spacing:-.025em}
+.r-txt p{margin:0;color:var(--soft);font-size:16.5px;line-height:1.65}
+.r-mock{flex:1;max-width:560px;min-height:250px;padding:24px 26px;border-radius:20px}
+.m-h{display:block;text-align:center;font-size:17px}
+.m-note{display:flex;gap:16px;margin-top:14px;color:#B9C1CF;line-height:1.8;font-size:13.5px}.m-note b{color:var(--ink)}.m-note>div{flex:1}
+.m-plan{display:flex;flex-direction:column;gap:10px;font-size:13.5px}
+.m-plan>div{display:flex;gap:12px;align-items:center}.m-plan>div>b{width:44px;text-align:right;flex:none}
+.m-plan>div>span{flex:1;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.05)}
+.m-plan .past{opacity:.55}.m-plan .past span{background:rgba(74,84,104,.35)}
+.m-plan .now>b{color:var(--acc2)}.m-plan .now span{background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.4)}
+.m-plan .go>b{color:var(--dim);font-weight:600}.m-plan .go span{background:transparent;border:1px dashed rgba(255,255,255,.14);color:var(--soft);display:flex;align-items:center;gap:8px}
+.m-plan .work span{background:rgba(227,178,92,.13);border:1px solid rgba(227,178,92,.35)}
+.m-dev{display:flex;align-items:center;justify-content:center;gap:26px;min-height:200px}
+.m-dev>div{text-align:center}.m-dev .mk{width:58px;height:58px;border-radius:16px;background:rgba(79,209,184,.12);color:var(--live);margin:0 auto}
+.m-dev small{display:block;margin-top:8px;font-size:13px;color:var(--soft)}
+/* pytania */
+.faq{max-width:760px;margin:0 auto;padding:110px 32px 0}
+.faq h2{text-align:center;margin:0 0 26px;font-size:34px;font-weight:800;letter-spacing:-.025em}
+.q{padding:0;border-radius:14px;margin-bottom:10px}
+.q summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;font-weight:700;font-size:16px}
+.q summary::-webkit-details-marker{display:none}
+.pm{width:14px;height:14px;position:relative;flex:none}.pm::before,.pm::after{content:"";position:absolute;left:0;right:0;top:6px;height:2px;border-radius:1px;background:var(--dim);transition:transform .2s}
+.pm::after{transform:rotate(90deg)}.q[open] .pm::after{transform:rotate(0)}
+.q p{margin:0;padding:0 22px 18px;color:var(--soft);font-size:14.5px;line-height:1.6}
+/* stopka */
+.end{margin:100px auto 0;max-width:1248px;padding:36px 44px;border-radius:22px;display:flex;align-items:center;gap:30px;background:linear-gradient(120deg,rgba(90,150,242,.16),rgba(79,209,184,.07))}
+.end h2{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}.end p{margin:6px 0 0;color:var(--soft)}
+.end .btn{margin-left:auto;display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:14px;background:var(--btn);color:var(--bg);font-weight:800;white-space:nowrap;box-shadow:0 14px 40px -14px rgba(90,150,242,.7)}
+footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:70px;padding:26px 32px;border-top:1px solid rgba(255,255,255,.07);color:var(--dim);font-size:13.5px}
+/* pojawianie się */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.3,1)}.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.tile{transition:none}}
+/* mniejsze ekrany */
+@media (max-width:1180px){.hero{flex-direction:column;align-items:stretch}.h-txt{max-width:640px}.h-vis{height:520px;max-width:900px;width:100%;margin:0 auto}.rows{padding:110px 0 0}}
+@media (max-width:820px){
+  .wrap{padding:0 16px}nav a:not(.login){display:none}.brand{font-size:16px;gap:10px}.brand .lg{width:30px;height:30px}
+  .hero{padding-top:28px;gap:36px}h1{font-size:42px}.lead{font-size:16.5px;margin:16px 0 22px}
+  .tile{padding:14px 16px;gap:12px}.tile .mk{width:42px;height:42px}.tile .cta{font-size:13px}
+  .h-vis{height:auto}.h-vis .glow{display:none}.h-vis .win{display:none}.phone{position:relative;right:auto;top:auto;margin:0 auto;height:auto;padding-bottom:18px}
+  .rows{gap:56px;padding-top:80px}.row,.row:nth-child(even){flex-direction:column;align-items:stretch;gap:20px}.r-txt h3{font-size:26px}.r-mock{max-width:none;min-height:0;padding:18px}
+  .fig.big{width:110px;height:88px}.fig.big svg{width:96px;height:72px}
+  .faq{padding:80px 16px 0}.faq h2{font-size:28px}
+  .end{margin:70px 16px 0;flex-direction:column;align-items:flex-start;padding:26px 22px}.end .btn{margin-left:0}
+  footer{padding:22px 16px}
+}
+"""
+
+JS = "\n".join([
     "const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];",
-    "const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;",
-    "let _lgN=0;",
-    func("logoSVG"), func("paintLogos"),
-    """// przycisk: bezpośredni link do najnowszego instalatora z GitHuba + wersja i rozmiar
+    "let _lgN=0;", func("logoSVG"),
+    """$$('.lg,.lg-s').forEach(e=>e.innerHTML=logoSVG());
+// wersja i rozmiary plików z najnowszego wydania na GitHubie
 (async()=>{try{const r=await fetch('https://api.github.com/repos/Brizuu/asystent-studenta/releases/latest',{headers:{Accept:'application/vnd.github+json'}});
-  if(!r.ok)return; const rel=await r.json(), a=(rel.assets||[]).find(x=>x.name==='AsystentSetup.exe'); if(!a)return;
-  const ver=(rel.tag_name||'').replace(/^v/,''), mb=Math.round(a.size/1048576);
-  $$('.lp-win-main').forEach(b=>{b.href=a.browser_download_url;b.firstChild.textContent='Pobierz na Windows · '+ver+' ';});
-  $('#lp-meta').textContent=`Za darmo · wersja ${ver} · ${mb} MB · Windows 10 i 11 · albo w przeglądarce, także na telefonie`;
+  if(!r.ok)return; const rel=await r.json(), ver=(rel.tag_name||'').replace(/^v/,''), A=rel.assets||[], mb=a=>Math.max(1,Math.round(a.size/1048576));
+  const w=A.find(x=>x.name==='AsystentSetup.exe'), n=A.find(x=>x.name==='Asystent.apk');
+  if(w){$('.tile.win').href=w.browser_download_url; $('.win-meta').textContent=`Instalator ${mb(w)} MB · z nagrywaniem wykładów`; $('.end .btn').href=w.browser_download_url;}
+  if(n){$('.tile.and').href=n.browser_download_url; $('.and-meta').textContent=`Plik APK ${mb(n)} MB · aktualizacje w aplikacji`;}
+  if(ver)$('#ver').textContent=ver;
 }catch(_){}})();
-paintLogos();
-// pojawianie się sekcji przy przewijaniu
-(()=>{const els=$$('.lp-reveal'); if(!('IntersectionObserver' in window)||reduceMotion()){els.forEach(e=>e.classList.add('in'));return;}
+// sekcje pojawiają się przy przewijaniu
+(()=>{const els=$$('.rv'); if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches){els.forEach(e=>e.classList.add('in'));return;}
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}}),{threshold:.12});
-  els.forEach(e=>{const sib=[...e.parentNode.children].filter(c=>c.classList.contains('lp-reveal'));e.style.transitionDelay=(sib.length>2?sib.indexOf(e)%3*80:0)+'ms';io.observe(e);});})();
-// kafelki: lekka paralaksa za kursorem; chowają się po przewinięciu
-addEventListener('pointermove',e=>{if(reduceMotion()||window._px)return;window._px=requestAnimationFrame(()=>{window._px=0;const a=$('.aura');
-  a.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(3));a.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(3));});});
-addEventListener('scroll',()=>document.body.classList.toggle('lp-down',scrollY>innerHeight*.45),{passive:true});
-$$('.lp-more').forEach(b=>b.onclick=()=>$('#lp-feat').scrollIntoView({behavior:reduceMotion()?'auto':'smooth'}));""",
+  els.forEach(e=>io.observe(e));})();""",
 ])
 
-favicon = "data:image/svg+xml," + re.sub(r"\s+", " ", """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%237a86ff'/><path d='M32 15.5l24 10.2-24 10.3L8 25.7z' fill='white'/><path d='M19 31v8c0 3.7 5.8 6.5 13 6.5s13-2.8 13-6.5v-8l-13 5.6z' fill='white' fill-opacity='.82'/></svg>""")
+favicon = "data:image/svg+xml," + re.sub(r"\s+", " ", """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%234A8AEA'/><g fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M12 26.5L32 17l20 9.5L32 36z'/><path d='M20.5 31v8.5c6.5 5 16.5 5 23 0V31'/><path d='M52 26.5v11'/></g></svg>""")
 
 page = f"""<!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asystent studenta — pobierz na Windows</title>
-<meta name="description" content="Plan zajęć, zeszyty z notatkami, nagrania wykładów zamieniane przez AI w notatki, zadania i budżet — aplikacja dla studentów na Windows.">
-<meta name="theme-color" content="#0b0b14">
+<title>Asystent studenta — plan, notatki z AI i zadania</title>
+<meta name="description" content="Plan z USOS, notatki z AI, zadania i budżet w jednej aplikacji dla studentów. Za darmo na Windows, Androida i w przeglądarce.">
+<meta name="theme-color" content="#0B0E14">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="{favicon}">
-<!-- wygenerowane przez cloud/build_site.py z index.html — nie edytuj ręcznie -->
-{style}
-<style>a.lp-go,a.dl{{text-decoration:none}} body.on-start .main{{padding:0}}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- wygenerowane przez cloud/build_site.py — nie edytuj ręcznie -->
+<style>{CSS}</style>
 </head>
-<body class="on-start">
-{aura}
-<div class="app"><main class="main">
-{landing}
-</main></div>
+<body>
+<div class="wrap">
+ <header><a class="brand" href="./"><span class="lg"></span>Asystent studenta</a>
+  <nav><a href="#funkcje">Funkcje</a><a href="#pytania">Pytania</a><a class="login" href="{WEB}">Zaloguj się</a></nav></header>
+ <section class="hero">
+  <div class="h-txt">
+   <div class="lab">Asystent studenta · za darmo</div>
+   <h1>Mniej chaosu.<br>Więcej nauki.</h1>
+   <p class="lead">Plan, notatki z AI, zadania i budżet w jednej aplikacji. Wybierz, gdzie chcesz zacząć:</p>
+   <div class="tiles">
+    {tile("win", SETUP, "win", "Windows 10 i 11", "Instalator · z nagrywaniem wykładów", "Pobierz", " download")}
+    {tile("and", APK, "and", "Android", "Plik APK · aktualizacje w aplikacji", "Pobierz")}
+    {tile("web", WEB, "web", "Przeglądarka i iPhone", "Bez instalacji · dodaj do ekranu głównego", "Otwórz")}
+   </div>
+   <p class="meta">Wersja <span id="ver">{VERSION}</span> · aplikacja sama się aktualizuje · bez reklam</p>
+  </div>
+  <div class="h-vis" aria-hidden="true"><div class="glow"></div><div class="g win">{DASH}</div>{PHONE}</div>
+ </section>
+ <section class="rows" id="funkcje">{rows}</section>
+</div>
+<section class="faq" id="pytania"><h2>Krótko i na temat</h2>{faq}</section>
+<section class="g end rv"><div><h2>Zacznij w minutę.</h2><p>Pobierz, zaloguj się i wklej link z USOS — reszta ułoży się sama.</p></div>
+ <a class="btn" href="{SETUP}" download>{I["win"]}Pobierz na Windows</a></section>
+<footer><span>© 2026 Asystent studenta · zenfix.pl</span><span>Za darmo · bez reklam</span></footer>
 <script>
-{js}
+{JS}
 </script>
 </body>
 </html>
