@@ -15,7 +15,7 @@
 <style>
 :root{--bg:#0B0E14;--ink:#EEF1F6;--soft:#9AA3B2;--dim:#7A8394;--acc:#5A96F2;--acc2:#8DB6FF;--live:#4FD1B8;--btn:#E6EDF9;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:var(--acc2);text-decoration:none}
 .wrap{max-width:1312px;margin:0 auto;padding:0 32px}
@@ -24,7 +24,7 @@ a{color:var(--acc2);text-decoration:none}
 .sky i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
 .sky i:nth-child(1){width:58vmax;height:46vmax;right:-14vmax;top:-22vmax;background:#24457F}
 .sky i:nth-child(2){width:46vmax;height:40vmax;left:-18vmax;top:18vh;background:#164E4C;animation-duration:32s}
-.sky i:nth-child(3){width:34vmax;height:30vmax;right:10vw;top:70vh;background:#2B2F6B;opacity:.35;animation-duration:38s}
+.sky i:nth-child(3){width:34vmax;height:30vmax;right:10vw;top:70vh;background:#24457F;opacity:.35;animation-duration:38s}
 @keyframes drift{to{transform:translate(-5vmax,4vmax) scale(1.1)}}
 .spot{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(520px circle at var(--mx,50%) var(--my,30%),rgba(90,150,242,.09),transparent 60%)}
 .grain{position:fixed;inset:-50%;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -39,8 +39,6 @@ mark{background:rgba(227,178,92,.25);color:#F3D9A4;border-radius:4px;padding:0 3
 .ln{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 6px;border-radius:7px;background:#E5534B;color:#fff;font-weight:800;font-style:normal;font-size:12.5px}
 .live{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(79,209,184,.6);animation:ping 2s infinite;display:inline-block;flex:none}
 @keyframes ping{70%{box-shadow:0 0 0 7px rgba(79,209,184,0)}100%{box-shadow:0 0 0 0 rgba(79,209,184,0)}}
-.spark{width:10px;height:10px;display:inline-block;background:conic-gradient(from 0deg,#B59CF0,#8DB6FF,#4FD1B8,#B59CF0);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spin 4s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 /* nagłówek: przy przewijaniu dostaje szkło */
 header{position:sticky;top:0;z-index:50;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent}
 header.scrolled{background:rgba(11,14,20,.62);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-color:rgba(255,255,255,.06)}
@@ -59,8 +57,7 @@ nav a.login:hover{background:rgba(255,255,255,.1);border-color:rgba(141,182,255,
 .h-txt .lab{color:var(--acc2);display:inline-flex;align-items:center;gap:8px}
 h1{margin:14px 0 0;font-size:64px;line-height:1.03;font-weight:800;letter-spacing:-.045em}
 h1 .w{display:inline-block}
-h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s ease-in-out infinite alternate}
-@keyframes shine{to{background-position:100% 0}}
+h1 .grad{color:var(--acc2)}
 .lead{margin:20px 0 30px;font-size:18px;line-height:1.6;color:var(--soft)}
 .tiles{display:flex;flex-direction:column;gap:10px}
 .tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;color:var(--ink);background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);transition:transform .35s var(--ease),border-color .25s,background .25s,box-shadow .35s}
@@ -73,7 +70,7 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .tile .mk{transition:transform .35s var(--ease)}.tile:hover .mk{transform:scale(1.07) rotate(-4deg)}
 .tile.win{background:linear-gradient(120deg,rgba(90,150,242,.22),rgba(90,150,242,.06));border-color:rgba(141,182,255,.4)}
 .tile.win .mk{background:var(--btn);color:var(--bg)}
-.tile.and .mk{color:var(--live)}.tile.web .mk{color:#B59CF0}
+.tile.and .mk{color:var(--live)}.tile.web .mk{color:var(--acc2)}
 .meta{margin:16px 0 0;color:var(--dim);font-size:13px}
 /* wejście hero: kolejno od góry */
 .in-up{opacity:0;transform:translateY(18px);filter:blur(6px);animation:inup .9s var(--ease) forwards}
@@ -96,7 +93,7 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .p-ev small{font-size:11px}
 .p-ev.now{background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.4)}.p-ev.now small{color:#B5CEFF}
 .p-ev.work{background:rgba(227,178,92,.13);border:1px solid rgba(227,178,92,.35)}.p-ev.work small{color:#E3B25C}
-.p-toast{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(181,156,240,.16);border:1px solid rgba(181,156,240,.35);font-weight:700}
+.p-toast{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.35);font-weight:700}
 .slide{opacity:0;transform:translateX(16px);animation:slide .7s var(--ease) forwards;animation-delay:calc(var(--d) + .6s)}
 @keyframes slide{to{opacity:1;transform:none}}
 .pbar{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden}.pbar i{display:block;height:100%;width:64%;border-radius:2px;background:linear-gradient(90deg,var(--acc),var(--live));animation:grow 14s linear infinite}
@@ -152,13 +149,13 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .dots i.on{height:22px;background:var(--acc2)}
 .m-file{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);position:relative;overflow:hidden;font-size:13px;margin-bottom:16px}
 .pdf{font-size:10px;font-weight:800;padding:4px 6px;border-radius:6px;background:#E5675F;color:#fff}
-.scan{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(181,156,240,.25),transparent);transform:translateX(-100%)}
+.scan{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(141,182,255,.25),transparent);transform:translateX(-100%)}
 .on .scan{animation:sheen 1.6s var(--ease) .2s 2}
 .m-h{display:block;text-align:center;font-size:18px}
 .m-note{display:flex;gap:18px;margin-top:14px;color:#B9C1CF;line-height:1.8;font-size:14px}.m-note b{color:var(--ink)}.m-note>div{flex:1}
 .lines span{display:block;opacity:0;transform:translateY(6px)}
 .on .lines span{animation:pop .6s var(--ease) forwards}.on .lines span:nth-child(1){animation-delay:.5s}.on .lines span:nth-child(2){animation-delay:.9s}.on .lines span:nth-child(3){animation-delay:1.3s}
-.lines .ask{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(181,156,240,.1);border:1px dashed rgba(181,156,240,.35)}.lines .ask i{display:block;margin-bottom:2px}
+.lines .ask{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(141,182,255,.1);border:1px dashed rgba(141,182,255,.35)}.lines .ask i{display:block;margin-bottom:2px}
 .hl{background:linear-gradient(90deg,rgba(227,178,92,.3),rgba(227,178,92,.3)) no-repeat 0 0/0 100%;background-color:transparent}
 .on .hl{animation:hl 1s var(--ease) 1.4s forwards}@keyframes hl{to{background-size:100% 100%}}
 .on .draw{animation:draw 1.6s var(--ease) 1s forwards}
@@ -263,7 +260,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
     <a class="tile and in-up" href="https://github.com/Brizuu/asystent-studenta/releases/latest/download/Asystent.apk"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg></span><span class="tt"><b>Android</b><small class="and-meta">Plik APK · aktualizacje w aplikacji</small></span><span class="cta">Pobierz<i>→</i></span></a>
     <a class="tile web in-up" href="app/"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg></span><span class="tt"><b>Przeglądarka i iPhone</b><small class="web-meta">Bez instalacji · dodaj do ekranu głównego</small></span><span class="cta">Otwórz<i>→</i></span></a>
    </div>
-   <p class="meta in-up">Wersja <span class="ver">1.9.16</span> · aplikacja sama się aktualizuje · bez reklam</p>
+   <p class="meta in-up">Wersja <span class="ver">1.9.17</span> · aplikacja sama się aktualizuje · bez reklam</p>
   </div>
   <div class="h-vis" aria-hidden="true"><i class="beam"></i><i class="hz"></i><div class="glow"></div><div class="tilt"><div class="g win"><div class="dash"><div class="d-side"><div class="d-brand"><span class="lg-s"></span><b>Asystent</b></div>
   <span class="on">Pulpit</span><span>Nauka</span><span>Plan dnia</span><span>Zadania</span><span>Finanse</span></div>
@@ -271,7 +268,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
   <div class="d-grid">
    <div class="g c pop" style="--d:.15s"><span class="lab xs"><i class="live"></i>Teraz · zostało <span id="d-min">33</span> min</span><b class="d-now">Mikroekonomia — wykład</b><span class="mut">s. 233 · do 11:15</span><i class="bar"><i id="d-bar"></i></i></div>
    <div class="g c pop" style="--d:.3s"><span class="lab xs">Dojazd</span><div class="d-tram"><span class="ln">16</span><b>Os. Sobieskiego</b><b class="mn"><span id="d-tram">4</span>′</b></div><span class="mut sm">Wyjdź o 11:27</span></div>
-   <div class="g c pop" style="--d:.45s"><span class="lab xs">Notatka AI z PDF<i class="spark"></i></span><b class="d-h3">3. Krzywa popytu</b>
+   <div class="g c pop" style="--d:.45s"><span class="lab xs">Notatka AI z PDF</span><b class="d-h3">3. Krzywa popytu</b>
     <div class="d-note"><div class="type"><span>• <b>Prawo popytu</b> – wyższa cena, mniejszy popyt</span><span>• <b>Przesunięcie D</b> – czynniki pozacenowe</span><span>• <mark>Q<sub>d</sub> = f(P)</mark></span></div>
     <span class="fig"><svg viewBox="0 0 80 56"><path d="M6 2v50h72" fill="none" stroke="#111" stroke-width="2"/><path class="draw" d="M14 6C24 34 44 46 74 48" fill="none" stroke="#2F6FD8" stroke-width="2.6"/></svg></span></div></div>
    <div class="g c pop" style="--d:.6s"><span class="lab xs">Zadania</span><div class="d-todo"><span class="chk">Projekt z baz danych</span><span class="chk auto">Mail do promotora</span><span class="chk done">Bilet miesięczny</span></div></div>
@@ -279,17 +276,17 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
  <div class="p-ev now slide" style="--d:.5s"><b>Mikroekonomia</b><small>teraz · do 11:15</small><i class="pbar"><i></i></i></div>
  <div class="p-ev slide" style="--d:.65s"><span class="ln">16</span> za <span id="p-tram">4</span> min</div>
  <div class="p-ev work slide" style="--d:.8s"><b>Praca</b><small>12:00 – 18:00</small></div>
- <div class="p-toast slide" style="--d:2.4s"><i class="spark"></i>Notatka z PDF gotowa</div></div></div></div>
+ <div class="p-toast slide" style="--d:2.4s">Notatka z PDF gotowa</div></div></div></div>
  </section>
  <section class="story" id="funkcje">
   <div class="s-head rv"><div class="lab">Najważniejsze</div><h2>Trzy rzeczy, które robią różnicę.</h2></div>
-  <div class="s-grid"><div class="steps"><article class="step" data-i="0"><span class="num" style="color:#B59CF0">01</span><h3>AI, które robi notatki do nauki</h3><p>Wrzucasz PDF albo nagranie wykładu — Gemini układa notatkę z nagłówkami, wyróżnieniami, pytaniami „Sprawdź się” i wykresami wyciętymi ze slajdów.</p><div class="chips"><span>Cały PDF, każda strona</span><span>Wykresy ze slajdów</span><span>Pytania do powtórki</span></div><div class="g r-mock m-inline"><div class="m-file"><span class="pdf">PDF</span><b>Wykład 4 · Popyt i podaż.pdf</b><i class="scan"></i></div>
+  <div class="s-grid"><div class="steps"><article class="step" data-i="0"><span class="num" style="color:#E3B25C">01</span><h3>AI, które robi notatki do nauki</h3><p>Wrzucasz PDF albo nagranie wykładu — Gemini układa notatkę z nagłówkami, wyróżnieniami, pytaniami „Sprawdź się” i wykresami wyciętymi ze slajdów.</p><div class="chips"><span>Cały PDF, każda strona</span><span>Wykresy ze slajdów</span><span>Pytania do powtórki</span></div><div class="g r-mock m-inline"><div class="m-file"><span class="pdf">PDF</span><b>Wykład 4 · Popyt i podaż.pdf</b><i class="scan"></i></div>
      <b class="m-h">2. Prawo popytu</b><div class="m-note"><div class="lines"><span>• <b>Popyt</b> – ilość, jaką kupujący chcą nabyć</span><span>• <b>Prawo popytu</b> – <mark class="hl">cena ↑ → popyt ↓</mark></span><span class="ask"><i class="lab xs">Sprawdź się</i>Co przesuwa krzywą popytu?</span></div>
      <span class="fig big"><svg viewBox="0 0 130 98"><path d="M8 2v90h120" fill="none" stroke="#111" stroke-width="2"/><path class="draw" d="M20 8C36 56 70 80 122 84" fill="none" stroke="#2F6FD8" stroke-width="2.8"/><text x="110" y="76" font-size="11">D</text></svg></span></div></div></article><article class="step" data-i="1"><span class="num" style="color:#8DB6FF">02</span><h3>Dzień ułożony za Ciebie</h3><p>Plan z USOS jednym linkiem. Pulpit pokazuje, co trwa teraz, co dalej i kiedy wyjść na tramwaj — z odjazdami na żywo.</p><div class="chips"><span>Import z USOS</span><span>Odjazdy na żywo</span><span>Przypomnienia w planie</span></div><div class="g r-mock m-inline"><div class="m-plan"><div class="past"><b>8:00</b><span>Analiza matematyczna II</span></div><div class="now"><b>9:45</b><span><b>Mikroekonomia</b> · teraz<i class="pbar"><i></i></i></span></div>
-     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne 🎉</span></div></div></div></article><article class="step" data-i="2"><span class="num" style="color:#4FD1B8">03</span><h3>Te same dane wszędzie</h3><p>Jedno konto na komputerze, w przeglądarce i na telefonie. PDF dodany w domu otwierasz na uczelni, zanim zdążysz usiąść.</p><div class="chips"><span>Synchronizacja w tle</span><span>Pliki z notatek</span><span>Udostępnianie znajomym</span></div><div class="g r-mock m-inline"><div class="m-dev"><svg class="links" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M70 60H200M200 60H330"/></svg><div class="dv" style="--d:0.0s"><span class="mk"><svg viewBox="0 0 24 24" class="ic fill"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><small>Windows</small></div><div class="dv" style="--d:0.25s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg></span><small>Przeglądarka</small></div><div class="dv" style="--d:0.5s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg></span><small>Android</small></div><i class="pkt p1"></i><i class="pkt p2"></i></div><div class="m-sync"><i class="live"></i>Zsynchronizowano · przed chwilą</div></div></article></div><div><div class="stage"><div class="g r-mock scene" data-i="0" style="--c:#B59CF0"><div class="m-file"><span class="pdf">PDF</span><b>Wykład 4 · Popyt i podaż.pdf</b><i class="scan"></i></div>
+     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne od 18:00</span></div></div></div></article><article class="step" data-i="2"><span class="num" style="color:#4FD1B8">03</span><h3>Te same dane wszędzie</h3><p>Jedno konto na komputerze, w przeglądarce i na telefonie. PDF dodany w domu otwierasz na uczelni, zanim zdążysz usiąść.</p><div class="chips"><span>Synchronizacja w tle</span><span>Pliki z notatek</span><span>Udostępnianie znajomym</span></div><div class="g r-mock m-inline"><div class="m-dev"><svg class="links" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M70 60H200M200 60H330"/></svg><div class="dv" style="--d:0.0s"><span class="mk"><svg viewBox="0 0 24 24" class="ic fill"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><small>Windows</small></div><div class="dv" style="--d:0.25s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg></span><small>Przeglądarka</small></div><div class="dv" style="--d:0.5s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg></span><small>Android</small></div><i class="pkt p1"></i><i class="pkt p2"></i></div><div class="m-sync"><i class="live"></i>Zsynchronizowano · przed chwilą</div></div></article></div><div><div class="stage"><div class="g r-mock scene" data-i="0" style="--c:#E3B25C"><div class="m-file"><span class="pdf">PDF</span><b>Wykład 4 · Popyt i podaż.pdf</b><i class="scan"></i></div>
      <b class="m-h">2. Prawo popytu</b><div class="m-note"><div class="lines"><span>• <b>Popyt</b> – ilość, jaką kupujący chcą nabyć</span><span>• <b>Prawo popytu</b> – <mark class="hl">cena ↑ → popyt ↓</mark></span><span class="ask"><i class="lab xs">Sprawdź się</i>Co przesuwa krzywą popytu?</span></div>
      <span class="fig big"><svg viewBox="0 0 130 98"><path d="M8 2v90h120" fill="none" stroke="#111" stroke-width="2"/><path class="draw" d="M20 8C36 56 70 80 122 84" fill="none" stroke="#2F6FD8" stroke-width="2.8"/><text x="110" y="76" font-size="11">D</text></svg></span></div></div><div class="g r-mock scene" data-i="1" style="--c:#8DB6FF"><div class="m-plan"><div class="past"><b>8:00</b><span>Analiza matematyczna II</span></div><div class="now"><b>9:45</b><span><b>Mikroekonomia</b> · teraz<i class="pbar"><i></i></i></span></div>
-     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne 🎉</span></div></div></div><div class="g r-mock scene" data-i="2" style="--c:#4FD1B8"><div class="m-dev"><svg class="links" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M70 60H200M200 60H330"/></svg><div class="dv" style="--d:0.0s"><span class="mk"><svg viewBox="0 0 24 24" class="ic fill"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><small>Windows</small></div><div class="dv" style="--d:0.25s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg></span><small>Przeglądarka</small></div><div class="dv" style="--d:0.5s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg></span><small>Android</small></div><i class="pkt p1"></i><i class="pkt p2"></i></div><div class="m-sync"><i class="live"></i>Zsynchronizowano · przed chwilą</div></div><div class="dots"><i data-i="0"></i><i data-i="1"></i><i data-i="2"></i></div></div></div></div>
+     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne od 18:00</span></div></div></div><div class="g r-mock scene" data-i="2" style="--c:#4FD1B8"><div class="m-dev"><svg class="links" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M70 60H200M200 60H330"/></svg><div class="dv" style="--d:0.0s"><span class="mk"><svg viewBox="0 0 24 24" class="ic fill"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><small>Windows</small></div><div class="dv" style="--d:0.25s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5s-1.2 5.9-3.7 8.5c-2.5-2.6-3.7-5.4-3.7-8.5s1.2-5.9 3.7-8.5z"/></svg></span><small>Przeglądarka</small></div><div class="dv" style="--d:0.5s"><span class="mk"><svg viewBox="0 0 24 24" class="ic"><path d="M6 10h12v7.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 17.5zM6.5 9a5.5 5.5 0 0111 0zM8 4.5l1.3 2M16 4.5l-1.3 2M9.5 19v2.5M14.5 19v2.5M3.5 11v4.5M20.5 11v4.5"/></svg></span><small>Android</small></div><i class="pkt p1"></i><i class="pkt p2"></i></div><div class="m-sync"><i class="live"></i>Zsynchronizowano · przed chwilą</div></div><div class="dots"><i data-i="0"></i><i data-i="1"></i><i data-i="2"></i></div></div></div></div>
  </section>
 </div>
 <section class="faq" id="pytania"><h2 class="rv">Krótko i na temat</h2><details class="g q rv"><summary>Czy to jest za darmo?<span class="pm"></span></summary><div class="qa"><p>Tak — aplikacja, konto i synchronizacja. Funkcje AI działają na Twoim darmowym kluczu Gemini z Google AI Studio albo przez zwykły czat.</p></div></details><details class="g q rv"><summary>Czy działa na iPhonie?<span class="pm"></span></summary><div class="qa"><p>Tak, w przeglądarce: zaloguj się w wersji webowej i dodaj ją do ekranu głównego.</p></div></details><details class="g q rv"><summary>Skąd wziąć plan z USOS?<span class="pm"></span></summary><div class="qa"><p>W USOSweb skopiuj link do kalendarza (eksport iCalendar) i wklej go w planie — zajęcia z salami pojawią się od razu.</p></div></details><details class="g q rv"><summary>Czy moje notatki są na każdym urządzeniu?<span class="pm"></span></summary><div class="qa"><p>Tak. Po zalogowaniu notatki, plan, zadania i pliki z notatek synchronizują się między komputerem, przeglądarką i telefonem.</p></div></details></section>
@@ -298,7 +295,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
 <footer><div class="ft">
  <a class="author" href="https://github.com/Brizuu" target="_blank" rel="noopener"><img src="https://github.com/Brizuu.png?size=80" alt="" loading="lazy" width="38" height="38" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av',textContent:'B'}))">
   <span><small>Autor i rozwój</small><b>Brizuu<svg viewBox="0 0 24 24" class="ic fill"><path d="M12 2.5a9.5 9.5 0 00-3 18.5c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.2-1.2-3.2-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.4-1.1-4.4-4.8 0-1 .4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 014.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.6 1 2.6 0 3.7-2.3 4.6-4.4 4.8.3.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A9.5 9.5 0 0012 2.5z"/></svg></b></span></a>
- <span>© 2026 Asystent studenta · wersja <span class="ver">1.9.16</span></span>
+ <span>© 2026 Asystent studenta · wersja <span class="ver">1.9.17</span></span>
  <div class="links2"><a href="https://github.com/Brizuu/asystent-studenta/releases" target="_blank" rel="noopener">Wydania</a><a href="app/">Zaloguj się</a><a href="#pytania">Pytania</a></div>
 </div></footer>
 <script>
@@ -349,6 +346,13 @@ if(!RM){let raf=0; addEventListener('pointermove',e=>{if(raf)return; raf=request
   if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)set(+x.target.dataset.i);}),{rootMargin:'-45% 0px -45% 0px'}); steps.forEach(s=>io.observe(s));}
   // na telefonie podgląd jest pod tekstem — animacje startują, gdy wjedzie na ekran
   const mo=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');mo.unobserve(x.target);}}),{threshold:.3}); $$('.m-inline').forEach(m=>mo.observe(m));})();
+// przewijanie „pomaga”: po zatrzymaniu w opowieści strona dociąga następny krok w kierunku przewijania (jeden ruch = jedna scena)
+(()=>{let t=0, auto=false, last=scrollY; const go=()=>{const dir=Math.sign(scrollY-last); last=scrollY; if(innerWidth<=980||!dir)return;
+    const c=innerHeight/2, offs=$$('.step').map(s=>{const r=s.getBoundingClientRect(); return r.top+r.height/2-c;});
+    if(offs.some(o=>Math.abs(o)<=6))return;   // już na miejscu
+    const ahead=offs.filter(o=>o*dir>0).sort((x,y)=>Math.abs(x)-Math.abs(y))[0];
+    if(ahead!==undefined&&Math.abs(ahead)<innerHeight*.75){auto=true; scrollBy({top:ahead,behavior:RM?'auto':'smooth'}); setTimeout(()=>{auto=false;last=scrollY;},750);}};
+  addEventListener('scroll',()=>{if(auto)return; clearTimeout(t); t=setTimeout(go,160);},{passive:true});})();
 // sekcje pojawiają się przy przewijaniu, rodzeństwo z opóźnieniem
 (()=>{const els=$$('.rv'); if(!('IntersectionObserver' in window)||RM){els.forEach(e=>e.classList.add('in'));return;}
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}}),{threshold:.12});

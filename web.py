@@ -85,7 +85,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);overflow-x:hidden;backg
 .sky i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
 .sky i:nth-child(1){width:58vmax;height:46vmax;right:-14vmax;top:-22vmax;background:#24457F}
 .sky i:nth-child(2){width:46vmax;height:40vmax;left:-18vmax;bottom:-16vmax;background:#164E4C;animation-duration:32s}
-.sky i:nth-child(3){width:30vmax;height:26vmax;left:40vw;top:40vh;background:#2B2F6B;opacity:.3;animation-duration:38s}
+.sky i:nth-child(3){width:30vmax;height:26vmax;left:40vw;top:40vh;background:#24457F;opacity:.3;animation-duration:38s}
 @keyframes drift{to{transform:translate(-5vmax,4vmax) scale(1.1)}}
 .spot{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(520px circle at var(--mx,70%) var(--my,40%),rgba(90,150,242,.09),transparent 60%)}
 .grain{position:fixed;inset:-50%;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -100,8 +100,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);overflow-x:hidden;backg
 /* lewa strona */
 .hero{position:relative}
 .hero h1{margin-top:16px;font-size:clamp(38px,4.8vw,60px);line-height:1.04;letter-spacing:-.045em;font-weight:800}
-.hero h1 span{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s ease-in-out infinite alternate}
-@keyframes shine{to{background-position:100% 0}}
+.hero h1 span{color:var(--acc2)}
 .hero p.lead{margin-top:16px;font-size:17px;line-height:1.6;color:var(--soft);max-width:470px}
 .stack{position:relative;margin-top:36px;height:250px;max-width:470px}
 .chip{position:absolute;padding:14px 16px;border-radius:16px;background:linear-gradient(150deg,rgba(255,255,255,.08),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.1);
@@ -117,8 +116,6 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);overflow-x:hidden;backg
 @keyframes grow{from{width:52%}to{width:86%}}
 .ln{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 6px;border-radius:7px;background:#E5534B;color:#fff;font-weight:800;font-size:12.5px;margin-right:8px}
 .c2 .row{display:flex;align-items:center;margin-top:8px;color:var(--ink);font-weight:700}
-.spark{width:10px;height:10px;display:inline-block;background:conic-gradient(#B59CF0,#8DB6FF,#4FD1B8,#B59CF0);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spin 4s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes in{from{opacity:0;transform:translateY(22px) scale(.96);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @keyframes bob{50%{translate:0 -8px}}
 .rise{opacity:0;animation:in .9s var(--ease) forwards}
@@ -183,7 +180,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);overflow-x:hidden;backg
     <div class="stack" aria-hidden="true">
       <div class="chip c1"><small><i class="live"></i>Teraz · zostało 33 min</small><b>Mikroekonomia — wykład</b><i class="bar"><i></i></i></div>
       <div class="chip c2"><small>Dojazd</small><div class="row"><span class="ln">16</span>za 4 min</div></div>
-      <div class="chip c3"><small><i class="spark"></i>Notatka AI</small><b>Notatka z PDF gotowa</b>12 stron · 3 wykresy · 8 pytań</div>
+      <div class="chip c3"><small>Notatka AI</small><b>Notatka z PDF gotowa</b>12 stron · 3 wykresy · 8 pytań</div>
     </div>
   </section>
 
