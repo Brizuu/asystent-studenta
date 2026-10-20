@@ -46,7 +46,7 @@ DASH = """<div class="dash"><div class="d-side"><div class="d-brand"><span class
   <div class="d-grid">
    <div class="g c pop" style="--d:.15s"><span class="lab xs"><i class="live"></i>Teraz · zostało <span id="d-min">33</span> min</span><b class="d-now">Mikroekonomia — wykład</b><span class="mut">s. 233 · do 11:15</span><i class="bar"><i id="d-bar"></i></i></div>
    <div class="g c pop" style="--d:.3s"><span class="lab xs">Dojazd</span><div class="d-tram"><span class="ln">16</span><b>Os. Sobieskiego</b><b class="mn"><span id="d-tram">4</span>′</b></div><span class="mut sm">Wyjdź o 11:27</span></div>
-   <div class="g c pop" style="--d:.45s"><span class="lab xs">Notatka AI z PDF<i class="spark"></i></span><b class="d-h3">3. Krzywa popytu</b>
+   <div class="g c pop" style="--d:.45s"><span class="lab xs">Notatka AI z PDF</span><b class="d-h3">3. Krzywa popytu</b>
     <div class="d-note"><div class="type"><span>• <b>Prawo popytu</b> – wyższa cena, mniejszy popyt</span><span>• <b>Przesunięcie D</b> – czynniki pozacenowe</span><span>• <mark>Q<sub>d</sub> = f(P)</mark></span></div>
     <span class="fig"><svg viewBox="0 0 80 56"><path d="M6 2v50h72" fill="none" stroke="#111" stroke-width="2"/><path class="draw" d="M14 6C24 34 44 46 74 48" fill="none" stroke="#2F6FD8" stroke-width="2.6"/></svg></span></div></div>
    <div class="g c pop" style="--d:.6s"><span class="lab xs">Zadania</span><div class="d-todo"><span class="chk">Projekt z baz danych</span><span class="chk auto">Mail do promotora</span><span class="chk done">Bilet miesięczny</span></div></div>
@@ -56,10 +56,10 @@ PHONE = """<div class="phone"><div class="notch"></div><div class="lab xs">Pn ·
  <div class="p-ev now slide" style="--d:.5s"><b>Mikroekonomia</b><small>teraz · do 11:15</small><i class="pbar"><i></i></i></div>
  <div class="p-ev slide" style="--d:.65s"><span class="ln">16</span> za <span id="p-tram">4</span> min</div>
  <div class="p-ev work slide" style="--d:.8s"><b>Praca</b><small>12:00 – 18:00</small></div>
- <div class="p-toast slide" style="--d:2.4s"><i class="spark"></i>Notatka z PDF gotowa</div></div>"""
+ <div class="p-toast slide" style="--d:2.4s">Notatka z PDF gotowa</div></div>"""
 
 STORY = [
-    ("#B59CF0", "01", "AI, które robi notatki do nauki",
+    ("#E3B25C", "01", "AI, które robi notatki do nauki",
      "Wrzucasz PDF albo nagranie wykładu — Gemini układa notatkę z nagłówkami, wyróżnieniami, pytaniami „Sprawdź się” i wykresami wyciętymi ze slajdów.",
      ["Cały PDF, każda strona", "Wykresy ze slajdów", "Pytania do powtórki"],
      """<div class="m-file"><span class="pdf">PDF</span><b>Wykład 4 · Popyt i podaż.pdf</b><i class="scan"></i></div>
@@ -69,7 +69,7 @@ STORY = [
      "Plan z USOS jednym linkiem. Pulpit pokazuje, co trwa teraz, co dalej i kiedy wyjść na tramwaj — z odjazdami na żywo.",
      ["Import z USOS", "Odjazdy na żywo", "Przypomnienia w planie"],
      """<div class="m-plan"><div class="past"><b>8:00</b><span>Analiza matematyczna II</span></div><div class="now"><b>9:45</b><span><b>Mikroekonomia</b> · teraz<i class="pbar"><i></i></i></span></div>
-     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne 🎉</span></div></div>"""),
+     <div class="go"><b>11:27</b><span><i class="ln">16</i>Wyjdź — tramwaj za 4 min<i class="dot"></i></span></div><div class="work"><b>12:00</b><span>Praca — kawiarnia</span></div><div class="free"><b>18:00</b><span>Wolne od 18:00</span></div></div>"""),
     ("#4FD1B8", "03", "Te same dane wszędzie",
      "Jedno konto na komputerze, w przeglądarce i na telefonie. PDF dodany w domu otwierasz na uczelni, zanim zdążysz usiąść.",
      ["Synchronizacja w tle", "Pliki z notatek", "Udostępnianie znajomym"],
@@ -96,7 +96,7 @@ faq = "".join(f'<details class="g q rv"><summary>{q}<span class="pm"></span></su
 CSS = """
 :root{--bg:#0B0E14;--ink:#EEF1F6;--soft:#9AA3B2;--dim:#7A8394;--acc:#5A96F2;--acc2:#8DB6FF;--live:#4FD1B8;--btn:#E6EDF9;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:var(--acc2);text-decoration:none}
 .wrap{max-width:1312px;margin:0 auto;padding:0 32px}
@@ -105,7 +105,7 @@ a{color:var(--acc2);text-decoration:none}
 .sky i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
 .sky i:nth-child(1){width:58vmax;height:46vmax;right:-14vmax;top:-22vmax;background:#24457F}
 .sky i:nth-child(2){width:46vmax;height:40vmax;left:-18vmax;top:18vh;background:#164E4C;animation-duration:32s}
-.sky i:nth-child(3){width:34vmax;height:30vmax;right:10vw;top:70vh;background:#2B2F6B;opacity:.35;animation-duration:38s}
+.sky i:nth-child(3){width:34vmax;height:30vmax;right:10vw;top:70vh;background:#24457F;opacity:.35;animation-duration:38s}
 @keyframes drift{to{transform:translate(-5vmax,4vmax) scale(1.1)}}
 .spot{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(520px circle at var(--mx,50%) var(--my,30%),rgba(90,150,242,.09),transparent 60%)}
 .grain{position:fixed;inset:-50%;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -120,8 +120,6 @@ mark{background:rgba(227,178,92,.25);color:#F3D9A4;border-radius:4px;padding:0 3
 .ln{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 6px;border-radius:7px;background:#E5534B;color:#fff;font-weight:800;font-style:normal;font-size:12.5px}
 .live{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(79,209,184,.6);animation:ping 2s infinite;display:inline-block;flex:none}
 @keyframes ping{70%{box-shadow:0 0 0 7px rgba(79,209,184,0)}100%{box-shadow:0 0 0 0 rgba(79,209,184,0)}}
-.spark{width:10px;height:10px;display:inline-block;background:conic-gradient(from 0deg,#B59CF0,#8DB6FF,#4FD1B8,#B59CF0);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spin 4s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 /* nagłówek: przy przewijaniu dostaje szkło */
 header{position:sticky;top:0;z-index:50;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent}
 header.scrolled{background:rgba(11,14,20,.62);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-color:rgba(255,255,255,.06)}
@@ -140,8 +138,7 @@ nav a.login:hover{background:rgba(255,255,255,.1);border-color:rgba(141,182,255,
 .h-txt .lab{color:var(--acc2);display:inline-flex;align-items:center;gap:8px}
 h1{margin:14px 0 0;font-size:64px;line-height:1.03;font-weight:800;letter-spacing:-.045em}
 h1 .w{display:inline-block}
-h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s ease-in-out infinite alternate}
-@keyframes shine{to{background-position:100% 0}}
+h1 .grad{color:var(--acc2)}
 .lead{margin:20px 0 30px;font-size:18px;line-height:1.6;color:var(--soft)}
 .tiles{display:flex;flex-direction:column;gap:10px}
 .tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;color:var(--ink);background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);transition:transform .35s var(--ease),border-color .25s,background .25s,box-shadow .35s}
@@ -154,7 +151,7 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .tile .mk{transition:transform .35s var(--ease)}.tile:hover .mk{transform:scale(1.07) rotate(-4deg)}
 .tile.win{background:linear-gradient(120deg,rgba(90,150,242,.22),rgba(90,150,242,.06));border-color:rgba(141,182,255,.4)}
 .tile.win .mk{background:var(--btn);color:var(--bg)}
-.tile.and .mk{color:var(--live)}.tile.web .mk{color:#B59CF0}
+.tile.and .mk{color:var(--live)}.tile.web .mk{color:var(--acc2)}
 .meta{margin:16px 0 0;color:var(--dim);font-size:13px}
 /* wejście hero: kolejno od góry */
 .in-up{opacity:0;transform:translateY(18px);filter:blur(6px);animation:inup .9s var(--ease) forwards}
@@ -177,7 +174,7 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .p-ev small{font-size:11px}
 .p-ev.now{background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.4)}.p-ev.now small{color:#B5CEFF}
 .p-ev.work{background:rgba(227,178,92,.13);border:1px solid rgba(227,178,92,.35)}.p-ev.work small{color:#E3B25C}
-.p-toast{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(181,156,240,.16);border:1px solid rgba(181,156,240,.35);font-weight:700}
+.p-toast{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(141,182,255,.16);border:1px solid rgba(141,182,255,.35);font-weight:700}
 .slide{opacity:0;transform:translateX(16px);animation:slide .7s var(--ease) forwards;animation-delay:calc(var(--d) + .6s)}
 @keyframes slide{to{opacity:1;transform:none}}
 .pbar{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden}.pbar i{display:block;height:100%;width:64%;border-radius:2px;background:linear-gradient(90deg,var(--acc),var(--live));animation:grow 14s linear infinite}
@@ -233,13 +230,13 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .dots i.on{height:22px;background:var(--acc2)}
 .m-file{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);position:relative;overflow:hidden;font-size:13px;margin-bottom:16px}
 .pdf{font-size:10px;font-weight:800;padding:4px 6px;border-radius:6px;background:#E5675F;color:#fff}
-.scan{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(181,156,240,.25),transparent);transform:translateX(-100%)}
+.scan{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(141,182,255,.25),transparent);transform:translateX(-100%)}
 .on .scan{animation:sheen 1.6s var(--ease) .2s 2}
 .m-h{display:block;text-align:center;font-size:18px}
 .m-note{display:flex;gap:18px;margin-top:14px;color:#B9C1CF;line-height:1.8;font-size:14px}.m-note b{color:var(--ink)}.m-note>div{flex:1}
 .lines span{display:block;opacity:0;transform:translateY(6px)}
 .on .lines span{animation:pop .6s var(--ease) forwards}.on .lines span:nth-child(1){animation-delay:.5s}.on .lines span:nth-child(2){animation-delay:.9s}.on .lines span:nth-child(3){animation-delay:1.3s}
-.lines .ask{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(181,156,240,.1);border:1px dashed rgba(181,156,240,.35)}.lines .ask i{display:block;margin-bottom:2px}
+.lines .ask{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(141,182,255,.1);border:1px dashed rgba(141,182,255,.35)}.lines .ask i{display:block;margin-bottom:2px}
 .hl{background:linear-gradient(90deg,rgba(227,178,92,.3),rgba(227,178,92,.3)) no-repeat 0 0/0 100%;background-color:transparent}
 .on .hl{animation:hl 1s var(--ease) 1.4s forwards}@keyframes hl{to{background-size:100% 100%}}
 .on .draw{animation:draw 1.6s var(--ease) 1s forwards}
@@ -367,6 +364,13 @@ if(!RM){let raf=0; addEventListener('pointermove',e=>{if(raf)return; raf=request
   if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)set(+x.target.dataset.i);}),{rootMargin:'-45% 0px -45% 0px'}); steps.forEach(s=>io.observe(s));}
   // na telefonie podgląd jest pod tekstem — animacje startują, gdy wjedzie na ekran
   const mo=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');mo.unobserve(x.target);}}),{threshold:.3}); $$('.m-inline').forEach(m=>mo.observe(m));})();
+// przewijanie „pomaga”: po zatrzymaniu w opowieści strona dociąga następny krok w kierunku przewijania (jeden ruch = jedna scena)
+(()=>{let t=0, auto=false, last=scrollY; const go=()=>{const dir=Math.sign(scrollY-last); last=scrollY; if(innerWidth<=980||!dir)return;
+    const c=innerHeight/2, offs=$$('.step').map(s=>{const r=s.getBoundingClientRect(); return r.top+r.height/2-c;});
+    if(offs.some(o=>Math.abs(o)<=6))return;   // już na miejscu
+    const ahead=offs.filter(o=>o*dir>0).sort((x,y)=>Math.abs(x)-Math.abs(y))[0];
+    if(ahead!==undefined&&Math.abs(ahead)<innerHeight*.75){auto=true; scrollBy({top:ahead,behavior:RM?'auto':'smooth'}); setTimeout(()=>{auto=false;last=scrollY;},750);}};
+  addEventListener('scroll',()=>{if(auto)return; clearTimeout(t); t=setTimeout(go,160);},{passive:true});})();
 // sekcje pojawiają się przy przewijaniu, rodzeństwo z opóźnieniem
 (()=>{const els=$$('.rv'); if(!('IntersectionObserver' in window)||RM){els.forEach(e=>e.classList.add('in'));return;}
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}}),{threshold:.12});
