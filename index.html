@@ -2856,6 +2856,51 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 @keyframes authIn{from{opacity:0;transform:translateY(16px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.auth-logo,.auth-stage .auth-card,.auth-brand h1,.auth-brand p{animation:none}}
 
+/* 1.9.16: tło Pulpitu z projektów H — flary za kartami (dawne niebo z porą dnia wyłączone) */
+body{--rl:256px} body.rail-min{--rl:100px}
+@media (max-width:820px){body{--rl:0px}}
+body.on-pulpit .sky{opacity:0!important}
+.flare{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .6s ease;--cx:calc(var(--rl) + (100vw - var(--rl)) / 2)}
+body.on-pulpit .flare{opacity:1}
+.flare>div{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
+body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opacity:1}
+.flare i{position:absolute;display:block}
+/* H1 · wiązka światła */
+.fl-h1 .beam{left:var(--cx);top:-14vh;width:130px;height:78vh;margin-left:-65px;background:radial-gradient(50% 100% at 50% 100%,rgba(79,209,184,.5),rgba(90,150,242,.16) 55%,transparent 80%);filter:blur(18px);animation:flBeam 9s ease-in-out infinite}
+.fl-h1 .pool{left:var(--cx);top:44vh;width:min(1500px,110vw);height:34vh;transform:translateX(-50%);background:radial-gradient(50% 40% at 50% 50%,rgba(79,209,184,.36),rgba(90,150,242,.14) 45%,transparent 75%);filter:blur(10px);animation:flPool 9s ease-in-out infinite}
+.fl-h1 .line{left:var(--rl);right:0;top:61vh;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.75) 50%,transparent)}
+.fl-h1 .floor{left:0;right:0;top:61vh;bottom:0;background:linear-gradient(180deg,rgba(18,44,48,.5),rgba(8,11,17,0) 70%)}
+@keyframes flBeam{50%{opacity:.75;transform:scaleX(1.15)}}
+@keyframes flPool{50%{opacity:.8}}
+/* H2 · horyzont planety */
+.fl-h2 .stars{inset:0;background-image:radial-gradient(1.5px 1.5px at 22% 14%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 48% 8%,rgba(255,255,255,.35),transparent),radial-gradient(1.5px 1.5px at 74% 18%,rgba(255,255,255,.55),transparent),radial-gradient(1.5px 1.5px at 88% 9%,rgba(255,255,255,.3),transparent),radial-gradient(1.5px 1.5px at 63% 26%,rgba(255,255,255,.4),transparent),radial-gradient(1.5px 1.5px at 36% 22%,rgba(255,255,255,.3),transparent);animation:flTw 6s ease-in-out infinite alternate}
+.fl-h2 .planet{left:var(--cx);top:64vh;width:260vw;height:260vw;margin-left:-130vw;border-radius:50%;background:radial-gradient(closest-side,#0B1018 97%,transparent 100%);box-shadow:0 -2px 0 rgba(141,182,255,.55),0 -18px 60px rgba(90,150,242,.45),0 -60px 180px rgba(79,209,184,.22);animation:flGlow 10s ease-in-out infinite}
+.fl-h2 .haze{left:var(--cx);top:52vh;width:min(1300px,95vw);height:28vh;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 60%,rgba(90,150,242,.26),transparent 70%);filter:blur(30px)}
+@keyframes flTw{to{opacity:.55}}
+@keyframes flGlow{50%{box-shadow:0 -2px 0 rgba(141,182,255,.65),0 -22px 70px rgba(90,150,242,.55),0 -70px 200px rgba(79,209,184,.28)}}
+/* H3 · zorza za szkłem */
+.fl-h3 .rib{border-radius:50%;filter:blur(60px)}
+.fl-h3 .r1{left:calc(var(--rl) + 10vw);top:12vh;width:76vw;height:18vh;background:linear-gradient(90deg,transparent,rgba(79,209,184,.48),rgba(90,150,242,.42),transparent);transform:rotate(-14deg);animation:flRib 18s ease-in-out infinite alternate}
+.fl-h3 .r2{left:calc(var(--rl) + 22vw);top:34vh;width:62vw;height:13vh;background:linear-gradient(90deg,transparent,rgba(90,150,242,.38),rgba(181,156,240,.28),transparent);transform:rotate(-9deg);animation:flRib 22s ease-in-out infinite alternate-reverse}
+.fl-h3 .r3{left:calc(var(--rl) + 2vw);top:70vh;width:70vw;height:16vh;background:linear-gradient(90deg,transparent,rgba(22,78,76,.7),transparent);transform:rotate(-4deg);animation:flRib 26s ease-in-out infinite alternate}
+.fl-h3 .vig{inset:0;background:radial-gradient(70% 60% at 55% 50%,transparent,rgba(9,12,18,.55))}
+@keyframes flRib{to{translate:4vw 2vh;scale:1.08}}
+@media (prefers-reduced-motion:reduce){.flare i{animation:none!important}}
+/* wybór tła w ustawieniach */
+.pbg-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.pbg-pick button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 10px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s,transform .25s cubic-bezier(.2,.8,.2,1)}
+.pbg-pick button:hover{transform:translateY(-2px);border-color:rgba(141,182,255,.3)}
+.pbg-pick button.on{border-color:rgba(141,182,255,.6);background:rgba(90,150,242,.1);box-shadow:0 0 0 3px rgba(90,150,242,.15)}
+.pbg-pick b{font-size:14px;margin-top:6px;padding:0 4px}.pbg-pick small{color:var(--ink-dim);font-size:12px;padding:0 4px}
+.pbg-pv{position:relative;display:block;width:100%;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:#080B11}
+.pbg-pv i{position:absolute;display:block}
+.pv-h1 i:nth-child(1){left:50%;top:-10%;width:14%;height:70%;margin-left:-7%;background:radial-gradient(50% 100% at 50% 100%,rgba(79,209,184,.7),transparent 80%);filter:blur(4px)}
+.pv-h1 i:nth-child(2){left:0;right:0;top:60%;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.9),transparent);box-shadow:0 0 14px 3px rgba(79,209,184,.35)}
+.pv-h2 i{left:-60%;right:-60%;top:62%;height:300%;border-radius:50%;background:#0B1018;box-shadow:0 -1px 0 rgba(141,182,255,.7),0 -8px 20px rgba(90,150,242,.55)}
+.pv-h3 i:nth-child(1){left:10%;top:18%;width:90%;height:22%;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(79,209,184,.7),rgba(90,150,242,.6),transparent);filter:blur(8px);transform:rotate(-14deg)}
+.pv-h3 i:nth-child(2){left:24%;top:48%;width:70%;height:16%;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(181,156,240,.5),transparent);filter:blur(8px);transform:rotate(-9deg)}
+@media (max-width:820px){.pbg-pick{grid-template-columns:1fr}}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -3069,6 +3114,11 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
     <div class="au-card c-ai lp-only" style="--d:20"><span class="au-ai-ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/></svg></span>Notatka gotowa</div>
     <div class="au-card c-time" style="--d:14"><div class="au-time">11:30</div><div class="au-sh-s">Wykład · s. 233</div></div>
   </div>
+</div>
+<div class="flare" id="flare" aria-hidden="true">
+  <div class="fl-h1"><i class="beam"></i><i class="pool"></i><i class="line"></i><i class="floor"></i></div>
+  <div class="fl-h2"><i class="stars"></i><i class="planet"></i><i class="haze"></i></div>
+  <div class="fl-h3"><i class="rib r1"></i><i class="rib r2"></i><i class="rib r3"></i><i class="vig"></i></div>
 </div>
 <div class="sky" id="sky" aria-hidden="true"><div class="layer l-morning"></div><div class="layer l-day"></div><div class="layer l-evening"></div><div class="layer l-night"></div><div class="orb"></div><div class="clouds"><i></i><i></i></div><div class="earth"><i class="e-land"></i><i class="e-glint"></i><i class="e-lights"></i><i class="e-haze"></i><i class="e-shade"></i></div><div class="wx-fog"></div><div class="wx-fall wx-rain"></div><div class="wx-fall wx-snow"></div><div class="wx-flash"></div><div class="s-dots"></div><div class="s-grain"></div></div>
 
@@ -3495,7 +3545,15 @@ body.has-tbar .spoti,body.has-tbar .pomo{top:42px}
 
     <section class="view" id="view-ustawienia">
       <div class="head"><div class="eyebrow">Aplikacja</div><h1>Ustawienia</h1><div class="date">Masz pomysł albo coś nie działa? <button class="lnk" onclick="go('sugestie')">Wyślij sugestię →</button></div></div>
-      <div class="seg st-tabs" id="st-tabs"><button class="on" data-t="ai" onclick="stTab('ai')">Sztuczna inteligencja</button><button data-t="dane" onclick="stTab('dane')">Dane</button></div>
+      <div class="seg st-tabs" id="st-tabs"><button class="on" data-t="ai" onclick="stTab('ai')">Sztuczna inteligencja</button><button data-t="dane" onclick="stTab('dane')">Dane</button><button data-t="wyglad" onclick="stTab('wyglad')">Wygląd</button></div>
+      <div class="st-pane" id="st-wyglad" hidden>
+        <div class="st-card glass"><div class="st-h"><h3>Tło Pulpitu</h3><p>Flary schowane za kartami. Wybór zapamiętujemy na tym urządzeniu.</p></div>
+          <div class="pbg-pick" id="pbg-pick">
+            <button data-b="h1"><span class="pbg-pv pv-h1"><i></i><i></i></span><b>Wiązka światła</b><small>pionowy promień i linia horyzontu</small></button>
+            <button data-b="h2"><span class="pbg-pv pv-h2"><i></i></span><b>Horyzont planety</b><small>łuk planety z poświatą u dołu</small></button>
+            <button data-b="h3"><span class="pbg-pv pv-h3"><i></i><i></i></span><b>Zorza</b><small>ukośne smugi zorzy za szkłem</small></button>
+          </div></div>
+      </div>
       <div class="st-pane" id="st-ai">
         <div class="st-card glass" id="st-status"></div>
         <div class="st-card glass" id="st-usage" hidden></div>
@@ -6415,7 +6473,12 @@ async function groupSend(gid){
 }
 /* ===== USTAWIENIA: połączenie z AI ===== */
 let AIS={};
-function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';}
+function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$('#st-ai').hidden=t!=='ai';$('#st-dane').hidden=t!=='dane';$('#st-wyglad').hidden=t!=='wyglad';if(t==='wyglad')paintPbg();}
+/* tło Pulpitu (projekty H): wiązka / horyzont / zorza — zamiast dawnego nieba */
+function pulpitBg(){let b='h1'; try{b=localStorage.getItem('pulpit_bg')||'h1';}catch(_){} return /^h[123]$/.test(b)?b:'h1';}
+function setPulpitBg(b){try{localStorage.setItem('pulpit_bg',b);}catch(_){} document.body.dataset.pbg=b; paintPbg();}
+function paintPbg(){const b=pulpitBg(); $$('#pbg-pick button').forEach(x=>{x.classList.toggle('on',x.dataset.b===b); x.onclick=()=>setPulpitBg(x.dataset.b);});}
+document.body.dataset.pbg=pulpitBg();
 async function paintWinPrefs(){
   const box=$('#st-win'); if(!box||!APP.desktop)return; let w; try{w=await api('/desktop/window');}catch(_){return;}
   box.hidden=false;

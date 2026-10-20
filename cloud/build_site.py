@@ -287,6 +287,14 @@ h1 .grad{background:linear-gradient(90deg,#EEF1F6,#8DB6FF 45%,#4FD1B8 90%);backg
 .end h2{margin:0;font-size:30px;font-weight:800;letter-spacing:-.025em}.end p{margin:6px 0 0;color:var(--soft)}
 .end .btn{margin-left:auto;display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 24px;border-radius:15px;background:var(--btn);color:var(--bg);font-weight:800;white-space:nowrap;box-shadow:0 14px 40px -14px rgba(90,150,242,.7);transition:transform .3s var(--ease),box-shadow .3s}
 .end .btn:hover{transform:translateY(-2px);box-shadow:0 20px 50px -14px rgba(90,150,242,.9)}
+
+/* flary z tła Pulpitu (projekty H): wiązka za podglądem, horyzont planety za zakończeniem */
+.h-vis .beam{position:absolute;left:52%;top:-180px;width:140px;height:620px;margin-left:-70px;background:radial-gradient(50% 100% at 50% 100%,rgba(79,209,184,.55),rgba(90,150,242,.16) 55%,transparent 80%);filter:blur(18px);animation:beam 9s ease-in-out infinite;pointer-events:none}
+.h-vis .hz{position:absolute;left:-30%;right:-30%;top:470px;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.7) 50%,transparent);box-shadow:0 0 30px 8px rgba(79,209,184,.12);pointer-events:none}
+@keyframes beam{50%{opacity:.7;transform:scaleX(1.15)}}
+.end .planet{position:absolute;left:50%;top:84%;width:2400px;height:2400px;margin-left:-1200px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(11,16,24,.92) 97%,transparent 100%);box-shadow:0 -2px 0 rgba(141,182,255,.5),0 -18px 60px rgba(90,150,242,.4),0 -60px 160px rgba(79,209,184,.2);animation:glowp 10s ease-in-out infinite}
+@keyframes glowp{50%{box-shadow:0 -2px 0 rgba(141,182,255,.65),0 -22px 70px rgba(90,150,242,.5),0 -70px 190px rgba(79,209,184,.26)}}
+.end .end-t,.end .btn{position:relative}
 /* stopka z autorem */
 footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
 .ft{max-width:1312px;margin:0 auto;padding:30px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;color:var(--dim);font-size:13.5px}
@@ -306,6 +314,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
 @media (max-width:980px){.s-grid{display:block}.stage{display:none}.step{min-height:0;opacity:1;transform:none;margin-bottom:72px}.m-inline{display:block;margin-top:24px;padding:22px;border-radius:20px;position:relative}
   .step .m-inline .lines span,.step .m-inline .m-plan>div,.step .m-inline .dv{opacity:1;transform:none}.step .m-inline .draw{stroke-dashoffset:0}}
 @media (max-width:820px){
+  .h-vis .beam,.h-vis .hz{display:none}
   .wrap,.hd{padding:0 16px}nav a:not(.login){display:none}.brand{font-size:16px;gap:10px}.brand .lg{width:30px;height:30px}.hd{height:64px}
   .hero{padding-top:24px;gap:36px}h1{font-size:44px}.lead{font-size:16.5px;margin:16px 0 22px}
   .tile{padding:14px 16px;gap:12px}.tile .mk{width:42px;height:42px}.tile .cta{font-size:13px}
@@ -403,7 +412,7 @@ page = f"""<!DOCTYPE html>
    </div>
    <p class="meta in-up">Wersja <span class="ver">{VERSION}</span> · aplikacja sama się aktualizuje · bez reklam</p>
   </div>
-  <div class="h-vis" aria-hidden="true"><div class="glow"></div><div class="tilt"><div class="g win">{DASH}</div>{PHONE}</div></div>
+  <div class="h-vis" aria-hidden="true"><i class="beam"></i><i class="hz"></i><div class="glow"></div><div class="tilt"><div class="g win">{DASH}</div>{PHONE}</div></div>
  </section>
  <section class="story" id="funkcje">
   <div class="s-head rv"><div class="lab">Najważniejsze</div><h2>Trzy rzeczy, które robią różnicę.</h2></div>
@@ -411,7 +420,7 @@ page = f"""<!DOCTYPE html>
  </section>
 </div>
 <section class="faq" id="pytania"><h2 class="rv">Krótko i na temat</h2>{faq}</section>
-<section class="g end rv"><div><h2>Zacznij w minutę.</h2><p>Pobierz, zaloguj się i wklej link z USOS — reszta ułoży się sama.</p></div>
+<section class="g end rv"><i class="planet" aria-hidden="true"></i><div class="end-t"><h2>Zacznij w minutę.</h2><p>Pobierz, zaloguj się i wklej link z USOS — reszta ułoży się sama.</p></div>
  <a class="btn" href="{SETUP}" download>{I["win"]}Pobierz na Windows</a></section>
 <footer><div class="ft">
  <a class="author" href="{AUTHOR_URL}" target="_blank" rel="noopener"><img src="{AUTHOR_URL}.png?size=80" alt="" loading="lazy" width="38" height="38" onerror="this.replaceWith(Object.assign(document.createElement('span'),{{className:'av',textContent:'B'}}))">
