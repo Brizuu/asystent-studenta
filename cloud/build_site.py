@@ -208,21 +208,34 @@ h1 .grad{color:var(--acc2)}
 .chk{display:flex;align-items:center;gap:8px;transition:color .4s}
 .chk::before{content:"";width:13px;height:13px;border-radius:4px;border:1.5px solid rgba(255,255,255,.35);flex:none;transition:.4s var(--ease)}
 .chk.done{color:var(--dim);text-decoration:line-through}.chk.done::before{background:var(--live);border-color:var(--live);box-shadow:inset 0 0 0 2px #10141c}
-/* opowieść o funkcjach: tekst przewija się, podgląd stoi i zmienia scenę */
-.story{position:relative;padding:120px 0 40px}
-.s-head{text-align:center;max-width:640px;margin:0 auto 40px}
-.s-head h2{margin:10px 0 0;font-size:44px;font-weight:800;letter-spacing:-.035em;line-height:1.08}
-.s-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:72px}
-.step{min-height:78vh;display:flex;flex-direction:column;justify-content:center;opacity:.28;transition:opacity .6s var(--ease),transform .6s var(--ease);transform:translateX(-10px)}
-.step.on{opacity:1;transform:none}
+/* opowieść o funkcjach: sekcja przypięta na ekranie, jeden ruch kółkiem = jedna scena (tekst i podgląd zmieniają się razem) */
+.story{position:relative;padding:60px 0 0}
+.pin{position:relative;height:calc(var(--n) * 100vh)}
+.pin-view{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;gap:34px;padding-top:56px}
+.s-head{text-align:center;max-width:860px;margin:0 auto}
+.s-head .lab span{color:var(--ink);font-variant-numeric:tabular-nums}
+.s-head h2{margin:10px 0 0;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.08}
+.s-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:72px;align-items:center}
+.steps{position:relative;height:340px}
+.step{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(34px);filter:blur(4px);pointer-events:none;
+  transition:opacity .55s var(--ease),transform .7s var(--ease),filter .55s var(--ease)}
+.step.up{transform:translateY(-34px)}
+.step.on{opacity:1;transform:none;filter:none;pointer-events:auto;transition-delay:.12s}
 .num{font-weight:800;font-size:15px;letter-spacing:.1em}
 .step h3{margin:12px 0 12px;font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
 .step p{margin:0;color:var(--soft);font-size:17px;line-height:1.7;max-width:470px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
 .chips span{height:34px;padding:0 14px;border-radius:17px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
 .m-inline{display:none}
-.stage{position:sticky;top:calc(50vh - 170px);height:340px}
-.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:28px 30px;border-radius:24px;opacity:0;transform:translateY(24px) scale(.97);filter:blur(8px);transition:opacity .7s var(--ease),transform .7s var(--ease),filter .7s var(--ease);box-shadow:0 40px 90px -40px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.07)}
+.stage{position:relative;height:340px}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:28px 30px;border-radius:24px;opacity:0;transform:translateY(30px) scale(.97);filter:blur(8px);pointer-events:none;transition:opacity .6s var(--ease),transform .8s var(--ease),filter .6s var(--ease);box-shadow:0 40px 90px -40px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.07)}
+.scene.up{transform:translateY(-30px) scale(.97)}
+.dots i{cursor:pointer;pointer-events:auto}
+.s-hint{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--dim);font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:opacity .4s}
+.s-hint i{width:22px;height:34px;border-radius:11px;border:1.5px solid rgba(255,255,255,.2);position:relative}
+.s-hint i::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:var(--acc2);animation:wheel 1.8s var(--ease) infinite}
+@keyframes wheel{0%{opacity:0;transform:translateY(-3px)}30%{opacity:1}100%{opacity:0;transform:translateY(9px)}}
+.pin.last .s-hint{opacity:0}
 .scene::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(140deg,var(--c),transparent 40%,transparent 70%,var(--c));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.5;pointer-events:none}
 .scene.on{opacity:1;transform:none;filter:none}
 .dots{position:absolute;right:-26px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}
@@ -308,7 +321,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
   .rv,.in-up,.pop,.slide,.type span,.lines span,.m-plan>div,.dv{opacity:1!important;transform:none!important;filter:none!important}.draw{stroke-dashoffset:0}.hl{background-size:100% 100%}.scene{transition:none}}
 /* mniejsze ekrany */
 @media (max-width:1180px){.hero{flex-direction:column;align-items:stretch;min-height:0}.h-txt{max-width:640px}.h-vis{height:540px;max-width:900px;width:100%;margin:0 auto}}
-@media (max-width:980px){.s-grid{display:block}.stage{display:none}.step{min-height:0;opacity:1;transform:none;margin-bottom:72px}.m-inline{display:block;margin-top:24px;padding:22px;border-radius:20px;position:relative}
+@media (max-width:980px){.pin{height:auto}.pin-view{position:static;height:auto;display:block;padding-top:0}.s-head{margin-bottom:40px}.s-hint{display:none}.steps{height:auto}.s-grid{display:block}.stage{display:none}.step{position:static;opacity:1;transform:none;filter:none;pointer-events:auto;margin-bottom:72px}.m-inline{display:block;margin-top:24px;padding:22px;border-radius:20px;position:relative}
   .step .m-inline .lines span,.step .m-inline .m-plan>div,.step .m-inline .dv{opacity:1;transform:none}.step .m-inline .draw{stroke-dashoffset:0}}
 @media (max-width:820px){
   .h-vis .beam,.h-vis .hz{display:none}
@@ -317,7 +330,7 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
   .tile{padding:14px 16px;gap:12px}.tile .mk{width:42px;height:42px}.tile .cta{font-size:13px}
   .h-vis{height:auto;perspective:none}.tilt{position:relative}.h-vis .glow{display:none}.h-vis .win{display:none}
   .phone{position:relative;right:auto;top:auto;margin:0 auto;height:380px}
-  .story{padding-top:70px}.s-head h2{font-size:32px}.step h3{font-size:28px}.step p{font-size:16px}
+  .story{padding-top:40px}.s-head h2{font-size:32px}.step h3{font-size:28px}.step p{font-size:16px}
   .m-note{flex-direction:column}.fig.big{align-self:center}
   .faq{padding:70px 16px 0}.faq h2{font-size:28px}
   .end{margin:70px 16px 0;flex-direction:column;align-items:flex-start;padding:28px 22px}.end .btn{margin-left:0}
@@ -357,20 +370,41 @@ if(!RM){let raf=0; addEventListener('pointermove',e=>{if(raf)return; raf=request
     const m=$('#d-min'); m.textContent=min; m.classList.remove('tick'); void m.offsetWidth; m.classList.add('tick');
     [$('#d-tram'),$('#p-tram')].forEach(e=>{if(!e)return; e.textContent=tram; e.classList.remove('tick'); void e.offsetWidth; e.classList.add('tick');});
     bar.style.width=(100-min/90*100).toFixed(1)+'%';},RM?60000:5000);})();
-// opowieść: aktywny krok przy środku ekranu zmienia scenę obok
-(()=>{const steps=$$('.step'), scenes=$$('.scene'), dots=$$('.dots i');
-  const set=i=>{steps.forEach(s=>s.classList.toggle('on',+s.dataset.i===i)); scenes.forEach(s=>{const on=+s.dataset.i===i; if(on&&!s.classList.contains('on')){s.classList.remove('on'); void s.offsetWidth;} s.classList.toggle('on',on);}); dots.forEach(d=>d.classList.toggle('on',+d.dataset.i===i));};
-  set(0);
-  if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)set(+x.target.dataset.i);}),{rootMargin:'-45% 0px -45% 0px'}); steps.forEach(s=>io.observe(s));}
+// opowieść: przypięta sekcja — numer sceny wynika z pozycji przewijania (działa też pasek, klawiatura i dotyk)
+(()=>{const pin=$('.pin'), steps=$$('.step'), scenes=$$('.scene'), dots=$$('.dots i'), N=steps.length; let cur=-1;
+  const top=()=>pin.getBoundingClientRect().top+scrollY, vh=()=>innerHeight, desk=()=>innerWidth>980;
+  const set=i=>{if(i===cur)return; const prev=cur; cur=i;
+    const mark=(el,k)=>{el.classList.toggle('on',k===i); el.classList.toggle('up',k<i);};
+    steps.forEach(s=>mark(s,+s.dataset.i)); scenes.forEach(s=>{const k=+s.dataset.i; if(k===i&&prev!==-1){s.classList.remove('on'); void s.offsetWidth;} mark(s,k);});
+    dots.forEach(d=>d.classList.toggle('on',+d.dataset.i===i)); $('#s-no').textContent=String(i+1).padStart(2,'0'); pin.classList.toggle('last',i===N-1);};
+  const idx=()=>Math.max(0,Math.min(N-1,Math.round((scrollY-top())/vh())));
+  addEventListener('scroll',()=>{if(desk()&&!anim)set(idx());},{passive:true}); set(0);
+  // płynny przejazd (własna krzywa, bez szarpania) do pozycji
+  let anim=null; const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const glide=(to,ms=760)=>{if(RM){scrollTo(0,to);return;} const from=scrollY, d=to-from, t0=performance.now(); document.documentElement.style.scrollBehavior='auto';
+    cancelAnimationFrame(anim); const step=now=>{const k=Math.min(1,(now-t0)/ms); scrollTo(0,from+d*ease(k)); if(k<1)anim=requestAnimationFrame(step); else{anim=null; document.documentElement.style.scrollBehavior=''; set(idx()); quietUntil=performance.now()+260;}};
+    anim=requestAnimationFrame(step);};
+  const goStep=i=>{set(i); glide(top()+i*vh());};
+  dots.forEach(d=>d.onclick=()=>goStep(+d.dataset.i));
+  // kółko: każdy nowy ruch (nawet mały) = jedna scena; bezwładność touchpada po przejeździe jest ignorowana
+  let lastWheel=0, quietUntil=0, used=false;
+  const route=(dir,e)=>{const y=scrollY, T=top(), H=vh(), end=T+(N-1)*H;
+    if(dir>0&&y<T-2&&y>T-H*.8){e&&e.preventDefault(); goStep(0); return true;}                       // wejście z góry → pierwsza scena
+    if(dir<0&&y>end+2&&y<end+H*.8){e&&e.preventDefault(); goStep(N-1); return true;}                  // powrót z dołu → ostatnia scena
+    if(y>=T-2&&y<=end+2){const i=Math.round((y-T)/H), n=i+dir;
+      if(n>=0&&n<N){e&&e.preventDefault(); goStep(n); return true;}
+      if(n>=N){e&&e.preventDefault(); glide(end+H*.92,820); return true;}                              // wyjście w dół: płynnie do następnej sekcji
+      if(n<0){e&&e.preventDefault(); glide(T-H*.92,820); return true;}}                                // wyjście w górę: płynnie do góry strony
+    return false;};
+  addEventListener('wheel',e=>{if(!desk()||e.ctrlKey||Math.abs(e.deltaY)<Math.abs(e.deltaX))return; const now=performance.now(), gap=now-lastWheel; lastWheel=now;
+    const y=scrollY, T=top(), H=vh(); if(y<T-H||y>T+(N-1)*H+H)return;                                // poza opowieścią — zwykłe przewijanie
+    if(anim||now<quietUntil){e.preventDefault(); return;}
+    if(used&&gap<180){e.preventDefault(); return;}                                                     // ten sam ruch, który już przełączył scenę
+    used=route(Math.sign(e.deltaY),e);},{passive:false});
+  addEventListener('keydown',e=>{if(!desk()||e.target.closest('input,textarea'))return; const k=e.key, dir=(k==='ArrowDown'||k==='PageDown'||(k===' '&&!e.shiftKey))?1:(k==='ArrowUp'||k==='PageUp'||(k===' '&&e.shiftKey))?-1:0;
+    if(!dir||anim)return; route(dir,e);});
   // na telefonie podgląd jest pod tekstem — animacje startują, gdy wjedzie na ekran
   const mo=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');mo.unobserve(x.target);}}),{threshold:.3}); $$('.m-inline').forEach(m=>mo.observe(m));})();
-// przewijanie „pomaga”: po zatrzymaniu w opowieści strona dociąga następny krok w kierunku przewijania (jeden ruch = jedna scena)
-(()=>{let t=0, auto=false, last=scrollY; const go=()=>{const dir=Math.sign(scrollY-last); last=scrollY; if(innerWidth<=980||!dir)return;
-    const c=innerHeight/2, offs=$$('.step').map(s=>{const r=s.getBoundingClientRect(); return r.top+r.height/2-c;});
-    if(offs.some(o=>Math.abs(o)<=6))return;   // już na miejscu
-    const ahead=offs.filter(o=>o*dir>0).sort((x,y)=>Math.abs(x)-Math.abs(y))[0];
-    if(ahead!==undefined&&Math.abs(ahead)<innerHeight*.75){auto=true; scrollBy({top:ahead,behavior:RM?'auto':'smooth'}); setTimeout(()=>{auto=false;last=scrollY;},750);}};
-  addEventListener('scroll',()=>{if(auto)return; clearTimeout(t); t=setTimeout(go,160);},{passive:true});})();
 // sekcje pojawiają się przy przewijaniu, rodzeństwo z opóźnieniem
 (()=>{const els=$$('.rv'); if(!('IntersectionObserver' in window)||RM){els.forEach(e=>e.classList.add('in'));return;}
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}}),{threshold:.12});
@@ -419,8 +453,11 @@ page = f"""<!DOCTYPE html>
   <div class="h-vis" aria-hidden="true"><i class="beam"></i><i class="hz"></i><div class="glow"></div><div class="tilt"><div class="g win">{DASH}</div>{PHONE}</div></div>
  </section>
  <section class="story" id="funkcje">
-  <div class="s-head rv"><div class="lab">Najważniejsze</div><h2>Trzy rzeczy, które robią różnicę.</h2></div>
-  <div class="s-grid"><div class="steps">{steps}</div><div><div class="stage">{stage}<div class="dots">{dots}</div></div></div></div>
+  <div class="pin" style="--n:{len(STORY)}"><div class="pin-view">
+   <div class="s-head"><div class="lab">Najważniejsze · <span id="s-no">01</span> / 0{len(STORY)}</div><h2>Trzy rzeczy, które robią różnicę.</h2></div>
+   <div class="s-grid"><div class="steps">{steps}</div><div class="stage">{stage}<div class="dots">{dots}</div></div></div>
+   <div class="s-hint" aria-hidden="true"><i></i>przewiń</div>
+  </div></div>
  </section>
 </div>
 <section class="faq" id="pytania"><h2 class="rv">Krótko i na temat</h2>{faq}</section>
