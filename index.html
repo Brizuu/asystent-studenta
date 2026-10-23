@@ -2868,8 +2868,8 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 /* H1 · wiązka światła */
 .fl-h1 .beam{left:var(--cx);top:-14vh;width:130px;height:78vh;margin-left:-65px;background:radial-gradient(50% 100% at 50% 100%,rgba(79,209,184,.5),rgba(90,150,242,.16) 55%,transparent 80%);filter:blur(18px);animation:flBeam 9s ease-in-out infinite}
 .fl-h1 .pool{left:var(--cx);top:44vh;width:min(1500px,110vw);height:34vh;transform:translateX(-50%);background:radial-gradient(50% 40% at 50% 50%,rgba(79,209,184,.36),rgba(90,150,242,.14) 45%,transparent 75%);filter:blur(10px);animation:flPool 9s ease-in-out infinite}
-.fl-h1 .line{left:var(--rl);right:0;top:61vh;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.75) 50%,transparent)}
-.fl-h1 .floor{left:0;right:0;top:61vh;bottom:0;background:linear-gradient(180deg,rgba(18,44,48,.5),rgba(8,11,17,0) 70%)}
+.fl-h1 .line{left:calc(var(--cx) - 30vw);width:60vw;top:61vh;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.22) 50%,transparent)}
+.fl-h1 .floor{left:0;right:0;top:55vh;bottom:0;background:linear-gradient(180deg,rgba(18,44,48,0),rgba(18,44,48,.2) 14%,rgba(8,11,17,0) 62%)}
 @keyframes flBeam{50%{opacity:.75;transform:scaleX(1.15)}}
 @keyframes flPool{50%{opacity:.8}}
 /* H2 · horyzont planety */
@@ -6183,7 +6183,7 @@ function sanitizeHtml(html){
     walk(c);
     if(!SAFE_TAGS.has(tag)){c.replaceWith(...c.childNodes);return;}
     [...c.attributes].forEach(a=>{const k=a.name.toLowerCase(),v=a.value.trim();
-      const keep=(k==='href'&&/^(https?:|mailto:)/i.test(v))||(k==='src'&&tag==='IMG'&&/^(https?:|data:image\/(png|jpe?g|gif|webp);)/i.test(v))
+      const keep=(k==='href'&&/^(https?:|mailto:)/i.test(v))||(k==='src'&&tag==='IMG'&&(/^(https?:|data:image\/(png|jpe?g|gif|webp);)/i.test(v)||/^uploads\/[\w.-]+$/.test(v)))
         ||(k==='style'&&!/url\(|expression|position|@import|behavior/i.test(v))||['color','colspan','rowspan','alt','title'].includes(k);
       if(!keep)c.removeAttribute(a.name);});
     if(tag==='A'){c.setAttribute('target','_blank');c.setAttribute('rel','noopener noreferrer');}

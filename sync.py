@@ -4,9 +4,14 @@ Każdy rekord synchronizowanych tabel ma stały `uid` i znacznik `sync_at` (UTC,
 każdej lokalnej zmianie). Usunięcia trafiają do `sync_deleted`. Wysyłka = rekordy zmienione od ostatniej
 wysyłki; pobranie = rekordy z serwera nowsze niż kursor. Konflikt: wygrywa nowsza zmiana.
 Klucze obce wysyłane są jako uid rekordu nadrzędnego, więc działają na każdym urządzeniu.
-Pliki (załączniki, nagrania) nie są synchronizowane — tylko dane z bazy."""
+Pliki z notatek (PDF-y, obrazy) jadą osobno przez /files; obrazy wklejone w treść są przy wysyłce
+zamieniane na takie pliki, a duże notatki kompresowane."""
+import base64
+import gzip
+import hashlib
 import json
 import os
+import re
 import platform
 import socket
 import urllib.error
@@ -115,6 +120,38 @@ def _uid_map(c, t) -> dict:
     return {r[0]: r[1] for r in c.execute(f"SELECT id, uid FROM {t}")}
 
 
+# obrazy wklejone do notatek siedzą w treści jako data:image/...;base64 — przy wysyłce idą osobno jako pliki konta,
+# a w notatce zostaje krótki odnośnik uploads/…; reszta dużej notatki jedzie skompresowana (gzip)
+_IMG = re.compile(r"data:image/(png|jpe?g|gif|webp);base64,([A-Za-z0-9+/=]{2000,})")
+GZ_FROM = 256 * 1024
+
+
+def _extract_images(text: str) -> str:
+    def sub(m):
+        ext = "jpg" if m.group(1) in ("jpg", "jpeg") else m.group(1)
+        try:
+            blob = base64.b64decode(m.group(2))
+        except Exception:
+            return m.group(0)
+        name = f"img_{hashlib.sha1(blob).hexdigest()[:20]}.{ext}"
+        f = _uploads() / name
+        if not f.exists():
+            f.write_bytes(blob)
+        return "uploads/" + name
+    return _IMG.sub(sub, text)
+
+
+def _pack(data: dict | None) -> dict | None:
+    """Notatka do wysłania: obrazy jako pliki, a gdy dalej duża — gzip w polu `_gz` (serwer kont rozpakuje)."""
+    if not data:
+        return data
+    data = {k: _extract_images(v) if isinstance(v, str) and "base64," in v else v for k, v in data.items()}
+    raw = json.dumps(data, ensure_ascii=False)
+    if len(raw) < GZ_FROM:
+        return data
+    return {"_gz": base64.b64encode(gzip.compress(raw.encode("utf-8"), 9)).decode("ascii")}
+
+
 def collect(c, since: str) -> list[dict]:
     """Zmiany od `since` (rekordy + usunięcia) w formacie serwera."""
     items = []
@@ -126,7 +163,7 @@ def collect(c, since: str) -> list[dict]:
             for col, parent in fks.items():
                 if col in d:
                     d[col] = maps[parent].get(d[col]) if d[col] is not None else None
-            items.append({"tbl": t, "uid": r["uid"], "updated_at": r["sync_at"], "deleted": False, "data": d})
+            items.append({"tbl": t, "uid": r["uid"], "updated_at": r["sync_at"], "deleted": False, "data": _pack(d)})
     for r in c.execute("SELECT tbl, uid, at FROM sync_deleted WHERE at > ?", (since,)):
         if r["tbl"] in TABLES:
             items.append({"tbl": r["tbl"], "uid": r["uid"], "updated_at": r["at"], "deleted": True, "data": None})
@@ -152,6 +189,8 @@ def apply(c, items: list[dict], applied: set | None = None) -> dict:
             stats["skipped"] += 1
             continue
         data = dict(it.get("data") or {})
+        if "_gz" in data:   # starszy serwer kont oddaje paczkę tak, jak ją dostał
+            data = json.loads(gzip.decompress(base64.b64decode(data["_gz"])).decode("utf-8"))
         ok = True
         for col, parent in TABLES[t].items():
             if col not in data:
