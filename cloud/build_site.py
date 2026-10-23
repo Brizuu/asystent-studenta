@@ -300,7 +300,7 @@ h1 .grad{color:var(--acc2)}
 
 /* flary z tła Pulpitu (projekty H): wiązka za podglądem, horyzont planety za zakończeniem */
 .h-vis .beam{position:absolute;left:52%;top:-180px;width:140px;height:620px;margin-left:-70px;background:radial-gradient(50% 100% at 50% 100%,rgba(79,209,184,.55),rgba(90,150,242,.16) 55%,transparent 80%);filter:blur(18px);animation:beam 9s ease-in-out infinite;pointer-events:none}
-.h-vis .hz{position:absolute;left:-30%;right:-30%;top:470px;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.7) 50%,transparent);box-shadow:0 0 30px 8px rgba(79,209,184,.12);pointer-events:none}
+.h-vis .hz{position:absolute;left:-10%;right:-10%;top:470px;height:1px;background:linear-gradient(90deg,transparent,rgba(160,240,225,.25) 50%,transparent);pointer-events:none}
 @keyframes beam{50%{opacity:.7;transform:scaleX(1.15)}}
 .end .planet{position:absolute;left:50%;top:84%;width:2400px;height:2400px;margin-left:-1200px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(11,16,24,.92) 97%,transparent 100%);box-shadow:0 -2px 0 rgba(141,182,255,.5),0 -18px 60px rgba(90,150,242,.4),0 -60px 160px rgba(79,209,184,.2);animation:glowp 10s ease-in-out infinite}
 @keyframes glowp{50%{box-shadow:0 -2px 0 rgba(141,182,255,.65),0 -22px 70px rgba(90,150,242,.5),0 -70px 190px rgba(79,209,184,.26)}}

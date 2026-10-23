@@ -9,6 +9,7 @@ Konfiguracja (zmienne środowiskowe):
   CLOUD_DB          ścieżka do bazy SQLite (domyślnie cloud/cloud.db)
   ALLOWED_ORIGINS   adresy aplikacji (CORS), po przecinku; domyślnie lokalne 127.0.0.1/localhost
 """
+import base64
 import hashlib
 import hmac
 import json
@@ -17,6 +18,7 @@ import re
 import secrets
 import sqlite3
 import time
+import zlib
 from collections import defaultdict, deque
 from pathlib import Path
 
@@ -570,7 +572,7 @@ def admin_suggestion_delete(sid: int, a=Depends(admin_user)):
 
 # ---------- synchronizacja urządzeń (dane z aplikacji jednego konta) ----------
 SYNC_TABLES = {"notebooks", "note_groups", "notes", "tasks", "todo_lists", "todo_items", "todo_checks", "costs", "cost_entries", "incomes", "quiz_cards", "transit_favs"}
-MAX_SYNC_ITEM = 2_000_000       # jedna notatka (JSON bloków)
+MAX_SYNC_ITEM = 12_000_000      # jedna notatka (JSON bloków po rozpakowaniu; obrazy jadą osobno jako pliki)
 MAX_SYNC_USER = 200_000_000     # łączny rozmiar danych konta
 
 
@@ -609,7 +611,17 @@ def sync_push(p: SyncPush, u=Depends(current_user)):
         for it in p.items:
             if it.tbl not in SYNC_TABLES or not it.uid or len(it.uid) > 64:
                 continue
-            data = None if it.deleted else json.dumps(it.data or {}, ensure_ascii=False)
+            d = it.data or {}
+            if not it.deleted and "_gz" in d:   # aplikacja wysyła duże notatki skompresowane
+                try:
+                    z = zlib.decompressobj(16 + zlib.MAX_WBITS)   # gzip, z limitem (bez „bomby” po rozpakowaniu)
+                    raw = z.decompress(base64.b64decode(d["_gz"]), MAX_SYNC_ITEM + 1)
+                    if len(raw) > MAX_SYNC_ITEM:
+                        raise ValueError
+                    d = json.loads(raw.decode("utf-8"))
+                except Exception:
+                    raise HTTPException(413, "Jedna z notatek jest za duża do synchronizacji.")
+            data = None if it.deleted else json.dumps(d, ensure_ascii=False)
             if data and len(data) > MAX_SYNC_ITEM:
                 raise HTTPException(413, "Jedna z notatek jest za duża do synchronizacji.")
             old = c.execute("SELECT updated_at FROM sync_items WHERE user_id=? AND tbl=? AND uid=?", (u["id"], it.tbl, it.uid)).fetchone()
