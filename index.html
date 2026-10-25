@@ -2911,6 +2911,37 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 [data-theme=paper] .b-text .katex .msupsub,.pdf-export[data-theme=paper] .katex .msupsub{color:#2F6FD8}
 [data-theme=paper] .b-text .katex,.pdf-export[data-theme=paper] .katex{color:#141821}
 
+/* 1.9.24: menu boczne na niskich ekranach — ciaśniej w pionie, profil zawsze widoczny (zwinięte i rozwinięte) */
+@media (min-width:821px){
+  .rail>.navlist{min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}   /* awaryjnie przewija się tylko lista, profil zostaje */
+  .rail>.navlist::-webkit-scrollbar{display:none}
+  .rail-bottom{flex:none}
+}
+@media (min-width:821px) and (max-height:900px){
+  .rail{padding-top:12px!important;padding-bottom:10px!important}
+  .brand{padding-bottom:10px!important}
+  body.rail-min .brand{width:46px;height:46px;margin-bottom:6px}
+  body.rail-min .brand .mark{width:36px;height:36px}
+  .navlist{gap:1px!important}
+  .navlist button,.rail-bottom .bell{height:37px!important}
+  .rail-bottom{margin-top:6px!important;padding-top:6px!important;gap:1px!important}
+  #nav-account .nav-av{width:30px!important;height:30px!important}
+}
+@media (min-width:821px) and (max-height:760px){
+  .rail{padding-top:8px!important;padding-bottom:8px!important}
+  .brand{padding-top:0!important;padding-bottom:6px!important}
+  body.rail-min .brand{width:40px;height:40px;margin-bottom:4px}
+  body.rail-min .brand .mark{width:32px;height:32px}
+  .navlist button,.rail-bottom .bell{height:32px!important;font-size:13.5px!important;border-radius:10px!important}
+  .navlist button svg,.rail-bottom .bell svg{width:18px;height:18px}
+  .rail-bottom{margin-top:4px!important;padding-top:4px!important}
+  #nav-account .nav-av{width:26px!important;height:26px!important}
+}
+@media (min-width:821px) and (max-height:640px){
+  .navlist button,.rail-bottom .bell{height:28px!important;font-size:13px!important}
+  .navlist button svg,.rail-bottom .bell svg{width:17px;height:17px}
+}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
