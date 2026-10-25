@@ -979,7 +979,10 @@ READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja klu
                  "- Najważniejsze frazy do zapamiętania (kluczowa zależność, wynik, wyjątek, częsty błąd) zaznacz <mark>…</mark> — "
                  "oszczędnie, 1–3 na sekcję. Terminy obce i cytaty w <em>.\n"
                  "- Do trudniejszych pojęć dodaj krótki przykład z życia (punkt zaczynający się od <strong>Przykład:</strong>).\n"
-                 "- Wzory zapisuj w zwykłym tekście (np. Qd = f(P)) i od razu objaśnij każdy symbol.\n"
+                 "- Proste wzory zapisuj w zwykłym tekście (np. Qd = f(P)). Matematykę z indeksami, ułamkami, potęgami, pierwiastkami, "
+                 "sumami, całkami, macierzami itp. zapisuj w LaTeX: w linii między pojedynczymi znakami dolara $a_{ik} = b_{ik}$, "
+                 "a większe wzory i macierze jako osobny akapit między podwójnymi dolarami, np. <p>$$A^T = \\begin{bmatrix} -1 & 2 \\\\ 3 & -4 \\end{bmatrix}$$</p>. "
+                 "Nigdy nie wstawiaj LaTeX-u w <code>, <mark> ani <strong>; nie używaj \\( \\) ani \\[ \\]. Zawsze objaśnij każdy symbol.\n"
                  "- Na końcu: <h3>Najważniejsze do zapamiętania</h3> (3–7 punktów), a potem <h3>Sprawdź się</h3> — 4–8 pytań "
                  "kontrolnych jako lista, każde z odpowiedzią w zagnieżdżonym punkcie (do samodzielnego przepytania się).\n")
 
