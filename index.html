@@ -3059,6 +3059,21 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 .cq-m{margin-left:auto;padding:1px 7px;border-radius:7px;background:rgba(255,255,255,.05);font-weight:600}
 @media (max-width:820px){.us-mrow{grid-template-columns:1fr auto}.us-mrow .ubar{grid-column:1/-1;order:3}}
 
+/* edycja wzorów w notatce */
+#blocks .itex{cursor:pointer;border-radius:6px;transition:background .15s,box-shadow .15s}
+#blocks .itex:hover{background:rgba(141,182,255,.1);box-shadow:0 0 0 3px rgba(141,182,255,.1)}
+#blocks .itex.tex-on{background:rgba(141,182,255,.16);box-shadow:0 0 0 2px rgba(141,182,255,.45)}
+.reading #blocks .itex{cursor:default}.reading #blocks .itex:hover{background:none;box-shadow:none}
+.tex-pop{position:fixed;z-index:190;width:min(460px,calc(100vw - 16px));padding:14px;border-radius:16px;background:linear-gradient(160deg,#181D28,#0E121A);border:1px solid rgba(255,255,255,.12);box-shadow:0 24px 60px -16px rgba(0,0,0,.8);animation:pop .14s ease}
+.tp-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}.tp-h b{font-size:13.5px}
+.tp-d{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
+.tex-pop textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:44px;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--ink);font:13.5px/1.5 ui-monospace,Consolas,monospace;outline:none}
+.tex-pop textarea:focus{border-color:rgba(141,182,255,.6);box-shadow:0 0 0 3px rgba(90,150,242,.16)}
+.tp-prev{margin-top:10px;min-height:44px;padding:10px;border-radius:10px;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;overflow-x:auto;color:#F4F7FC}
+.tp-prev .katex{font-size:1.25em}.tp-prev .katex .msupsub{color:#8DB6FF}.tp-prev.err{color:#F19A93;font-size:12.5px;justify-content:flex-start;flex-direction:column;align-items:flex-start;gap:3px}.tp-prev.err small{color:var(--ink-dim);font-size:11px}
+.tp-hint{margin-top:8px;font-size:11.5px;color:var(--ink-dim);line-height:1.6}.tp-hint code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:5px;font-size:11px}
+.tp-a{display:flex;align-items:center;gap:8px;margin-top:12px}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -7388,7 +7403,12 @@ document.addEventListener('mousedown',e=>{if($('#outline')&&!e.target.closest('#
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOutline();});
 /* Spotify i Pomodoro: prawa krawędź równo z kalkulatorem (gdy zakładki Nauki są na ekranie), inaczej stały odstęp */
 function alignFabs(){const c=document.querySelector('#view-nauka.active .tab-calc'), r=c&&c.offsetParent&&innerWidth>820?c.getBoundingClientRect():null;
-  document.body.style.setProperty('--fab-r',(r&&r.width?Math.max(8,Math.round(innerWidth-r.right)):18)+'px');}
+  const B=document.body.style; if(!r||!r.width){B.setProperty('--fab-r','18px');return;}
+  // mierzymy prawdziwą krawędź logo Spotify (skala przycisku, pasek przewijania, powiększenie ekranu) i dociągamy ją do kalkulatora
+  const logo=document.querySelector('.spoti-logo'), cur=parseFloat(getComputedStyle(document.body).getPropertyValue('--fab-r'))||18;
+  if(logo&&(logo.matches(':hover')||document.querySelector('.spoti.open')))return;   // podczas najechania logo jest powiększone
+  if(!logo||!logo.offsetParent){B.setProperty('--fab-r',Math.max(8,Math.round(document.documentElement.clientWidth-r.right))+'px');return;}
+  const d=logo.getBoundingClientRect().right-r.right; if(Math.abs(d)>.5)B.setProperty('--fab-r',Math.max(4,Math.round(cur+d))+'px');}
 const alignSoon=()=>[0,300,700,1200].forEach(t=>setTimeout(alignFabs,t));   // widoki wjeżdżają z animacją — mierzymy też po jej końcu
 addEventListener('resize',()=>requestAnimationFrame(alignFabs));
 new MutationObserver(alignSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
@@ -8562,6 +8582,42 @@ async function aiImproveBlock(id,btn){
   verToast(id);
 }
 /* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
+/* edycja wzoru w notatce: klik w wzór → okienko z zapisem LaTeX i podglądem na żywo (Enter zapisuje, Esc anuluje) */
+function texEdit(el){
+  document.querySelector('.tex-pop')?.remove();
+  const ed=el.closest('.b-text,.cobody,.tgbody'); if(!ed)return;
+  const disp=el.classList.contains('disp'), orig=el.dataset.tex||'';
+  const pop=document.createElement('div'); pop.className='tex-pop'; pop.setAttribute('role','dialog'); pop.setAttribute('aria-label','Edycja wzoru');
+  pop.innerHTML=`<div class="tp-h"><b>Wzór</b><label class="tp-d"><input type="checkbox" ${disp?'checked':''}> osobno, na środku</label></div>
+    <textarea spellcheck="false" rows="${orig.length>60?3:2}">${esc(orig)}</textarea>
+    <div class="tp-prev"></div>
+    <div class="tp-hint">Np. <code>a_{ik}</code> indeks, <code>x^2</code> potęga, <code>\\frac{a}{b}</code> ułamek, <code>\\sqrt{x}</code>, <code>\\sum_{k=1}^{n}</code></div>
+    <div class="tp-a"><button class="btn ghost sm danger tp-del">Usuń</button><span style="flex:1"></span><button class="btn ghost sm tp-x">Anuluj</button><button class="btn sm tp-ok">Zapisz</button></div>`;
+  document.body.appendChild(pop);
+  const ta=pop.querySelector('textarea'), pv=pop.querySelector('.tp-prev'), cb=pop.querySelector('.tp-d input');
+  const prev=()=>{const t=ta.value.trim(); pv.classList.remove('err');
+    if(!t){pv.innerHTML='<span class="muted">Podgląd pojawi się tutaj</span>';return;}
+    try{pv.innerHTML=window.katex?katex.renderToString(texSpace(t),{throwOnError:true,displayMode:cb.checked}):esc(t);}
+    catch(e){pv.classList.add('err'); const m=String(e.message||e).replace(/^KaTeX parse error:\s*/,'');
+      pv.innerHTML='Błąd w zapisie wzoru — '+(/end of input|Expected '\}'/i.test(m)?'brakuje zamykającego nawiasu <b>}</b>.':/Undefined control sequence/i.test(m)?'nieznane polecenie '+esc((m.match(/\\[a-zA-Z]+/)||[''])[0])+'.':'sprawdź nawiasy { } i polecenia.')+`<small>${esc(m.slice(0,110))}</small>`;}};
+  const place=()=>{const r=el.getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
+    pop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';
+    pop.style.top=(r.bottom+8+h>innerHeight-8?Math.max(8,r.top-h-8):r.bottom+8)+'px';};
+  const close=()=>{pop.remove(); el.classList.remove('tex-on'); document.removeEventListener('mousedown',out,true);};
+  const save=()=>{const t=ta.value.trim(); if(!t){del();return;}
+    if(pv.classList.contains('err')){ta.focus();return;}
+    el.dataset.tex=t; el.classList.toggle('disp',cb.checked); el.innerHTML=texRender(t,cb.checked); close(); ed.dispatchEvent(new Event('input',{bubbles:true}));};
+  const del=()=>{const n=el.nextSibling; el.remove(); if(n&&n.nodeType===3&&n.nodeValue.startsWith(' '))n.nodeValue=n.nodeValue.slice(1); close(); ed.dispatchEvent(new Event('input',{bubbles:true}));};
+  const out=e=>{if(!pop.contains(e.target)&&e.target!==el&&!el.contains(e.target))close();};
+  ta.addEventListener('input',()=>{prev();}); cb.onchange=()=>{prev();place();};
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();save();} else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}});
+  pop.querySelector('.tp-ok').onclick=save; pop.querySelector('.tp-x').onclick=close; pop.querySelector('.tp-del').onclick=del;
+  el.classList.add('tex-on'); prev(); place(); setTimeout(()=>{ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);},20);
+  setTimeout(()=>document.addEventListener('mousedown',out,true),0);
+}
+// otwieramy już przy wciśnięciu: inaczej wejście bloku w edycję (pasek narzędzi) przesuwa treść i klik trafia obok wzoru
+document.addEventListener('mousedown',e=>{const el=e.target.closest('#blocks .itex'); if(!el||e.button!==0||noteMode==='study')return; e.preventDefault(); e.stopPropagation(); texEdit(el);},true);
+document.addEventListener('click',e=>{if(e.target.closest('#blocks .itex')&&noteMode!=='study'){e.preventDefault();e.stopPropagation();}},true);
 /* wzory z AI: $…$ (w linii) i $$…$$ (osobno) → prawdziwe wzory KaTeX; zapis zostaje w data-tex do edycji/eksportu */
 // czytelność: odstęp między czynnikami z indeksami (a_{i1}b_{1k} → a_{i1}\:b_{1k}); zapis w data-tex zostaje oryginalny
 const texSpace=t=>t.replace(/(_\{[^{}]*\}|_[a-zA-Z0-9])(?!\s*\\(end|right|[lc]?dots|quad))(?=\s*\\?[a-zA-Z])/g,'$1\\:');
