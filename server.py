@@ -1041,6 +1041,45 @@ class AIImprove(BaseModel):
     instructions: str = ""
 
 
+class AIInsert(BaseModel):
+    context: str
+    instructions: str = ""
+    focus: str = ""
+    title: str = ""
+    in_list: bool = False
+
+
+def _insert_prompt(a: AIInsert, fmt: str = "html") -> str:
+    """Dopisek w konkretnym miejscu notatki: temat z okolic znacznika [[TUTAJ]], zwracamy tylko nowy fragment."""
+    task = a.instructions.strip() or "dopisz to, czego w tym miejscu brakuje (np. przykład, definicję albo jaśniejsze wyjaśnienie)"
+    return ("Jesteś doświadczonym korepetytorem akademickim. Poniżej fragment notatki studenta" + (f" „{a.title}”" if a.title else "") +
+            " w HTML. Znacznik [[TUTAJ]] pokazuje dokładne miejsce, w którym student chce dopisać treść.\n"
+            "1) Z treści wokół znacznika (najbliższy nagłówek, akapit i punkty przed i po nim) ustal, jakiego tematu i pojęcia dotyczy to miejsce.\n"
+            f"2) Zadanie studenta: {task}.\n"
+            + (f"3) Student zaznaczył fragment: „{a.focus}” — dopisek ma dotyczyć właśnie jego.\n" if a.focus else "") +
+            "Zasady:\n- Napisz WYŁĄCZNIE nowy fragment do wstawienia w to miejsce — nie powtarzaj ani nie przepisuj istniejącej notatki, bez wstępu i komentarzy.\n"
+            "- Merytorycznie poprawnie, w tym samym stylu i języku co notatka (po polsku). Zwięźle: zwykle 2–6 punktów albo 1–3 krótkie akapity, chyba że zadanie mówi inaczej.\n"
+            "- Kluczowe pojęcie pogrub <strong>, najważniejszą frazę oszczędnie <mark>. Przykład zaczynaj od <strong>Przykład:</strong>.\n"
+            "- Matematykę z indeksami, ułamkami, potęgami czy macierzami zapisuj w LaTeX: w linii $…$, większe wzory jako osobny akapit $$…$$; LaTeX nigdy w <code>, <mark> ani <strong>.\n"
+            + ("- Znacznik stoi w punkcie listy: zwróć WYŁĄCZNIE elementy <li>…</li> (mogą zawierać zagnieżdżone <ul>), bez otaczającego <ul>.\n" if a.in_list else "")
+            + (HTML_RULE if fmt == "html" else "Odpowiedz w Markdown, bez wstępu.") +
+            "\n\nNOTATKA:\n" + a.context[:20_000])
+
+
+@app.post("/api/ai/insert")
+def ai_insert(a: AIInsert):
+    if "[[TUTAJ]]" not in a.context:
+        raise HTTPException(400, "Brak miejsca do dopisania.")
+    out = _ai_call([{"text": _insert_prompt(a)}], kind="insert", max_tokens=4096, timeout=120)
+    return {"html": _clean_ai_html(out)}
+
+
+@app.post("/api/ai/insert/prompt")
+def ai_insert_prompt(a: AIInsert):
+    """Tryb bez klucza: polecenie do wklejenia w zwykły czat."""
+    return {"prompt": _insert_prompt(a, "markdown")}
+
+
 @app.post("/api/ai/improve")
 def ai_improve(a: AIImprove):
     if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):

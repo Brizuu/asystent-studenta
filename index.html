@@ -2978,6 +2978,15 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 .kg-tip{margin:12px 0 0;font-size:12.5px;color:var(--ink-dim);line-height:1.55}
 @media (prefers-reduced-motion:reduce){.kg-btn.hl{animation:none}}
 
+/* „Dopisz tutaj z AI” */
+.ai-here{display:inline-flex;align-items:center;gap:7px;min-width:2px;min-height:1.1em;vertical-align:middle;border-left:2px solid var(--accent-text);padding:0 8px;margin:0 2px;color:var(--accent-text);font-size:13px;font-weight:600;animation:aiHere 1.2s ease-in-out infinite}
+.ai-here:empty{padding:0;margin:0 1px}
+@keyframes aiHere{50%{border-color:transparent}}
+.b-text .ai-new{animation:aiNew 2.4s ease}
+@keyframes aiNew{0%{background:rgba(141,182,255,.16);border-radius:6px}100%{background:transparent}}
+.ctxmenu .cm-ai{color:var(--accent-text)!important}
+@media (prefers-reduced-motion:reduce){.ai-here,.b-text .ai-new{animation:none}}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -7434,6 +7443,7 @@ document.addEventListener('mouseup',()=>{document.querySelectorAll('#blocks .blo
 // klik na blok → tryb edycji tego bloku (opcje pojawiają się dopiero teraz)
 $('#blocks').addEventListener('mousedown',e=>{
   if(noteMode==='study')return;
+  if(e.button===2){const bk=e.target.closest('.block'); if(bk&&!bk.classList.contains('editing'))e.preventDefault(); return;}   // PPM: bez wchodzenia w edycję — pasek narzędzi przesunąłby treść pod kursorem przed otwarciem menu
   if(e.target.closest('.rtb')||e.target.closest('.bctl'))return;
   if(e.target.closest('.pdf-actions'))return;   // przyciski PDF: bez wchodzenia w edycję (pasek linku przesuwał blok i klik nie trafiał)
   const blk=e.target.closest('.block'); if(!blk)return;
@@ -7450,8 +7460,20 @@ $('#blocks').addEventListener('contextmenu',e=>{
   if(e.target.closest('.rtb')||e.target.closest('.rtb-menu'))return;
   e.preventDefault();
   const blk=e.target.closest('.block');
+  // miejsce kliknięcia w tekście — pod „Dopisz tutaj z AI”
+  CTX_TXT=null; const bt=e.target.closest('.b-text');
+  if(bt){let r=null; if(document.caretRangeFromPoint)r=document.caretRangeFromPoint(e.clientX,e.clientY);
+    else if(document.caretPositionFromPoint){const cp=document.caretPositionFromPoint(e.clientX,e.clientY); if(cp){r=document.createRange();r.setStart(cp.offsetNode,cp.offset);}}
+    // kliknięcie obok tekstu (koniec wiersza, odstęp) — bierzemy kliknięty akapit / punkt, a nie najbliższy znak gdzie indziej
+    const hostEl=e.target.closest('li,p,h1,h2,h3,h4,blockquote');
+    if(hostEl&&bt.contains(hostEl)&&(!r||!hostEl.contains(r.startContainer))){r=document.createRange(); r.selectNodeContents(hostEl); r.collapse(false);}
+    // zaznaczenie liczy się tylko wtedy, gdy kliknięto w nie (stare zaznaczenie gdzie indziej nie przenosi miejsca)
+    const sel=getSelection(); if(sel.rangeCount&&!sel.isCollapsed&&bt.contains(sel.anchorNode)){const sr=sel.getRangeAt(0);
+      if([...sr.getClientRects()].some(q=>e.clientX>=q.left-2&&e.clientX<=q.right+2&&e.clientY>=q.top-2&&e.clientY<=q.bottom+2))r=sr.cloneRange();}
+    if(r&&bt.contains(r.startContainer))CTX_TXT={bid:blk.dataset.bid,range:r};}
   showBlockMenu(e.clientX,e.clientY,blk?blk.dataset.bid:null);
 });
+let CTX_TXT=null;
 let ctxEl=null;
 function closeCtx(){if(ctxEl){ctxEl.remove();ctxEl=null;}document.removeEventListener('mousedown',ctxOutside);}
 function ctxOutside(e){if(ctxEl&&!ctxEl.contains(e.target))closeCtx();}
@@ -7464,7 +7486,8 @@ function showBlockMenu(x,y,bid){
     down:'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     del:'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13M10 11v6M14 11v6"/></svg>'
   };
-  let html=`<button data-a="add"><span class="cmi">${CI.add}</span>Dodaj blok…</button>`;
+  let html=(CTX_TXT&&CTX_TXT.bid===bid?`<button data-a="aihere" class="cm-ai"><span class="cmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z"/></svg></span>Dopisz tutaj z AI…</button><div class="cm-sep"></div>`:'')
+    +`<button data-a="add"><span class="cmi">${CI.add}</span>Dodaj blok…</button>`;
   if(bid){const b=getBlock(bid);
     html+=`<div class="cm-sep"></div>
       <button data-a="half"><span class="cmi">${CI.half}</span>${b&&b.row?'Rozdziel (pełna szerokość)':'Ustaw obok następnego'}</button>
@@ -7477,7 +7500,7 @@ function showBlockMenu(x,y,bid){
   m.style.left=Math.max(8,Math.min(x,innerWidth-m.offsetWidth-8))+'px';
   m.style.top=Math.max(8,Math.min(y,innerHeight-m.offsetHeight-8))+'px';
   m.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.a;closeCtx();
-    if(a==='add')openAddMenuAt(x,y,bid); else if(a==='half')toggleWidth(bid); else if(a==='up')moveBlock(bid,-1); else if(a==='down')moveBlock(bid,1); else if(a==='del')removeBlock(bid);});
+    if(a==='aihere'&&CTX_TXT)aiInsertHere(CTX_TXT.bid,CTX_TXT.range); else if(a==='add')openAddMenuAt(x,y,bid); else if(a==='half')toggleWidth(bid); else if(a==='up')moveBlock(bid,-1); else if(a==='down')moveBlock(bid,1); else if(a==='del')removeBlock(bid);});
   setTimeout(()=>document.addEventListener('mousedown',ctxOutside),0);
 }
 /* PPM → „Dodaj blok…”: nowy blok ląduje pod klikniętym blokiem (a rząd obok siebie zostaje w całości) */
@@ -7888,6 +7911,7 @@ function buildTextBlock(d,b){
   const aiBtn=tbDropdown(aiSvg+' AI','AI (Gemini): notatka z tekstu, poprawa notatki',()=>[
     {html:'✦',label:'Utwórz notatkę AI z tego tekstu',run:()=>aiNoteFromBlock(b.id,aiBtn)},
     {html:'✎',label:'Popraw tę notatkę AI…',run:()=>aiImproveBlock(b.id,aiBtn)},
+    {html:'⤵',label:'Dopisz tutaj (w miejscu kursora)…',run:()=>{const s=getSelection(); aiInsertHere(b.id,s.rangeCount&&ed.contains(s.anchorNode)?s.getRangeAt(0).cloneRange():null,aiBtn);}},
     ...(b.versions&&b.versions.length?[{html:'↺',label:`Poprzednie wersje (${b.versions.length})`,run:()=>openVersions(b.id)}]:[]),
   ]); aiBtn.classList.add('ai'); tb.appendChild(aiBtn);
   const texHtml=t=>{try{return window.katex?katex.renderToString(t,{throwOnError:false}):esc(t);}catch(_){return esc(t);}};
@@ -8391,6 +8415,51 @@ function aiPackImages(html){const imgs=[];const out=(html||'').replace(/<img\b[^
 function aiUnpackImages(html,imgs){const used=new Set();
   html=html.replace(/(<p>\s*)?\[\[\s*OBRAZ\s*(\d+)\s*\]\](\s*<\/p>)?/gi,(m,a,n)=>{const i=+n-1;if(!imgs[i]||used.has(i))return '';used.add(i);return '<div>'+imgs[i]+'</div>';});
   imgs.forEach((im,i)=>{if(!used.has(i))html+='<div>'+im+'</div>';}); return html;}
+/* „Dopisz tutaj z AI”: Gemini dopisuje brakujący fragment (przykłady, definicję, wyjaśnienie…) dokładnie w klikniętym miejscu;
+   temat bierze z okolic tego miejsca w notatce */
+async function aiInsertHere(bid,range,btn){
+  const b=getBlock(bid), blk=[...$$('#blocks .block')].find(x=>x.dataset.bid===bid), ed=blk&&blk.querySelector('.b-text'); if(!b||!ed)return;
+  if(!range||!ed.contains(range.startContainer)){range=document.createRange(); range.selectNodeContents(ed); range.collapse(false);}
+  const focusTxt=range.collapsed?'':String(range).trim().slice(0,300);
+  // znacznik miejsca: na końcu zaznaczenia albo w miejscu kursora
+  const mk=document.createElement('span'); mk.className='ai-here'; mk.contentEditable='false'; mk.innerHTML='<span class="ai-spin sm"></span>Gemini pisze…';
+  const r=range.cloneRange(); r.collapse(false); r.insertNode(mk);
+  if(/^(UL|OL)$/.test(mk.parentElement.tagName)){const li=mk.previousElementSibling||mk.nextElementSibling; if(li&&li.tagName==='LI')li.appendChild(mk);}   // znacznik między punktami → do punktu
+  const host=mk.parentElement.closest('li,p,h1,h2,h3,h4,blockquote,pre')||null, inList=!!(host&&host.tagName==='LI');
+  // kontekst: notatka z [[TUTAJ]] w miejscu znacznika (obrazy jako krótkie znaczniki), przycięta wokół tego miejsca
+  const cl=ed.cloneNode(true); cl.querySelector('.ai-here').replaceWith(document.createTextNode('[[TUTAJ]]'));
+  let ctx=aiPackImages(stripDecor(cl)).out; const at=ctx.indexOf('[[TUTAJ]]'); ctx=ctx.slice(Math.max(0,at-9000),at+5000);
+  mk.innerHTML='';   // na czas wyboru polecenia tylko mała kreska w tekście
+  const res=await aiInstrDialog({title:'Dopisz tutaj z AI',sub:'Gemini dopisze fragment dokładnie w tym miejscu. Temat odczyta z sąsiedniej treści — możesz tylko wybrać, czego brakuje.'+(focusTxt?`<br>Zaznaczony fragment: <b>${esc(focusTxt.slice(0,80))}${focusTxt.length>80?'…':''}</b>`:''),
+    presets:['Dodaj przykłady','Dopisz definicję','Wyjaśnij prościej','Wzór z objaśnieniem symboli','Pytania sprawdzające z odpowiedziami','Krótkie podsumowanie'],
+    placeholder:'np. dodaj 2 przykłady z życia albo zdefiniuj pojęcie, o którym mowa wyżej',go:'Dopisz'});
+  if(!res){mk.remove();return;}
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  const body={context:ctx,instructions:res.instructions,focus:focusTxt,title:(noteData&&noteData.title)||'',in_list:inList};
+  let html=null;
+  if(AIS.mode==='chat'||!AIS.has_key){mk.remove(); html=await aiNoteViaChat('','',res.instructions,'/ai/insert/prompt',body); if(!html)return; const r2=range.cloneRange(); r2.collapse(false); r2.insertNode(mk);}
+  else{mk.innerHTML='<span class="ai-spin sm"></span>Gemini pisze…'; aiBusy(btn,true);
+    try{const rr=await fetch('api/ai/insert',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const data=await rr.json(); if(!rr.ok)throw new Error(data.detail||('Błąd '+rr.status)); html=data.html;}
+    catch(err){mk.remove(); popout({icon:'warn',title:'Nie udało się dopisać',text:err.message}); return;}
+    finally{aiBusy(btn,false);}}
+  pushVersion(b,'Przed dopisaniem AI');   // „↺ Poprzednie wersje” cofa dopisek
+  const frag=document.createElement('div'); frag.innerHTML=html; aiMath(frag);
+  const blocky=frag.querySelector('p,ul,ol,h3,h4,li,table,blockquote');
+  if(inList){   // w punkcie listy: nowe punkty pod klikniętym punktem (z zachowaniem poziomu)
+    const lis=[...frag.querySelectorAll(':scope>li, :scope>ul>li, :scope>ol>li')];
+    let after=host; (lis.length?lis:[Object.assign(document.createElement('li'),{innerHTML:frag.innerHTML})]).forEach(li=>{li.classList.add('ai-new'); after.after(li); after=li;});
+    mk.remove();
+  }else if(blocky&&host&&host!==ed){   // w akapicie: nowe bloki zaraz za nim
+    let after=host; [...frag.childNodes].forEach(n=>{if(n.nodeType===1)n.classList.add('ai-new'); after.after(n); after=n;}); mk.remove();
+  }else{   // w pustym miejscu / bez bloków: dokładnie w miejscu znacznika
+    [...frag.childNodes].forEach(n=>{if(n.nodeType===1)n.classList.add('ai-new');}); mk.replaceWith(...frag.childNodes);
+  }
+  ed.dispatchEvent(new Event('input',{bubbles:true}));
+  setTimeout(()=>{ed.querySelectorAll('.ai-new').forEach(n=>n.classList.remove('ai-new')); b.html=ed.innerHTML; scheduleSave();},2600);
+  b.html=ed.innerHTML; scheduleSave();
+  ed.querySelector('.ai-new')?.scrollIntoView({block:'nearest',behavior:reduceMotion()?'auto':'smooth'});
+}
 async function aiImproveBlock(id,btn){
   const b=getBlock(id); if(!b)return;
   const tmp=document.createElement('div'); tmp.innerHTML=b.html||''; if((tmp.textContent||'').trim().length<10){popout({icon:'info',title:'Za mało tekstu',text:'Napisz coś w tym bloku, a AI pomoże to ulepszyć.'});return;}
