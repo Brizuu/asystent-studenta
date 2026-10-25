@@ -3088,6 +3088,16 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 .block:not(.editing) .tt-block,.reading .tt-block{display:none}
 .tt-block{padding:0 4px 6px}
 
+/* styl notatki AI + notatka od zera */
+.ai-styles button.on{border-color:rgba(141,182,255,.55)!important;background:rgba(90,150,242,.12)!important}
+.blockmenu .bm-ai{color:var(--accent-text)!important;border-bottom:1px solid rgba(255,255,255,.07);border-radius:8px 8px 0 0;margin-bottom:2px}
+.blockmenu .bm-ai .bmi{color:var(--accent-text)}
+.ai-empty{display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:16px;border:1px dashed rgba(141,182,255,.3);background:rgba(90,150,242,.05);margin:6px 0 14px}
+.ai-empty>div{flex:1}.ai-empty b{display:block;font-size:15px}.ai-empty small{display:block;color:var(--ink-dim);font-size:13px;margin-top:2px;line-height:1.5}
+.ai-empty-ic{width:42px;height:42px;border-radius:13px;background:rgba(141,182,255,.14);color:var(--accent-text);display:flex;align-items:center;justify-content:center;flex:none}.ai-empty-ic svg{width:24px;height:24px}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}.shake{animation:shake .4s ease;border-color:#E5675F!important}
+@media (max-width:820px){.ai-empty{flex-wrap:wrap}.ai-empty .btn{width:100%}}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -3851,6 +3861,7 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
             <div class="addblock" id="addblock">
               <button class="btn ghost sm" onclick="toggleAddMenu(event)">+ Dodaj blok</button>
               <div class="menu blockmenu glass">
+                <button class="bm-ai" onclick="const i=addAfterIndex();closeAddMenu();aiTopicNote(i)"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M10.5 3.2c.5 3.6 2.7 5.8 6.3 6.3-3.6.5-5.8 2.7-6.3 6.3-.5-3.6-2.7-5.8-6.3-6.3 3.6-.5 5.8-2.7 6.3-6.3z"/><path d="M18 13.6c.25 1.8 1.35 2.9 3.15 3.15-1.8.25-2.9 1.35-3.15 3.15-.25-1.8-1.35-2.9-3.15-3.15 1.8-.25 2.9-1.35 3.15-3.15z" opacity=".8"/></svg></span><span>Notatka AI od zera…</span></button>
                 <button onclick="addBlock('heading')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5v14M15 5v14M5 12h10M18 9v10M18 9l2-1"/></svg></span><span>Nagłówek</span></button>
                 <button onclick="addBlock('text')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span>Tekst (pełne formatowanie)</span></button>
                 <button onclick="addBlock('table')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M3 14.5h18M9 5v14M15 5v14"/></svg></span><span>Tabela (Excel)</span></button>
@@ -7486,6 +7497,9 @@ function renderBlocks(){
     const rid=b.row; const g=[]; while(i<arr.length&&arr[i].row===rid){g.push(arr[i]);i++;}
     el.appendChild(rowEl(rid,g));
   }
+  if(!arr.length&&noteMode!=='study'){const e=document.createElement('div'); e.className='ai-empty';
+    e.innerHTML=`<span class="ai-empty-ic">${typeof ICO_HELPER!=='undefined'?ICO_HELPER:'✦'}</span><div><b>Pusta notatka</b><small>Napisz temat, a Gemini przygotuje notatkę od zera — np. „Macierze odwrotne, wytłumacz jak dla laika”.</small></div>
+      <button class="btn sm">✦ Notatka AI od zera</button>`; e.querySelector('button').onclick=()=>aiTopicNote(0); el.appendChild(e);}
   wireBlockDnd();
   // starsze notatki AI z surowym zapisem $…$ — pokaż jako wzory (zapis LaTeX zostaje w data-tex)
   if(window.katex)el.querySelectorAll('.b-text').forEach(t=>{if(/\$|\\[([]/.test(t.textContent))aiMath(t);});
@@ -8410,16 +8424,18 @@ async function aiNoteFromBlock(id,btnEl){
   const b=getBlock(id); if(!b)return;
   const tmp=document.createElement('div'); tmp.innerHTML=b.html||''; const text=(tmp.textContent||'').trim();
   if(text.length<10){alert('Za mało tekstu w tym bloku, aby zrobić notatkę.');return;}
-  const topic=await aiTopicDialog(); if(topic===null)return;   // anulowano
+  const r=await aiInstrDialog({title:'Notatka z AI',sub:'Zamienię ten blok w pełną, uporządkowaną notatkę do nauki. Temat możesz zostawić pusty — wykryję go automatycznie.',
+    presets:['Wytłumacz jak dla laika','Z przykładami','Krótko — ściąga','Dodaj pytania kontrolne'],placeholder:'np. dużo przykładów, prostym językiem',topic:true,styles:true,go:'Generuj notatkę'});
+  if(!r)return; const topic=r.topic;
   if(!AIS.mode)AIS=await api('/settings/ai');
   if(AIS.mode==='chat'||!AIS.has_key){   // bez klucza → przez zwykły czat
-    const html=await aiNoteViaChat(text,topic); if(!html)return;
+    const html=await aiNoteViaChat(text,topic,r.instructions,'/ai/note/prompt',{text,topic,instructions:r.instructions,style:r.style}); if(!html)return;
     insertAiBlock(id,html); return;
   }
   const oldHTML=btnEl?btnEl.innerHTML:''; if(btnEl){btnEl.classList.add('busy');btnEl.innerHTML='⏳ AI…';}
   const stop=aiProgress({title:'Gemini tworzy notatkę',stages:['Wysyłam tekst','Gemini porządkuje treść','Układam notatkę do nauki'],bid:id});
   try{
-    const res=await fetch('api/ai/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,topic})});
+    const res=await fetch('api/ai/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,topic,instructions:r.instructions,style:r.style})});
     const data=await res.json();
     if(!res.ok) throw new Error(data.detail||('Błąd '+res.status));
     insertAiBlock(id,data.html);
@@ -8427,23 +8443,35 @@ async function aiNoteFromBlock(id,btnEl){
   finally{ stop(); if(btnEl){btnEl.classList.remove('busy');btnEl.innerHTML=oldHTML;} }
 }
 /* okno z poleceniem dla AI: gotowe podpowiedzi + własny opis; opcjonalnie wybór, co zrobić z wynikiem */
-function aiInstrDialog({title,sub,presets=[],placeholder='',topic=false,modes=null,go='Generuj'}){
+// zeszyt / notatka z matematyki → domyślnie styl „krok po kroku”
+function mathish(){const nb=(typeof allNotebooks!=='undefined'?allNotebooks:[]).find(x=>noteData&&x.id===noteData.notebook_id);
+  const t=((nb&&nb.name)||'')+' '+((noteData&&noteData.title)||'');
+  return /matem|algebr|analiz|całk|calk|pochodn|macierz|statyst|rachun|geometr|równa|rowna|fizyk|ekonometr|logik/i.test(t);}
+function aiInstrDialog({title,sub,presets=[],placeholder='',topic=false,modes=null,go='Generuj',styles=false,topicFirst=false,topicLabel='Temat (opcjonalnie)',style0=''}){
   return new Promise(res=>{
-    let mode=modes?modes[0].k:null;
+    let mode=modes?modes[0].k:null, style=style0||(styles&&mathish()?'math':'');
     $('#modal').style.maxWidth='560px';
     $('#modal').innerHTML=`<h3>✦ ${esc(title)}</h3><div class="msub">${sub}</div>
+      ${topic&&topicFirst?`<label class="field"><span>${esc(topicLabel)}</span><input id="ai-topic" placeholder="np. Całki oznaczone" autocomplete="off"></label>`:''}
+      ${styles?`<div class="field"><span>Styl notatki</span><div class="ai-modes ai-styles">
+        <button type="button" data-s=""><b>Zwykła do nauki</b><small>Struktura, definicje, wyróżnienia, pytania na końcu.</small></button>
+        <button type="button" data-s="math"><b>∑ Matematyczna — krok po kroku</b><small>Rozbija temat na czynniki pierwsze: intuicja, wzory, przykłady liczone krok po kroku, typowe błędy, ćwiczenia.</small></button></div></div>`:''}
       <label class="field"><span>Na czym ma się skupić AI? (opcjonalnie)</span><textarea id="ai-ins" rows="3" placeholder="${escAttr(placeholder)}"></textarea></label>
       ${presets.length?`<div class="ai-chips">${presets.map(p=>`<button type="button" data-p="${escAttr(p)}">${esc(p)}</button>`).join('')}</div>`:''}
-      ${topic?`<label class="field"><span>Temat (opcjonalnie)</span><input id="ai-topic" placeholder="np. Całki oznaczone" autocomplete="off"></label>`:''}
+      ${topic&&!topicFirst?`<label class="field"><span>${esc(topicLabel)}</span><input id="ai-topic" placeholder="np. Całki oznaczone" autocomplete="off"></label>`:''}
       ${modes?`<div class="field"><span>Wynik</span><div class="ai-modes">${modes.map(m=>`<button type="button" data-k="${m.k}"><b>${m.l}</b><small>${m.d}</small></button>`).join('')}</div></div>`:''}
       <div class="actions"><button class="btn ghost" id="ai-cancel">Anuluj</button><button class="btn" id="ai-go">${esc(go)}</button></div>`;
-    openModal(); const ta=$('#ai-ins'); setTimeout(()=>ta.focus(),40);
+    openModal(); const ta=$('#ai-ins'); setTimeout(()=>(topicFirst?$('#ai-topic'):ta).focus(),40);
+    const paintS=()=>$$('.ai-styles button').forEach(b=>b.classList.toggle('on',b.dataset.s===style));
+    $$('.ai-styles button').forEach(b=>b.onclick=()=>{style=b.dataset.s;paintS();}); paintS();
     $$('.ai-chips button').forEach(c=>c.onclick=()=>{const p=c.dataset.p, v=ta.value.trim();
       ta.value=v.includes(p)?v:(v?v.replace(/[.\s]*$/,'')+'. ':'')+p; c.classList.add('on'); ta.focus();});
-    const paint=()=>$$('.ai-modes button').forEach(b=>b.classList.toggle('on',b.dataset.k===mode));
-    $$('.ai-modes button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;paint();}); paint();
+    const paint=()=>$$('.ai-modes:not(.ai-styles) button').forEach(b=>b.classList.toggle('on',b.dataset.k===mode));
+    $$('.ai-modes:not(.ai-styles) button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;paint();}); paint();
     let done=false; const fin=v=>{if(done)return;done=true;closeModal();res(v);};
-    $('#ai-go').onclick=()=>fin({instructions:ta.value.trim(),topic:topic?$('#ai-topic').value.trim():'',mode});
+    $('#ai-go').onclick=()=>{if(topicFirst&&!$('#ai-topic').value.trim()){$('#ai-topic').focus();$('#ai-topic').classList.add('shake');setTimeout(()=>$('#ai-topic')?.classList.remove('shake'),500);return;}
+      fin({instructions:ta.value.trim(),topic:topic?$('#ai-topic').value.trim():'',mode,style});};
+    if(topicFirst)$('#ai-topic').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#ai-go').click();}};
     $('#ai-cancel').onclick=()=>fin(null);
     ta.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('#ai-go').click();}};
   });
@@ -8503,10 +8531,29 @@ async function aiFigures(html,url){
     out=out.replace(m[0],rep);}
   return out;
 }
+/* Notatka AI od zera: sam temat (+ jak tłumaczyć, np. „jak dla laika”) → Gemini pisze notatkę z wiedzy */
+async function aiTopicNote(at){   // at: indeks w notatce (domyślnie na końcu)
+  if(!noteData)return;
+  const r=await aiInstrDialog({title:'Notatka AI od zera',sub:'Napisz temat — Gemini przygotuje całą notatkę do nauki. Możesz dopisać, jak ma tłumaczyć.',
+    topic:true,topicFirst:true,topicLabel:'Temat notatki',styles:true,presets:['Wytłumacz jak dla laika, krok po kroku','Na poziomie studiów','Krótko — ściąga przed kolokwium','Dużo przykładów z życia'],
+    placeholder:'np. wytłumacz jak dla kompletnego laika, z analogiami',go:'Utwórz notatkę'});
+  if(!r||!r.topic)return;
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  const nb=(allNotebooks||[]).find(x=>x.id===noteData.notebook_id);
+  const body={topic:r.topic,instructions:r.instructions,style:r.style,context:[nb&&nb.name,noteData.title].filter(Boolean).join(' · ')};
+  const put=html=>{const blk={id:uid(),type:'text',html:aiFormat(html)}; const i=at==null?noteData.content.length:Math.max(0,Math.min(at,noteData.content.length));
+    noteData.content.splice(i,0,blk); if(!noteData.title||noteData.title==='Nowa notatka'){noteData.title=r.topic.slice(0,80); const t=$('#note-title'); if(t)t.value=noteData.title;}
+    renderBlocks(); scheduleSave(); const el=[...$('#blocks').children].find(x=>x.dataset.bid===blk.id); el&&el.scrollIntoView({block:'start',behavior:reduceMotion()?'auto':'smooth'});};
+  if(AIS.mode==='chat'||!AIS.has_key){const html=await aiNoteViaChat('',r.topic,r.instructions,'/ai/topic-note/prompt',body); if(html)put(html); return;}
+  const stop=aiProgress({title:'Gemini pisze notatkę od zera',stages:['Wysyłam temat','Gemini zbiera najważniejsze',r.style==='math'?'Rozpisuję obliczenia krok po kroku':'Układam notatkę do nauki','Dodaję przykłady i pytania']});
+  try{const res=await fetch('api/ai/topic-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await res.json(); if(!res.ok)throw new Error(d.detail||('Błąd '+res.status)); stop(); put(d.html);}
+  catch(err){stop(); popout({icon:'warn',title:'Nie udało się utworzyć notatki',text:err.message});}
+}
 async function aiPdfNote(url,bid,btn){
   if(!url)return;
   const r=await aiInstrDialog({title:'Notatka AI z PDF',sub:'AI przeczyta cały plik (także wzory, tabele i skany) i zrobi z niego notatkę do nauki pod tym blokiem.',
-    presets:AI_PDF_PRESETS,placeholder:'np. skup się głównie na odpowiedziach i wyróżnieniu pytań kontrolnych, resztę dorób do nauki',topic:true,go:'Utwórz notatkę'});
+    presets:AI_PDF_PRESETS,placeholder:'np. skup się głównie na odpowiedziach i wyróżnieniu pytań kontrolnych, resztę dorób do nauki',topic:true,styles:true,go:'Utwórz notatkę'});
   if(!r)return;
   if(!AIS.mode)AIS=await api('/settings/ai');
   if(AIS.mode==='chat'||!AIS.has_key){   // bez klucza: tekst z PDF → polecenie do zwykłego czatu
@@ -8517,7 +8564,7 @@ async function aiPdfNote(url,bid,btn){
   }
   aiBusy(btn,true,'⏳ AI czyta PDF…');
   const stop=aiProgress({title:'Gemini robi notatkę z PDF',stages:['Wysyłam plik','Gemini czyta dokument','Wyszukuję najważniejsze treści','Układam notatkę do nauki'],bid});
-  try{const res=await fetch('api/ai/pdf-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,instructions:r.instructions,topic:r.topic})});
+  try{const res=await fetch('api/ai/pdf-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,instructions:r.instructions,topic:r.topic,style:r.style})});
     const data=await res.json(); if(!res.ok)throw new Error(data.detail||('Błąd '+res.status)); const html=await aiFigures(data.html,url); stop(); insertAiBlock(bid,html);}
   catch(err){stop(); popout({icon:'warn',title:'Nie udało się utworzyć notatki',text:err.message});}
   finally{stop(); aiBusy(btn,false);}
@@ -8576,16 +8623,16 @@ async function aiImproveBlock(id,btn){
   const b=getBlock(id); if(!b)return;
   const tmp=document.createElement('div'); tmp.innerHTML=b.html||''; if((tmp.textContent||'').trim().length<10){popout({icon:'info',title:'Za mało tekstu',text:'Napisz coś w tym bloku, a AI pomoże to ulepszyć.'});return;}
   const r=await aiInstrDialog({title:'Popraw notatkę AI',sub:'AI uporządkuje notatkę, poprawi język, uzupełni luki i wyróżni najważniejsze — bez usuwania faktów. Poprzednią wersję zawsze możesz przywrócić.',
-    presets:['Lepsza struktura i nagłówki','Dodaj przykłady','Dodaj pytania kontrolne z odpowiedziami','Skróć do najważniejszego','Wyjaśnij prościej'],placeholder:'np. dodaj przykłady do każdej definicji',
+    styles:true,presets:['Lepsza struktura i nagłówki','Dodaj przykłady','Dodaj pytania kontrolne z odpowiedziami','Skróć do najważniejszego','Wyjaśnij prościej'],placeholder:'np. dodaj przykłady do każdej definicji',
     modes:[{k:'replace',l:'Zastąp ten blok',d:'Stara wersja zostaje — „↺ Poprzednia wersja” przywraca ją jednym kliknięciem.'},{k:'new',l:'Nowy blok pod spodem',d:'Oryginał bez zmian, poprawiona wersja pojawi się niżej.'}],go:'Popraw'});
   if(!r)return;
   const {out,imgs}=aiPackImages(stripDecor((()=>{const d=document.createElement('div');d.innerHTML=b.html||'';return d;})()));
   if(!AIS.mode)AIS=await api('/settings/ai');
   let html=null;
-  if(AIS.mode==='chat'||!AIS.has_key){html=await aiNoteViaChat('','',r.instructions,'/ai/improve/prompt',{html:out,instructions:r.instructions});}
+  if(AIS.mode==='chat'||!AIS.has_key){html=await aiNoteViaChat('','',r.instructions,'/ai/improve/prompt',{html:out,instructions:r.instructions,style:r.style});}
   else{aiBusy(btn,true);
     const stop=aiProgress({title:'Gemini poprawia notatkę',stages:['Wysyłam notatkę','Gemini porządkuje strukturę','Poprawiam język i uzupełniam luki'],bid:id,mode:r.mode==='new'?'after':'replace'});
-    try{const res=await fetch('api/ai/improve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:out,instructions:r.instructions})});
+    try{const res=await fetch('api/ai/improve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:out,instructions:r.instructions,style:r.style})});
       const data=await res.json(); if(!res.ok)throw new Error(data.detail||('Błąd '+res.status)); html=data.html;}
     catch(err){stop(); popout({icon:'warn',title:'Nie udało się poprawić notatki',text:err.message});}
     finally{stop(); aiBusy(btn,false);}}

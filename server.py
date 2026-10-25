@@ -488,6 +488,8 @@ def upload_file(u: Upload):
 class AINote(BaseModel):
     text: str
     topic: str = ""
+    instructions: str = ""
+    style: str = ""
 
 
 def _norm_key(k: str) -> str:
@@ -758,7 +760,7 @@ def _instr_line(instructions: str) -> str:
             if instructions else "")
 
 
-def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "") -> str:
+def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "", style: str = "") -> str:
     fmt_rule = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: "
                 "<h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <mark>. "
                 "Nie używaj <blockquote>, nie dodawaj żadnych atrybutów style ani class. "
@@ -782,7 +784,7 @@ def _note_prompt(text: str, topic: str, fmt: str = "html", instructions: str = "
         "- Uporządkuj: krótki tytuł (nagłówek), wprowadzenie, sekcje tematyczne, listy punktowane, "
         "pogrubione kluczowe pojęcia, a na końcu sekcję „Najważniejsze do zapamiętania”.\n"
         "- Jeśli czegoś brakuje w wypowiedzi, nie zmyślaj faktów.\n"
-        + fmt_rule +
+        + _style_rule(style) + fmt_rule +
         "Treść do przetworzenia:\n" + text
     )
 
@@ -793,6 +795,7 @@ class NotePrompt(BaseModel):
     text: str
     topic: str = ""
     instructions: str = ""
+    style: str = ""
 
 
 @app.post("/api/ai/note/prompt")
@@ -800,7 +803,7 @@ def ai_note_prompt(a: NotePrompt):
     """Tryb bez klucza: gotowe polecenie do wklejenia w zwykły czat (Gemini/ChatGPT)."""
     if not a.text.strip():
         raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
-    return {"prompt": _note_prompt(a.text, a.topic, "markdown", a.instructions)}
+    return {"prompt": _note_prompt(a.text, a.topic, "markdown", a.instructions, a.style)}
 
 
 # ---------- USTAWIENIA: połączenie z AI ----------
@@ -1014,11 +1017,29 @@ def ai_note(a: AINote):
     if not a.text.strip():
         raise HTTPException(400, "Pusty tekst — nie ma z czego zrobić notatki.")
 
-    prompt = _note_prompt(a.text, a.topic)
+    prompt = _note_prompt(a.text, a.topic, instructions=a.instructions, style=a.style)
 
     out = _ai_call([{"text": prompt}], kind="note", max_tokens=16384, timeout=240, complete=True)
 
     return {"html": _clean_ai_html(out)}
+
+
+# styl „matematyczny — krok po kroku”: rozbicie tematu na czynniki pierwsze i pokazanie każdego przekształcenia
+MATH_RULE = ("\nSTYL: NOTATKA MATEMATYCZNA KROK PO KROKU — najważniejsze jest, żeby student zrozumiał, JAK się liczy:\n"
+             "- Każdą metodę / typ zadania rozbij na czynniki pierwsze: najpierw intuicja (po co to jest i co oznacza, 1–3 zdania prostym językiem), "
+             "potem potrzebne pojęcia i wzory z objaśnieniem KAŻDEGO symbolu, potem algorytm jako lista numerowana <ol> kroków.\n"
+             "- Do każdej metody co najmniej jeden PRZYKŁAD ROZWIĄZANY KROK PO KROKU: <h4>PRZYKŁAD</h4>, treść zadania, a potem <ol>, gdzie "
+             "każdy krok to jedno przekształcenie zapisane w LaTeX ($…$ albo $$…$$) i obok krótko, CO robimy i DLACZEGO (np. „mnożymy 2. wiersz przez 3, "
+             "żeby wyzerować…”). Nie przeskakuj obliczeń — pokaż wszystkie działania pośrednie, także proste rachunki.\n"
+             "- Wynik wyróżnij <mark>, a na końcu przykładu sprawdzenie (podstawienie, kontrola wymiaru, szacunek).\n"
+             "- Dodaj <h4>TYPOWE BŁĘDY</h4> (czego się pilnować) i <h4>ĆWICZENIE</h4>: 2–3 zadania do samodzielnego rozwiązania z odpowiedziami "
+             "i krótką wskazówką w zagnieżdżonym punkcie.\n"
+             "- Macierze zapisuj jako \\begin{bmatrix}…\\end{bmatrix}, ułamki \\frac{}{}; wynik i kluczowe elementy możesz wyróżnić \\boxed{} "
+             "albo \\colorbox{#5A4A22}{$…$}.\n")
+
+
+def _style_rule(style: str) -> str:
+    return MATH_RULE if (style or "").lower() == "math" else ""
 
 
 HTML_RULE = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: <h3>, <h4>, <p>, <ul>, <ol>, <li>, "
@@ -1076,6 +1097,7 @@ class AIDocNote(BaseModel):
     url: str
     instructions: str = ""
     topic: str = ""
+    style: str = ""
 
 
 @app.post("/api/ai/pdf-note")
@@ -1092,7 +1114,7 @@ def ai_pdf_note(a: AIDocNote):
               "- Przejdź przez CAŁY dokument — od pierwszej do ostatniej strony, każdą sekcję i każdy slajd. Niczego nie pomijaj "
               "i nie kończ wcześniej; kolejność sekcji jak w dokumencie.\n"
               "- Jeśli w dokumencie są pytania (kontrolne, egzaminacyjne, zadania) — wypisz je wyraźnie i podaj odpowiedzi lub rozwiązania.\n"
-              + READABLE_RULE + FIGURE_RULE + HTML_RULE)
+              + READABLE_RULE + _style_rule(a.style) + FIGURE_RULE + HTML_RULE)
     out = _ai_call([{"inline_data": {"mime_type": mt, "data": base64.b64encode(b).decode()}}, {"text": prompt}], kind="pdf",
                    max_tokens=32768, timeout=420, complete=True)
     return {"html": _clean_ai_html(out)}
@@ -1130,12 +1152,12 @@ READABLE_RULE = ("Układ notatki do NAUKI (oparty na badaniach: sygnalizacja klu
                  "kontrolnych jako lista, każde z odpowiedzią w zagnieżdżonym punkcie (do samodzielnego przepytania się).\n")
 
 
-def _improve_prompt(html: str, instructions: str, fmt: str = "html") -> str:
+def _improve_prompt(html: str, instructions: str, fmt: str = "html", style: str = "") -> str:
     return ("Jesteś doświadczonym korepetytorem akademickim i redaktorem. Ulepsz poniższą notatkę studenta, tak żeby była "
             "lepsza do nauki i przyjemna w czytaniu: przejrzysta struktura, poprawiony język i błędy, uzupełnione oczywiste luki i "
             "skróty myślowe, wyróżnione kluczowe pojęcia.\n"
             + _instr_line(instructions)
-            + (READABLE_RULE if fmt == "html" else "") +
+            + (READABLE_RULE if fmt == "html" else "") + _style_rule(style) +
             "Zasady:\n- Zachowaj WSZYSTKIE fakty, definicje, wzory, daty i przykłady — nic merytorycznego nie usuwaj.\n"
             "- Nie zmyślaj nowych faktów; dopowiedzenia tylko oczywiste i zgodne z treścią.\n"
             "- Znaczniki w postaci [[OBRAZ 1]], [[OBRAZ 2]]… to obrazy — zostaw je bez zmian, każdy w osobnym akapicie, w sensownym miejscu.\n"
@@ -1146,6 +1168,7 @@ def _improve_prompt(html: str, instructions: str, fmt: str = "html") -> str:
 class AIImprove(BaseModel):
     html: str
     instructions: str = ""
+    style: str = ""
 
 
 class AIInsert(BaseModel):
@@ -1219,18 +1242,54 @@ def ai_chat(a: AIChat):
     return {"html": _clean_ai_html(out)}
 
 
+class AITopicNote(BaseModel):
+    topic: str
+    instructions: str = ""
+    style: str = ""
+    context: str = ""   # tytuł notatki / zeszytu — pomaga ustalić dziedzinę
+
+
+def _topic_prompt(a: AITopicNote, fmt: str = "html") -> str:
+    """Notatka od zera z samego tematu (z wiedzy Gemini) — poziom i sposób tłumaczenia wg wskazówek studenta."""
+    return ("Jesteś świetnym korepetytorem, który potrafi wytłumaczyć każdy temat. Student prosi o notatkę do nauki OD ZERA na temat: "
+            f"„{a.topic.strip()[:300]}”" + (f" (kontekst: {a.context.strip()[:200]})" if a.context.strip() else "") + ".\n"
+            + _instr_line(a.instructions) +
+            "Zasady:\n- Zacznij od intuicji i najprostszego wyjaśnienia, potem stopniowo dokładniej; każde nowe pojęcie zdefiniuj, zanim go użyjesz.\n"
+            "- Gdy student prosi o proste wyjaśnienie (np. „jak dla laika”, „jak dla dziecka”), pisz bardzo prostym językiem, krótkimi zdaniami, "
+            "z analogiami z codziennego życia — ale merytorycznie poprawnie.\n"
+            "- Dawaj konkretne przykłady; pisz tylko sprawdzoną, standardową wiedzę akademicką, bez zmyślania.\n"
+            + (READABLE_RULE if fmt == "html" else "") + _style_rule(a.style)
+            + (HTML_RULE if fmt == "html" else "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (###, -, **), bez wstępu."))
+
+
+@app.post("/api/ai/topic-note")
+def ai_topic_note(a: AITopicNote):
+    if not a.topic.strip():
+        raise HTTPException(400, "Podaj temat notatki.")
+    out = _ai_call([{"text": _topic_prompt(a)}], kind="note", max_tokens=16384, timeout=240, complete=True)
+    return {"html": _clean_ai_html(out)}
+
+
+@app.post("/api/ai/topic-note/prompt")
+def ai_topic_note_prompt(a: AITopicNote):
+    """Tryb bez klucza: polecenie do wklejenia w zwykły czat."""
+    if not a.topic.strip():
+        raise HTTPException(400, "Podaj temat notatki.")
+    return {"prompt": _topic_prompt(a, "markdown")}
+
+
 @app.post("/api/ai/improve")
 def ai_improve(a: AIImprove):
     if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):
         raise HTTPException(400, "Ta notatka jest pusta — nie ma czego poprawiać.")
-    out = _ai_call([{"text": _improve_prompt(a.html[:200_000], a.instructions)}], kind="improve", max_tokens=24576, timeout=300, complete=True)
+    out = _ai_call([{"text": _improve_prompt(a.html[:200_000], a.instructions, style=a.style)}], kind="improve", max_tokens=24576, timeout=300, complete=True)
     return {"html": _clean_ai_html(out)}
 
 
 @app.post("/api/ai/improve/prompt")
 def ai_improve_prompt(a: AIImprove):
     """Tryb bez klucza: polecenie poprawki do wklejenia w zwykły czat."""
-    return {"prompt": _improve_prompt(a.html[:200_000], a.instructions, "markdown")}
+    return {"prompt": _improve_prompt(a.html[:200_000], a.instructions, "markdown", a.style)}
 
 
 # ---------- EKSPORT / IMPORT danych (ZIP: baza + załączniki) ----------
