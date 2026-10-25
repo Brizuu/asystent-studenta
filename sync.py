@@ -291,6 +291,9 @@ def run(p: SyncRun):
         if not r.get("more"):
             break
     with get_conn() as c:
+        if stats["added"]:   # po pobraniu: te same wpisy planu z dwóch urządzeń scal w jeden (usunięcie dubla też się zsynchronizuje)
+            import server
+            server.dedupe_tasks(c)
         items = [i for i in collect(c, st.get("last_push") or "") if (i["tbl"], i["uid"]) not in applied]
         dev = _device(c)
     pushed = 0
