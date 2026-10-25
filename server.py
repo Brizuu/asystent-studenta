@@ -513,7 +513,41 @@ def _clean_ai_html(s: str) -> str:
     # bez własnego tła/ramki: usuń atrybuty style/class i zamień blockquote na zwykły akapit
     s = re.sub(r'\s(style|class)="[^"]*"', "", s)
     s = re.sub(r"</?blockquote>", lambda m: "<p>" if "/" not in m.group(0) else "</p>", s)
+    s = _fix_foreign(s)
     return s.strip()
+
+
+_CYR = re.compile(r"[\u0400-\u04FF]+(?:[-'][\u0400-\u04FF]+)*")
+_TRANSLIT = dict(zip("абвгґдеєжзиіїйклмнопрстуфхцчшщьюяыэёъ",
+                     ["a", "b", "w", "g", "g", "d", "e", "je", "ż", "z", "y", "i", "ji", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t",
+                      "u", "f", "ch", "c", "cz", "sz", "szcz", "", "ju", "ja", "y", "e", "jo", ""]))
+
+
+def _fix_foreign(s: str) -> str:
+    """Gemini czasem wtrąci słowo cyrylicą (np. „формулює” zamiast „formułuje”). Takie słowa poprawiamy krótkim
+    zapytaniem (tylko te słowa z kontekstem), a gdy się nie uda — transliterujemy na alfabet łaciński."""
+    words = list(dict.fromkeys(m.group(0) for m in _CYR.finditer(s)))[:40]
+    if not words:
+        return s
+    fix = {}
+    try:
+        text = re.sub(r"<[^>]+>", " ", s)
+        ctx = []
+        for w in words:
+            i = text.find(w)
+            ctx.append({"slowo": w, "kontekst": re.sub(r"\s+", " ", text[max(0, i - 120): i + len(w) + 120]).strip()})
+        out = gemini([{"text": "W polskiej notatce do nauki pojawiły się słowa zapisane cyrylicą lub w innym języku. Dla każdego podaj "
+                               "poprawne polskie słowo albo wyrażenie pasujące gramatycznie do kontekstu. Odpowiedz WYŁĄCZNIE obiektem JSON "
+                               "{\"słowo obce\": \"polski odpowiednik\"}.\n" + json.dumps(ctx, ensure_ascii=False)}],
+                     max_tokens=1024, temperature=0.1, timeout=40, tries=2, kind="fix", json_mode=True)
+        fix = {k: v for k, v in json.loads(out).items() if isinstance(v, str) and not _CYR.search(v)}
+    except Exception:
+        fix = {}
+
+    def tr(w: str) -> str:
+        r = "".join(_TRANSLIT.get(ch.lower(), ch) if ch.lower() in _TRANSLIT else ch for ch in w)
+        return r[:1].upper() + r[1:] if w[:1].isupper() else r
+    return _CYR.sub(lambda m: fix.get(m.group(0)) or tr(m.group(0)), s)
 
 
 class GeminiError(Exception):
@@ -988,7 +1022,9 @@ def ai_note(a: AINote):
 
 
 HTML_RULE = ("Odpowiedz WYŁĄCZNIE treścią notatki w prostym HTML, używając tylko tagów: <h3>, <h4>, <p>, <ul>, <ol>, <li>, "
-             "<strong>, <em>, <mark>. Bez atrybutów style/class, bez komentarzy, wstępu i znaczników ```.")
+             "<strong>, <em>, <mark>. Bez atrybutów style/class, bez komentarzy, wstępu i znaczników ```. "
+             "Pisz wyłącznie poprawną polszczyzną alfabetem łacińskim — żadnych słów cyrylicą ani w innych językach (poza "
+             "terminami fachowymi zapisanymi w <em>). W $…$ umieszczaj tylko matematykę — zwykłe liczby w tekście pisz bez dolarów.")
 
 
 def _ai_call(parts: list, kind: str, max_tokens: int = 8192, timeout: int = 180, complete: bool = False) -> str:
