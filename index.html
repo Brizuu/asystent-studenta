@@ -2901,6 +2901,11 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 .pv-h3 i:nth-child(2){left:24%;top:48%;width:70%;height:16%;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(181,156,240,.5),transparent);filter:blur(8px);transform:rotate(-9deg)}
 @media (max-width:820px){.pbg-pick{grid-template-columns:1fr}}
 
+/* wzory z notatek AI: osobne wyśrodkowane, w linii z normalnym odstępem; długie macierze przewijają się zamiast rozpychać notatkę */
+.itex.disp{display:block;margin:10px 0;text-align:center;overflow-x:auto;overflow-y:hidden;padding:4px 0}
+.itex.disp .katex-display{margin:0}
+.b-text .itex .katex{font-size:1.06em}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -7201,6 +7206,9 @@ function renderBlocks(){
     el.appendChild(rowEl(rid,g));
   }
   wireBlockDnd();
+  // starsze notatki AI z surowym zapisem $…$ — pokaż jako wzory (zapis LaTeX zostaje w data-tex)
+  if(window.katex)el.querySelectorAll('.b-text').forEach(t=>{if(/\$|\\[([]/.test(t.textContent))aiMath(t);});
+  texHydrate(el);
   if(typeof AI_JOBS!=='undefined'&&AI_JOBS.size)aiProgAttach();
   setTimeout(paintOutline,0);
 }
@@ -8247,7 +8255,29 @@ async function aiImproveBlock(id,btn){
   verToast(id);
 }
 /* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
-function aiFormat(html){const d=document.createElement('div'); d.innerHTML=html||'';
+/* wzory z AI: $…$ (w linii) i $$…$$ (osobno) → prawdziwe wzory KaTeX; zapis zostaje w data-tex do edycji/eksportu */
+function texRender(t,disp){try{return window.katex?katex.renderToString(t,{throwOnError:false,displayMode:!!disp}):esc(t);}catch(_){return esc(t);}}
+function texHydrate(root){if(!window.katex||!root)return;
+  root.querySelectorAll('.itex[data-tex]').forEach(e=>{if(!e.querySelector('.katex'))e.innerHTML=texRender(e.dataset.tex,e.classList.contains('disp'));});}
+const TEX_RE=/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$(?!\s)([^$\n]*?[^\s$\\])\$(?!\d)/g;
+function aiMath(root){
+  // LaTeX wrzucony przez AI w <code>/<mark>/<strong> — wyjmij, żeby dało się go wyrenderować
+  root.querySelectorAll('code,mark,strong,em,b,i').forEach(e=>{const t=e.textContent; if(/\$[^$]+\$|\\[([]/.test(t)&&/\\[a-zA-Z]+|[_^{}]/.test(t)&&!e.querySelector('*'))e.replaceWith(document.createTextNode(t));});
+  root.normalize();
+  const nodes=[]; const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); let n;
+  while((n=w.nextNode())){if(/\$|\\[([]/.test(n.nodeValue)&&!n.parentElement.closest('pre,.itex'))nodes.push(n);}
+  nodes.forEach(tn=>{const txt=tn.nodeValue; TEX_RE.lastIndex=0; if(!TEX_RE.test(txt))return; TEX_RE.lastIndex=0;
+    const frag=document.createDocumentFragment(); let last=0, m;
+    while((m=TEX_RE.exec(txt))){const tex=(m[1]??m[2]??m[3]??m[4]).trim(); const disp=m[1]!=null||m[2]!=null;
+      if(!tex){continue;}
+      // samotna kwota w zdaniu ("$5") nie jest wzorem — wzór ma znaki matematyczne albo litery-symbole
+      if(!disp&&!/[\\_^{}=+\-*/<>|]|^[a-zA-Z]$/.test(tex))continue;
+      frag.append(txt.slice(last,m.index));
+      const sp=document.createElement('span'); sp.className='itex'+(disp?' disp':''); sp.contentEditable='false'; sp.dataset.tex=tex; sp.innerHTML=texRender(tex,disp);
+      frag.append(sp); last=m.index+m[0].length;}
+    if(!last)return; frag.append(txt.slice(last)); tn.replaceWith(frag);});
+}
+function aiFormat(html){const d=document.createElement('div'); d.innerHTML=html||''; aiMath(d);
   d.querySelectorAll('h3').forEach(h=>{h.style.textAlign='center';});
   // cała wolna linia przed każdym (pod)tytułem — grupy treści wyraźnie oddzielone, da się ją potem usunąć jak zwykłą linię
   const blank=e=>e&&e.tagName==='P'&&!e.textContent.trim()&&!e.querySelector('img');
