@@ -1418,6 +1418,7 @@ import quiz   # noqa: E402
 import komunikacja   # noqa: E402
 import aktualizacje   # noqa: E402
 import sync   # noqa: E402
+import importer   # noqa: E402
 
 
 def init_all():
@@ -1444,3 +1445,4 @@ app.include_router(quiz.router)
 app.include_router(komunikacja.router)
 app.include_router(aktualizacje.router)
 app.include_router(sync.router)
+app.include_router(importer.router)
