@@ -2988,16 +2988,16 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 @media (prefers-reduced-motion:reduce){.ai-here,.b-text .ai-new{animation:none}}
 
 /* 1.9.28: Asystent nauki (czat o notatce) */
-.ch-fab{position:fixed;right:28px;bottom:28px;z-index:140;width:56px;height:56px;border:0;border-radius:18px;cursor:pointer;color:#fff;display:none;align-items:center;justify-content:center;
+.ch-fab{position:fixed;right:24px;bottom:22px;z-index:140;width:46px;height:46px;border:0;border-radius:15px;cursor:pointer;color:#fff;display:none;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#5E9BF4,#3F7BE0);box-shadow:0 14px 34px -10px rgba(90,150,242,.8),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
-.ch-fab svg{width:30px;height:30px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.ch-fab svg{width:23px;height:23px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
 .ch-fab::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 0 rgba(141,182,255,.5);animation:chPulse 3.2s ease-out 1.5s 2}
 @keyframes chPulse{0%{box-shadow:0 0 0 0 rgba(141,182,255,.45)}100%{box-shadow:0 0 0 16px rgba(141,182,255,0)}}
 .ch-fab:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 18px 40px -10px rgba(90,150,242,.95)}
 body.ch-avail .ch-fab{display:flex}
 body.ch-open .ch-fab{transform:rotate(-8deg) scale(.92)}
-.ch-panel{position:fixed;right:28px;bottom:98px;z-index:150;width:420px;height:min(580px,calc(100vh - 140px));display:flex;flex-direction:column;border-radius:22px;
-  background:linear-gradient(160deg,rgba(24,29,40,.97),rgba(14,18,26,.98));border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);
+.ch-panel{position:fixed;right:24px;bottom:80px;z-index:150;width:420px;height:min(580px,calc(100vh - 80px - 96px));display:flex;flex-direction:column;border-radius:22px;
+  background:linear-gradient(160deg,#181D28,#0E121A);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);
   opacity:0;transform:translateY(16px) scale(.97);transform-origin:bottom right;pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
 .ch-panel.on{opacity:1;transform:none;pointer-events:auto}
 .ch-panel header{display:flex;align-items:center;gap:9px;padding:14px 12px 10px 16px}
@@ -3041,7 +3041,8 @@ body.ch-open .ch-fab{transform:rotate(-8deg) scale(.92)}
 .ch-selpop button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:var(--ink-soft);font-weight:700;font-size:12px;font-family:inherit;cursor:pointer}
 .ch-selpop button:first-child{background:rgba(141,182,255,.14);color:var(--accent-text)}.ch-selpop button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
 .ch-selpop svg{width:15px;height:15px}
-@media (max-width:820px){.ch-fab{right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:50px;height:50px}
+body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
+@media (max-width:820px){.ch-fab{right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:44px;height:44px}
   .ch-panel{left:8px;right:8px;width:auto;bottom:calc(144px + env(safe-area-inset-bottom));height:min(70vh,560px)}}
 @media (prefers-reduced-motion:reduce){.ch-panel,.ch-m,.ch-fab{transition:none;animation:none}}
 
