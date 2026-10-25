@@ -8636,7 +8636,8 @@ function aiMath(root){
     while((m=TEX_RE.exec(txt))){const tex=(m[1]??m[2]??m[3]??m[4]).trim(); const disp=m[1]!=null||m[2]!=null;
       if(!tex){continue;}
       // samotna kwota w zdaniu ("$5") nie jest wzorem — wzór ma znaki matematyczne albo litery-symbole
-      if(!disp&&!/[\\_^{}=+\-*/<>|]|^[a-zA-Z]$/.test(tex))continue;
+      // zwykła proza w dolarach nie jest wzorem; liczba albo symbol ($0$, $x$, $\\alpha$) — tak
+      if(!disp&&!/[\\_^{}=+\-*/<>|]|^[a-zA-Z]$|^-?[\d.,]+$|^[a-zA-Z]?\d*[a-zA-Z]?$/.test(tex))continue;
       frag.append(txt.slice(last,m.index));
       const sp=document.createElement('span'); sp.className='itex'+(disp?' disp':''); sp.contentEditable='false'; sp.dataset.tex=tex; sp.innerHTML=texRender(tex,disp);
       frag.append(sp); last=m.index+m[0].length;}
