@@ -38,6 +38,13 @@ zostają — **Dokończ zamianę** wznawia od miejsca przerwania. Zamknięcie ok
 
 Ze źródeł: `pip install -r requirements.txt pywebview sounddevice soundfile` i `python desktop.py`.
 
+## Import notatek z innych aplikacji
+
+Nauka → **⬇ Importuj** (albo Ustawienia → Dane). Obsługiwane: Obsidian (cały folder sejfu albo .zip), Notion
+(eksport Markdown & CSV), Google Docs / Word / OneNote (.docx, także równania → LaTeX), Evernote (.enex),
+Google Keep (Takeout), Joplin, Logseq, Bear i inne (Markdown, .html, .txt, .csv) oraz PDF-y. Obrazy, wzory,
+tabele, listy zadań, ramki i linki `[[…]]` między notatkami zostają; podfoldery stają się grupami albo zeszytami.
+
 ## Plan zajęć z USOS
 
 Plan dnia → **Importuj plan z USOS** → plik `.ics` (USOSweb → Mój plan → eksport do iCalendar).

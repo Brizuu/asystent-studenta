@@ -469,7 +469,8 @@ def share_delete(sid: int, u=Depends(current_user)):
 
 # ---------- administrator: lista kont (bez haseł) i reset hasła ----------
 @app.get("/admin/users")
-def admin_users(a=Depends(admin_user)):
+def admin_users(response: Response, a=Depends(admin_user)):
+    response.headers["Cache-Control"] = "no-store"   # panel odświeża listę na żywo — bez kopii z cache
     now = time.time()
     with db() as c:
         rows = c.execute("""

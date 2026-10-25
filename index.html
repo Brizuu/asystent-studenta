@@ -1025,6 +1025,7 @@ body.on-dojazd .dj-bg{opacity:1}
 .adm-u{padding:16px;border-radius:18px;background:var(--glass);border:1px solid var(--line)} .adm-u+.adm-u{margin-top:10px}
 .adm-top{display:flex;align-items:center;gap:14px} .adm-top .m{flex:1;min-width:0}
 .adm-top b{display:flex;align-items:center;gap:8px;font-size:15.5px} .adm-top small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-u.adm-fresh{border-color:rgba(79,209,184,.45);box-shadow:0 0 0 1px rgba(79,209,184,.25) inset} .adm-badge.adm-nb{background:rgba(79,209,184,.16);color:#4FD1B8;margin-left:6px}
 .adm-badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:99px;background:rgba(159,171,255,.18);color:#c3cbff}
 .adm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px}
 .adm-grid span{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:2px}
@@ -3098,6 +3099,29 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}.shake{animation:shake .4s ease;border-color:#E5675F!important}
 @media (max-width:820px){.ai-empty{flex-wrap:wrap}.ai-empty .btn{width:100%}}
 
+.b-text table{border-collapse:collapse;margin:10px 0;max-width:100%;display:block;overflow-x:auto;font-size:.95em}
+.b-text th,.b-text td{border:1px solid var(--line);padding:6px 12px;vertical-align:top;text-align:left;min-width:48px}
+.b-text th{background:var(--glass-2);color:var(--ink);font-weight:600}
+.imp-src{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin:16px 0 10px}
+.imp-src button{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);font:inherit;font-size:13px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;text-align:left}
+.imp-src button:hover{background:var(--glass)} .imp-src button.on{background:var(--glass-2);color:var(--ink);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.imp-src .mono{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:11px;letter-spacing:-.02em;background:color-mix(in srgb,var(--c) 17%,transparent);color:var(--c);flex:none}
+.imp-how{font-size:13.5px;line-height:1.6;color:var(--ink-soft);padding:11px 14px;border-radius:12px;background:var(--glass);margin-bottom:12px}
+.imp-how b{color:var(--ink);font-weight:600} .imp-how code{font-size:12px;padding:1px 5px;border-radius:5px;background:var(--glass-2)}
+.imp-drop{border:1.5px dashed var(--line);border-radius:16px;padding:18px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-soft);transition:border-color .15s,background .15s}
+.imp-drop svg{color:var(--ink-dim);margin-bottom:2px} .imp-drop b{color:var(--ink);font-weight:600;font-size:14.5px}
+.imp-drop.over{border-color:var(--accent);background:rgba(90,150,242,.08)} .imp-drop small{color:var(--ink-dim);font-size:12.5px}
+.imp-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.imp-list{margin:10px 0 14px;font-size:13px;color:var(--ink-soft)}
+.imp-sum{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px} .imp-sum b{color:var(--ink)}
+.imp-kinds{display:flex;flex-wrap:wrap;gap:5px} .imp-kinds span{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--glass-2);color:var(--ink-soft)}
+.imp-clear{margin-left:auto;background:none;border:0;color:var(--ink-dim);font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline}
+.imp-names{display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:12px;color:var(--ink-dim)} .imp-names span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-prog{margin:12px 0 2px} #imp-name-w[hidden],#imp-fold-w[hidden],.imp-prog[hidden]{display:none} .imp-prog small{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
+.imp-prog .bar{height:6px;border-radius:99px;background:var(--glass-2);overflow:hidden} .imp-prog .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit;transition:width .25s}
+.imp-prog.ind .bar i{width:35%!important;animation:impInd 1.2s ease-in-out infinite} @keyframes impInd{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
+#imp-fold{display:flex;width:100%} #imp-fold button{flex:1}
+@media (max-width:560px){.imp-src{grid-template-columns:repeat(2,1fr)} #imp-row{display:flex;flex-direction:column;gap:0} #imp-fold button{padding:10px 8px;font-size:13.5px}}
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -3779,6 +3803,10 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
         <div class="st-card glass" id="st-upd"></div>
         <div class="st-card glass" id="st-win" hidden></div>
         <div class="st-card glass">
+          <div class="st-h"><h3>Import z innych aplikacji</h3><p>Obsidian, Notion, Google Docs, Evernote, OneNote, Google Keep, Joplin i inne — pliki Markdown, Word, HTML, ENEX albo całe paczki .zip. Obrazy, wzory, tabele, listy zadań i linki między notatkami zostają.</p></div>
+          <div class="st-actions"><button class="btn" onclick="openNoteImport()">Importuj notatki…</button></div>
+        </div>
+        <div class="st-card glass">
           <div class="st-h"><h3>Kopia danych</h3><p>Baza, załączniki i nagrania w jednym pliku ZIP — do przeniesienia na inny komputer albo na zapas.</p></div>
           <div class="st-actions"><button class="btn" onclick="exportData()">Eksportuj dane</button>
             <button class="btn ghost" onclick="$('#import-file').click()">Importuj kopię…</button></div>
@@ -3808,7 +3836,8 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
         <div class="pane glass" id="pane-notebooks" style="display:none">
           <div class="paneh">
             <div class="hbox"><span class="eyebrow">Biblioteka</span><span class="htitle">Twoje zeszyty</span></div>
-            <button class="btn ghost sm" onclick="openNbCreator()">+ Nowy zeszyt</button>
+            <div class="pnbtns"><button class="btn ghost sm" onclick="openNoteImport()" title="Obsidian, Notion, Google Docs, Evernote, OneNote, Keep, Markdown…">⬇ Importuj</button>
+            <button class="btn ghost sm" onclick="openNbCreator()">+ Nowy zeszyt</button></div>
           </div>
           <div class="pick nbgrid" id="nb-list"></div>
         </div>
@@ -6295,15 +6324,28 @@ async function loadAdmin(){
   if(!ME||!ME.is_admin){box.innerHTML='<div class="empty">Ta sekcja jest dostępna tylko dla administratora.</div>';return;}
   loadAdmSugg(); admPkp();
   try{ADM=await cloud('/admin/users');}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return;}
+  ADM_AT=Date.now(); renderAdmin(); admLive();
+}
+/* lista kont na żywo: gdy panel jest otwarty, co 15 s (i po powrocie do karty) pobiera konta — nowe rejestracje pojawiają się same */
+let ADM_T=null, ADM_AT=0; const ADM_NEW=new Set();
+function admLive(){ if(ADM_T)return; ADM_T=setInterval(admPoll,15000); }
+async function admPoll(){
+  if(!$('#view-admin').classList.contains('active')||!ME||!ME.is_admin){clearInterval(ADM_T);ADM_T=null;return;}
+  if(document.hidden)return;
+  let list; try{list=await cloud('/admin/users');}catch(_){return;}
+  const known=new Set(ADM.map(u=>u.id)), fresh=list.filter(u=>!known.has(u.id));
+  fresh.forEach(u=>ADM_NEW.add(u.id)); ADM=list; ADM_AT=Date.now();
+  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#adm-users'))return;   // nie przerywaj klikania w liście
   renderAdmin();
 }
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ADM_T&&Date.now()-ADM_AT>5000)admPoll();});
 function renderAdmin(){
   const q=norm($('#adm-q').value||''), list=ADM.filter(u=>!q||[u.display_name,u.email,u.university,u.field].some(x=>norm(x||'').includes(q)));
   const dt=s=>s?new Date(s.replace(' ','T')+'Z').toLocaleString('pl-PL',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
-  $('#adm-count').textContent=`${ADM.length} ${plural(ADM.length,'konto','konta','kont')}`;
-  $('#adm-users').innerHTML=list.length?list.map(u=>`<div class="adm-u">
+  $('#adm-count').textContent=`${ADM.length} ${plural(ADM.length,'konto','konta','kont')}${ADM_NEW.size?` · +${ADM_NEW.size} ${plural(ADM_NEW.size,'nowe','nowe','nowych')}`:''} · na żywo, ${new Date(ADM_AT||Date.now()).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+  $('#adm-users').innerHTML=list.length?list.map(u=>`<div class="adm-u${ADM_NEW.has(u.id)?' adm-fresh':''}">
       <div class="adm-top">${avatarHTML(u,44)}
-        <div class="m"><b>${esc(u.display_name)}${u.is_admin?'<span class="adm-badge">Admin</span>':''}</b><small>${esc(u.email)} · @${esc(u.username)} · ID ${u.id}</small></div>
+        <div class="m"><b>${esc(u.display_name)}${u.is_admin?'<span class="adm-badge">Admin</span>':''}${ADM_NEW.has(u.id)?'<span class="adm-badge adm-nb">Nowe</span>':''}</b><small>${esc(u.email)} · @${esc(u.username)} · ID ${u.id}</small></div>
         <button class="btn ghost sm" onclick="adminReset(${u.id})">Resetuj hasło</button></div>
       <div class="adm-grid">
         <div><span>Uczelnia</span>${esc(u.university||'—')}</div><div><span>Kierunek</span>${esc(u.field||'—')}</div><div><span>Rok</span>${esc(u.study_year||'—')}</div>
@@ -6494,6 +6536,125 @@ async function importShare(sid){
     await popout({icon:'ok',title:'Zaimportowano',text:`„${name}” jest w Twoich ${isNb?'zeszytach':'notatkach'}.`});
     go('nauka'); selectNotebook(nbId); if(noteId)setTimeout(()=>openNote(noteId),250);
   };
+}
+/* ---------- IMPORT z innych aplikacji: Obsidian, Notion, Google Docs, Evernote, OneNote, Keep, Markdown… ----------
+   Pliki idą partiami (duże — w kawałkach) do /api/import/files, potem /api/import/run robi z nich notatki z blokami. */
+const IMP_SRC=[
+  {k:'obsidian',n:'Obsidian',m:'Ob',c:'#8DB6FF',how:'Kliknij <b>Wybierz folder</b> i wskaż folder sejfu (vault) albo wgraj go spakowany do .zip. Zachowamy podfoldery, obrazy, osadzenia <code>![[…]]</code>, linki <code>[[…]]</code>, ramki <code>&gt; [!tip]</code>, listy zadań i wzory <code>$…$</code>.'},
+  {k:'notion',n:'Notion',m:'N',c:'#EEF1F6',how:'W Notion otwórz <b>⋯</b> na stronie (albo Ustawienia → Ogólne → całą przestrzeń) → <b>Eksportuj</b> → format <b>Markdown &amp; CSV</b>, zaznacz „Dołącz podstrony”. Pobrany plik <b>.zip</b> wgraj w całości — podstrony zostaną połączone linkami.'},
+  {k:'gdocs',n:'Google Docs',m:'G',c:'#5A96F2',how:'Jeden dokument: <b>Plik → Pobierz → Microsoft Word (.docx)</b>. Wiele naraz: <b>takeout.google.com</b> → zaznacz tylko „Dysk” → wgraj pobrany .zip. Nagłówki, listy, tabele i obrazy przejdą, a równania zamienimy na LaTeX.'},
+  {k:'evernote',n:'Evernote',m:'E',c:'#54d996',how:'Zaznacz notatki albo cały notes → <b>⋯ → Eksportuj</b> → format <b>ENEX (.enex)</b>. Każdy plik .enex stanie się grupą, z obrazami, załącznikami PDF i polami wyboru.'},
+  {k:'onenote',n:'OneNote',m:'O',c:'#E5675F',how:'OneNote na komputerze: <b>Plik → Eksportuj</b> → Strona albo Sekcja → <b>Dokument programu Word (.docx)</b>. Możesz wgrać kilka plików .docx naraz.'},
+  {k:'keep',n:'Google Keep',m:'K',c:'#E3B25C',how:'Wejdź na <b>takeout.google.com</b>, odznacz wszystko poza <b>Keep</b> i pobierz .zip — wgraj go tutaj. Listy staną się checklistami, a etykiety grupami.'},
+  {k:'other',n:'Inne',m:'···',c:'#4FD1B8',how:'Joplin, Logseq, Bear, Typora, Simplenote, Standard Notes — wyeksportuj do <b>Markdown (.md)</b>. Obsługujemy też pliki <b>.docx, .html, .txt i .csv</b>, PDF-y (każdy jako notatka z podglądem) oraz paczki <b>.zip</b> z tym wszystkim.'}];
+const IMP_SKIP=/(^|\/)(\.[^/]*|__MACOSX|node_modules)(\/|$)/;
+let IMP=null;
+function impFmt(b){return b<1024*1024?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(b<10485760?1:0).replace('.',',')+' MB';}
+async function openNoteImport(src){
+  const nbs=await api('/notebooks');
+  IMP={files:new Map(),src:src||'obsidian',busy:false};
+  const dirOk='webkitdirectory' in document.createElement('input');
+  $('#modal').style.maxWidth='640px';
+  $('#modal').innerHTML=`<h3>Importuj notatki z innej aplikacji</h3>
+    <div class="msub">Przenieś swoje notatki razem z obrazami, wzorami, tabelami, listami zadań i linkami między notatkami.</div>
+    <div class="imp-src">${IMP_SRC.map(s=>`<button type="button" data-k="${s.k}" style="--c:${s.c}"><span class="mono">${s.m}</span>${s.n}</button>`).join('')}</div>
+    <div class="imp-how" id="imp-how"></div>
+    <div class="imp-drop" id="imp-drop">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>
+      <b>Upuść tutaj pliki${dirOk?' albo cały folder':''}</b><small>.md · .docx · .html · .enex · .txt · .csv · .pdf · .zip</small>
+      <div class="imp-btns"><button type="button" class="btn sm" id="imp-pick">Wybierz pliki</button>${dirOk?'<button type="button" class="btn ghost sm" id="imp-dirb">Wybierz folder</button>':''}</div>
+      <input type="file" id="imp-f" multiple hidden accept=".md,.markdown,.txt,.html,.htm,.docx,.enex,.json,.csv,.zip,.pdf,.png,.jpg,.jpeg,.gif,.webp">
+      <input type="file" id="imp-d" hidden ${dirOk?'webkitdirectory':''}>
+    </div>
+    <div class="imp-list" id="imp-list"></div>
+    <div class="frow" id="imp-row"><div class="field"><span>Gdzie zapisać</span><div id="imp-nb"></div></div>
+      <label class="field" id="imp-name-w"><span>Nazwa nowego zeszytu</span><input id="imp-name" placeholder="z nazwy folderu lub paczki"></label></div>
+    <div class="field" id="imp-fold-w"><span>Podfoldery</span><div class="seg" id="imp-fold"><button type="button" class="on" data-k="groups">Grupy w jednym zeszycie</button><button type="button" data-k="notebooks">Osobne zeszyty</button></div></div>
+    <div class="imp-prog" id="imp-prog" hidden><div class="bar"><i></i></div><small></small></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="imp-go" disabled>Importuj</button></div>`;
+  const paintSrc=()=>{$$('.imp-src button').forEach(b=>b.classList.toggle('on',b.dataset.k===IMP.src)); $('#imp-how').innerHTML=IMP_SRC.find(s=>s.k===IMP.src).how;};
+  $$('.imp-src button').forEach(b=>b.onclick=()=>{IMP.src=b.dataset.k;paintSrc();});
+  paintSrc();
+  const cb=combo($('#imp-nb'),{items:[{v:'new',label:'+ Nowy zeszyt'},...nbs.map(n=>({v:n.id,label:n.name,icon:ICONS.nauka,color:n.color}))],value:'new',readonly:true,
+    onChange:v=>{$('#imp-name-w').hidden=v!=='new'; $('#imp-fold-w').hidden=v!=='new';}});
+  IMP.cb=cb;
+  $$('#imp-fold button').forEach(b=>b.onclick=()=>$$('#imp-fold button').forEach(x=>x.classList.toggle('on',x===b)));
+  $('#imp-pick').onclick=()=>$('#imp-f').click();
+  if($('#imp-dirb'))$('#imp-dirb').onclick=()=>$('#imp-d').click();
+  const fromInput=inp=>{impAdd([...inp.files].map(f=>({file:f,path:f.webkitRelativePath||f.name}))); inp.value='';};
+  $('#imp-f').onchange=e=>fromInput(e.target); $('#imp-d').onchange=e=>fromInput(e.target);
+  const dz=$('#imp-drop');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',e=>{if(!dz.contains(e.relatedTarget))dz.classList.remove('over');});
+  dz.addEventListener('drop',async e=>{e.preventDefault();dz.classList.remove('over');
+    const items=[...(e.dataTransfer.items||[])].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);
+    if(!items.length){impAdd([...e.dataTransfer.files].map(f=>({file:f,path:f.name})));return;}
+    const out=[]; await Promise.all(items.map(en=>impWalk(en,'',out))); impAdd(out);});
+  $('#imp-go').onclick=impRun;
+  openModal();
+}
+/* folder upuszczony z eksploratora — przejście po całym drzewie */
+async function impWalk(en,pre,out){
+  if(en.isFile){await new Promise(r=>en.file(f=>{out.push({file:f,path:pre+f.name});r();},()=>r()));return;}
+  if(!en.isDirectory)return;
+  const rd=en.createReader(); let batch;
+  do{batch=await new Promise(r=>rd.readEntries(r,()=>r([]))); for(const x of batch)await impWalk(x,pre+en.name+'/',out);}while(batch.length);
+}
+function impAdd(list){
+  if(!IMP)return;
+  list.forEach(x=>{const p=x.path.replace(/\\/g,'/'); if(!IMP_SKIP.test(p))IMP.files.set(p,x.file);});
+  impPaint();
+  const first=[...IMP.files.keys()][0]||'', root=first.includes('/')?first.split('/')[0]:first.replace(/\.zip$/i,'');
+  if(root&&!$('#imp-name').value&&[...IMP.files.keys()].every(p=>p.startsWith(root)))$('#imp-name').placeholder=root.replace(/\s+[0-9a-f]{32}$/i,'').replace(/\.(md|docx|enex|html?)$/i,'');
+}
+function impPaint(){
+  const fs=[...IMP.files.entries()], total=fs.reduce((a,[,f])=>a+f.size,0);
+  const kinds={}; const kindOf=p=>{const e=(p.split('.').pop()||'').toLowerCase();
+    return {md:'Markdown',markdown:'Markdown',txt:'tekst',docx:'Word',html:'HTML',htm:'HTML',enex:'Evernote',json:'Keep',csv:'CSV',zip:'ZIP',pdf:'PDF',png:'obrazy',jpg:'obrazy',jpeg:'obrazy',gif:'obrazy',webp:'obrazy'}[e]||'inne';};
+  fs.forEach(([p])=>{const k=kindOf(p); kinds[k]=(kinds[k]||0)+1;});
+  $('#imp-list').innerHTML=fs.length?`<div class="imp-sum"><b>${fs.length} ${plural(fs.length,'plik','pliki','plików')}</b> · ${impFmt(total)}
+      <span class="imp-kinds">${Object.entries(kinds).map(([k,n])=>`<span>${n} × ${k}</span>`).join('')}</span>
+      <button type="button" class="imp-clear" onclick="IMP.files.clear();impPaint()">wyczyść</button></div>
+    <div class="imp-names">${fs.slice(0,4).map(([p])=>`<span>${esc(p)}</span>`).join('')}${fs.length>4?`<span class="more">…i ${fs.length-4} więcej</span>`:''}</div>`:'';
+  $('#imp-go').disabled=!fs.length||IMP.busy;
+}
+const b64=f=>new Promise((res,rej)=>{const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]||''); r.onerror=()=>rej(r.error); r.readAsDataURL(f);});
+async function impPost(path,body){
+  const r=await fetch('api/import/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>({})); if(!r.ok)throw new Error(d.detail||(r.status===413?'Za duża paczka naraz.':'Błąd '+r.status)); return d;
+}
+async function impRun(){
+  if(!IMP||IMP.busy||!IMP.files.size)return;
+  IMP.busy=true; $('#imp-go').disabled=true; $('#imp-go').textContent='Importuję…';
+  const pr=$('#imp-prog'), bar=$('#imp-prog i'), lbl=$('#imp-prog small'); pr.hidden=false; pr.classList.remove('ind');
+  const files=[...IMP.files.entries()], total=files.reduce((a,[,f])=>a+f.size,0)||1, CH=12*1024*1024;
+  let sid='', sent=0;
+  const tick=()=>{bar.style.width=Math.min(100,sent/total*100).toFixed(1)+'%'; lbl.textContent=`Wysyłam pliki… ${impFmt(sent)} z ${impFmt(total)}`;};
+  try{
+    let batch=[], size=0;
+    const flush=async()=>{if(!batch.length)return; const d=await impPost('files',{session:sid,files:batch}); sid=d.session; batch=[]; size=0; tick();};
+    for(const [path,f] of files){
+      if(f.size>CH){await flush();
+        for(let o=0;o<f.size;o+=CH){const part=f.slice(o,o+CH); const d=await impPost('files',{session:sid,files:[{path,data:await b64(part),append:o>0}]}); sid=d.session; sent+=part.size; tick();}
+        continue;}
+      batch.push({path,data:await b64(f)}); size+=f.size; sent+=f.size;
+      if(size>=CH||batch.length>=150)await flush();
+    }
+    await flush();
+    pr.classList.add('ind'); lbl.textContent='Zamieniam na notatki — obrazy, wzory, linki…';
+    const tgt=IMP.cb.get();
+    const res=await impPost('run',{session:sid,target:tgt==='new'?null:+tgt,name:$('#imp-name').value.trim(),folders:$('#imp-fold .on')?.dataset.k||'groups'});
+    closeModal(); await loadNauka();
+    const nbN=res.notebooks.length, extra=[res.images?`${res.images} ${plural(res.images,'obraz','obrazy','obrazów')}`:'',res.links?`${res.links} ${plural(res.links,'link','linki','linków')} między notatkami`:''].filter(Boolean).join(' · ');
+    if(!res.notes){popout({icon:'warn',title:'Nie znaleziono notatek',text:'W wybranych plikach nie było notatek do zaimportowania.'});return;}
+    await popout({icon:'ok',title:`Zaimportowano ${res.notes} ${plural(res.notes,'notatkę','notatki','notatek')}`,
+      text:(nbN===1?`Zeszyt „${res.notebooks[0].name}”`:`${nbN} ${plural(nbN,'zeszyt','zeszyty','zeszytów')}: ${res.notebooks.map(n=>n.name).join(', ')}`)+(extra?' · '+extra:''),
+      hint:[res.missing?`Nie znaleziono ${res.missing} ${plural(res.missing,'pliku','plików','plików')} z obrazami — wgraj cały folder albo .zip z załącznikami.`:'',res.skipped&&res.skipped.length?'Pominięte: '+res.skipped.slice(0,4).join(', '):''].filter(Boolean).join(' ')});
+    go('nauka'); if(res.notebooks[0])selectNotebook(res.notebooks[0].id);
+  }catch(err){
+    if(sid)fetch('api/import/'+sid,{method:'DELETE'}).catch(()=>{});
+    pr.hidden=true; popout({icon:'warn',title:'Import nie powiódł się',text:err.message});
+  }finally{ if(IMP){IMP.busy=false; const g=$('#imp-go'); if(g){g.textContent='Importuj'; g.disabled=!IMP.files.size;}} }
 }
 /* --- odbiorcy udostępnienia: znajomi i grupy --- */
 let GRP=null;
