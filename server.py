@@ -1080,6 +1080,38 @@ def ai_insert_prompt(a: AIInsert):
     return {"prompt": _insert_prompt(a, "markdown")}
 
 
+class ChatMsg(BaseModel):
+    role: str
+    text: str
+
+
+class AIChat(BaseModel):
+    title: str = ""
+    note: str = ""
+    quote: str = ""
+    messages: list[ChatMsg] = []
+
+
+@app.post("/api/ai/chat")
+def ai_chat(a: AIChat):
+    """Asystent nauki: rozmowa o otwartej notatce (Gemini zna jej treść; zaznaczony fragment = o co pytamy)."""
+    if not a.messages or a.messages[-1].role != "user":
+        raise HTTPException(400, "Brak pytania.")
+    talk = "\n".join(("STUDENT: " if m.role == "user" else "ASYSTENT: ") + m.text[:6000] for m in a.messages[-12:])
+    prompt = ("Jesteś cierpliwym korepetytorem akademickim w aplikacji do nauki. Student uczy się z notatki" + (f" „{a.title}”" if a.title else "") +
+              " i zadaje pytania. Odpowiadaj po polsku, konkretnie i zrozumiale — jak dobry nauczyciel: najpierw krótka odpowiedź, potem "
+              "wyjaśnienie, w razie potrzeby przykład. Opieraj się na notatce; gdy czegoś w niej nie ma, możesz użyć ogólnej wiedzy, "
+              "ale zaznacz to krótko. Gdy student prosi o przepytanie — zadawaj po jednym pytaniu i oceniaj jego odpowiedź.\n"
+              "- Zwięźle: zwykle 3–10 zdań lub kilka punktów. Kluczowe pojęcia w <strong>, najważniejszą frazę oszczędnie w <mark>.\n"
+              "- Matematykę z indeksami, ułamkami, potęgami czy macierzami zapisuj w LaTeX: w linii $…$, większe wzory jako osobny akapit $$…$$.\n"
+              "Odpowiedz WYŁĄCZNIE treścią odpowiedzi w prostym HTML (tagi: <p>, <ul>, <ol>, <li>, <strong>, <em>, <mark>, <h4>), bez wstępu typu „Oto odpowiedź”.\n\n"
+              "NOTATKA STUDENTA:\n" + (a.note[:60_000] or "(pusta)") +
+              (f"\n\nSTUDENT ZAZNACZYŁ FRAGMENT (pytanie dotyczy jego): „{a.quote[:1500]}”" if a.quote else "") +
+              "\n\nROZMOWA:\n" + talk + "\nASYSTENT:")
+    out = _ai_call([{"text": prompt}], kind="chat", max_tokens=3072, timeout=90)
+    return {"html": _clean_ai_html(out)}
+
+
 @app.post("/api/ai/improve")
 def ai_improve(a: AIImprove):
     if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):
