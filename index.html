@@ -2907,7 +2907,8 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 .b-text .itex .katex,.b-text .katex{font-size:1.2em;color:#F4F7FC;-webkit-text-stroke:.22px currentColor;letter-spacing:.01em}
 .b-text .itex{padding:0 3px}
 .b-text .itex.disp .katex{font-size:1.32em}
-.b-text .katex .msupsub{-webkit-text-stroke:.18px currentColor}
+.b-text .katex .msupsub{-webkit-text-stroke:.18px currentColor;color:#8DB6FF;font-size:1.1em}   /* indeksy w kolorze akcentu — od razu widać, co jest indeksem */
+[data-theme=paper] .b-text .katex .msupsub,.pdf-export[data-theme=paper] .katex .msupsub{color:#2F6FD8}
 [data-theme=paper] .b-text .katex,.pdf-export[data-theme=paper] .katex{color:#141821}
 
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
@@ -8263,7 +8264,9 @@ async function aiImproveBlock(id,btn){
 }
 /* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
 /* wzory z AI: $…$ (w linii) i $$…$$ (osobno) → prawdziwe wzory KaTeX; zapis zostaje w data-tex do edycji/eksportu */
-function texRender(t,disp){try{return window.katex?katex.renderToString(t,{throwOnError:false,displayMode:!!disp}):esc(t);}catch(_){return esc(t);}}
+// czytelność: odstęp między czynnikami z indeksami (a_{i1}b_{1k} → a_{i1}\:b_{1k}); zapis w data-tex zostaje oryginalny
+const texSpace=t=>t.replace(/(_\{[^{}]*\}|_[a-zA-Z0-9])(?!\s*\\(end|right|[lc]?dots|quad))(?=\s*\\?[a-zA-Z])/g,'$1\\:');
+function texRender(t,disp){try{return window.katex?katex.renderToString(texSpace(t),{throwOnError:false,displayMode:!!disp}):esc(t);}catch(_){return esc(t);}}
 function texHydrate(root){if(!window.katex||!root)return;
   root.querySelectorAll('.itex[data-tex]').forEach(e=>{if(!e.querySelector('.katex'))e.innerHTML=texRender(e.dataset.tex,e.classList.contains('disp'));});}
 const TEX_RE=/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$(?!\s)([^$\n]*?[^\s$\\])\$(?!\d)/g;
