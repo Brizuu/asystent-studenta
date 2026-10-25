@@ -142,9 +142,45 @@ def next_day(after: str):
     return {"date": r["d"], "tasks": list_tasks(day=r["d"])} if r["d"] else {}
 
 
+TASK_KEY = ("title", "date", "start_time", "end_time", "room", "building")
+
+
+def dedupe_tasks(c) -> int:
+    """Identyczne wpisy w planie (ten sam tytuł, dzień, godziny i sala) — zostaje jeden. Dublowały się np. przy podwójnym
+    kliknięciu „Dodaj” albo synchronizacji dwóch urządzeń. Zostaje wpis z najmniejszym uid, więc każde urządzenie wybiera ten sam."""
+    cols = {r[1] for r in c.execute("PRAGMA table_info(tasks)")}
+    key = [k for k in TASK_KEY if k in cols]
+    if "uid" not in cols:
+        return 0
+    expr = ",".join(f"COALESCE({k},'')" for k in key)
+    groups = c.execute(f"SELECT {expr}, COUNT(*) n FROM tasks GROUP BY {expr} HAVING n>1").fetchall()
+    removed = 0
+    todo_cols = {r[1] for r in c.execute("PRAGMA table_info(todo_items)")} if c.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='todo_items'").fetchone() else set()
+    for g in groups:
+        where = " AND ".join(f"COALESCE({k},'')=?" for k in key)
+        ids = c.execute(f"SELECT id FROM tasks WHERE {where} ORDER BY uid IS NULL, uid, id", tuple(g[:len(key)])).fetchall()
+        keep, drop = ids[0][0], [r[0] for r in ids[1:]]
+        for d in drop:
+            for col in ("anchor_id", "task_id"):
+                if col in todo_cols:
+                    c.execute(f"UPDATE todo_items SET {col}=? WHERE {col}=?", (keep, d))
+            # notatka / przypomnienie z duplikatu przechodzą na wpis, który zostaje
+            c.execute("UPDATE tasks SET note_id=COALESCE(note_id,(SELECT note_id FROM tasks WHERE id=?)), "
+                      "notes=CASE WHEN COALESCE(notes,'')='' THEN (SELECT notes FROM tasks WHERE id=?) ELSE notes END WHERE id=?", (d, d, keep))
+            c.execute("DELETE FROM tasks WHERE id=?", (d,))
+            removed += 1
+    return removed
+
+
 @app.post("/api/tasks")
 def add_task(t: Task):
     with get_conn() as c:
+        same = c.execute("SELECT id FROM tasks WHERE title=? AND date=? AND COALESCE(start_time,'')=COALESCE(?,'') "
+                         "AND COALESCE(end_time,'')=COALESCE(?,'') AND COALESCE(room,'')=COALESCE(?,'') AND COALESCE(building,'')=COALESCE(?,'')",
+                         (t.title, t.date, t.start_time, t.end_time, t.room, t.building)).fetchone()
+        if same:   # podwójne kliknięcie „Dodaj” albo ten sam wpis drugi raz — bez dubla w planie
+            return {"id": same[0]}
         cur = c.execute(
             "INSERT INTO tasks(title,date,start_time,end_time,priority,notes,remind_at,kind,note_id,room,building) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
             (t.title, t.date, t.start_time, t.end_time, t.priority, t.notes, t.remind_at, t.kind, t.note_id, t.room, t.building))
@@ -1156,9 +1192,13 @@ def init_all():
     quiz.init()
     komunikacja.init()
     sync.setup()
+    with get_conn() as c:
+        dedupe_tasks(c)
 
 
-sync.setup()   # po utworzeniu wszystkich tabel (finanse, zadania)
+sync.setup()
+with get_conn() as _c:
+    dedupe_tasks(_c)   # po utworzeniu wszystkich tabel (finanse, zadania)
 app.include_router(nagrania.router)
 app.include_router(usos.router)
 app.include_router(finanse.router)

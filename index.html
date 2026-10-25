@@ -3980,6 +3980,7 @@ function dashNow(tasks,nbs,notes){
   }
 }
 function dashPlan(tasks){
+  const seen=new Set(); tasks=tasks.filter(t=>{const k=[t.title,t.start_time,t.end_time,t.room].join('|'); if(seen.has(k))return false; seen.add(k); return true;});
   const n=nowMin(), L=[...tasks].sort((a,b)=>(a.start_time?toMin(a.start_time):9999)-(b.start_time?toMin(b.start_time):9999)).slice(0,6);
   $('#dc-plan').innerHTML=`<div class="dc-h"><span class="eyebrow">Plan dnia</span><a href="#" onclick="event.preventDefault();go('plan')">Otwórz</a></div>`+
     (L.length?`<div class="dp">${L.map(t=>{const past=t.start_time?evSpan(t)[1]<=n:t.done, c=past?'var(--cat-past)':kindOf(t.kind)[2];
@@ -4472,7 +4473,9 @@ async function openTask(id,date,hour){
   openModal(); setTimeout(()=>$('#tk-title')?.focus(),60);
 }
 async function submitTask(){
+  if(submitTask.busy)return;   // podwójne kliknięcie „Dodaj” nie robi dwóch wpisów
   const title=$('#tk-title').value.trim(); if(!title){$('#tk-title').focus();return;}
+  submitTask.busy=true; setTimeout(()=>submitTask.busy=false,1500);
   const date=$('#tk-date').value||todayISO(), rem=$('#tk-rem').value, nid=cbNote.get();
   const data={title, date, kind:cbKind.get()||'', start_time:$('#tk-start').value||null, end_time:$('#tk-end').value||null,
     priority:cbPr.get(), remind_at:rem?date+'T'+rem:null, notes:$('#tk-notes').value.trim(), note_id:nid?+nid:null,
