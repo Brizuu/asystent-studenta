@@ -3074,6 +3074,20 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 .tp-hint{margin-top:8px;font-size:11.5px;color:var(--ink-dim);line-height:1.6}.tp-hint code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:5px;font-size:11px}
 .tp-a{display:flex;align-items:center;gap:8px;margin-top:12px}
 
+/* formatowanie fragmentów wzoru */
+.tt-bar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:8px}
+.tt-bar button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 9px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.04);color:var(--ink-soft);font-weight:600;font-size:12px;font-family:inherit;cursor:pointer}
+.tt-bar button:hover{background:rgba(255,255,255,.08);color:var(--ink);border-color:rgba(141,182,255,.35)}
+.tt-box{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1.5px solid currentColor;border-radius:3px;font-size:11px;font-style:italic}
+.tt-bg{display:inline-flex;align-items:center;justify-content:center;width:18px;height:16px;border-radius:3px;color:#fff;font-size:11px;font-style:italic}
+.tt-sw{display:inline-flex;gap:4px;margin:0 2px}.tt-sw i{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.tt-sw i.on{border-color:#0B0E14;box-shadow:0 0 0 2px #EEF1F6}
+.tt-mx{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;width:100%;margin-top:2px}.tt-mx small{font-size:11.5px;color:var(--ink-dim);margin-right:2px}
+.tt-mx button{height:24px;padding:0 7px;font-size:11.5px}
+.tt-hint{width:100%;font-size:11.5px;color:var(--ink-dim);margin-top:2px;transition:color .2s}.tt-hint.warn{color:#E3B25C}
+.block:not(.editing) .tt-block,.reading .tt-block{display:none}
+.tt-block{padding:0 4px 6px}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -8582,6 +8596,47 @@ async function aiImproveBlock(id,btn){
   verToast(id);
 }
 /* notatki z AI w układzie „do czytania”: nagłówki sekcji (h3) na środku */
+/* formatowanie fragmentów wzoru: ramka, tło, kolor, pogrubienie, cała kolumna / wiersz macierzy */
+const TEX_COLORS=[['Złoty','#E3B25C','#5A4A22'],['Niebieski','#8DB6FF','#24457F'],['Morski','#4FD1B8','#1E5A50'],['Czerwony','#E5675F','#6A2E2E']];
+function texTools(ta,changed){
+  const bar=document.createElement('div'); bar.className='tt-bar';
+  let col=0;
+  const paint=()=>{const m=texMatrix(ta.value);
+    bar.innerHTML=`<button data-a="box" title="Ramka wokół zaznaczenia"><span class="tt-box">a</span>Ramka</button>
+      <button data-a="bg" title="Tło pod zaznaczeniem"><span class="tt-bg" style="background:${TEX_COLORS[col][2]}">a</span>Tło</button>
+      <button data-a="fg" title="Kolor zaznaczenia"><span style="color:${TEX_COLORS[col][1]};font-weight:800">a</span>Kolor</button>
+      <button data-a="bold" title="Pogrubienie"><b>B</b></button>
+      <span class="tt-sw">${TEX_COLORS.map((c,i)=>`<i data-c="${i}" title="${c[0]}" class="${i===col?'on':''}" style="background:${c[1]}"></i>`).join('')}</span>
+      <button data-a="clear" title="Usuń formatowanie z zaznaczenia (albo z całego wzoru)">✕ Wyczyść</button>
+      ${m?`<span class="tt-mx"><small>Macierz:</small>${[...Array(m.cols)].map((_,k)=>`<button data-col="${k}" title="Zaznacz kolumnę ${k+1}">K${k+1}</button>`).join('')}${[...Array(m.rows)].map((_,k)=>`<button data-row="${k}" title="Zaznacz wiersz ${k+1}">W${k+1}</button>`).join('')}</span>`:''}
+      <div class="tt-hint">Zaznacz fragment zapisu (np. liczbę) i wybierz Ramkę, Tło albo Kolor${m?' — albo całą kolumnę / wiersz macierzy':''}.</div>`;
+    bar.querySelectorAll('[data-c]').forEach(x=>x.onmousedown=e=>{e.preventDefault(); col=+x.dataset.c; paint();});
+    bar.querySelectorAll('button').forEach(x=>x.onmousedown=e=>{e.preventDefault(); act(x);});};
+  const wrap=(S,a)=>{const c=TEX_COLORS[col];
+    if(a==='box')return `\\boxed{${S}}`; if(a==='bg')return `\\colorbox{${c[2]}}{$${S}$}`; if(a==='fg')return `\\textcolor{${c[1]}}{${S}}`; if(a==='bold')return `\\boldsymbol{${S}}`; return S;};
+  const set=(v,a0,a1)=>{ta.value=v; ta.focus(); if(a0!=null)ta.setSelectionRange(a0,a1); changed(); paint();};
+  const act=x=>{const v=ta.value, a=ta.selectionStart, b=ta.selectionEnd, sel=v.slice(a,b);
+    if(x.dataset.col!=null||x.dataset.row!=null){set(texMatrixMark(v,x.dataset.col!=null?'col':'row',+(x.dataset.col??x.dataset.row),S=>wrap(S,'bg'),texStrip)); return;}
+    const k=x.dataset.a; if(!k)return;
+    if(k==='clear'){if(a!==b){const t=texStrip(sel); set(v.slice(0,a)+t+v.slice(b),a,a+t.length);} else set(texStrip(v)); return;}
+    if(a===b){ta.focus(); bar.querySelector('.tt-hint').classList.add('warn'); setTimeout(()=>bar.querySelector('.tt-hint')?.classList.remove('warn'),1400); return;}
+    const t=wrap(sel.trim(),k); set(v.slice(0,a)+t+v.slice(b),a,a+t.length);};
+  paint(); ta.addEventListener('input',()=>{const had=!!bar.querySelector('.tt-mx'); if(had!==!!texMatrix(ta.value))paint();});
+  return bar;
+}
+function texStrip(t){   // zdejmij formatowanie dodane przyciskami (wielokrotnie — także zagnieżdżone)
+  let p; do{p=t; t=t.replace(/\\colorbox\{[^{}]*\}\{\$([^$]*)\$\}/g,'$1').replace(/\\(?:textcolor|color)\{[^{}]*\}\{((?:[^{}]|\{[^{}]*\})*)\}/g,'$1').replace(/\\(?:boxed|boldsymbol)\{((?:[^{}]|\{[^{}]*\})*)\}/g,'$1');}while(t!==p); return t;}
+function texMatrix(t){const m=t.match(/\\begin\{([pbvBV]?matrix)\}([\s\S]*?)\\end\{\1\}/); if(!m)return null;
+  const rows=m[2].split(/\\\\/).filter(r=>r.trim()), cols=Math.max(...rows.map(r=>r.split('&').length)); return {rows:rows.length,cols,m};}
+function texMatrixMark(t,kind,k,mark,strip){   // zaznacz/odznacz kolumnę albo wiersz (drugie kliknięcie zdejmuje)
+  const x=texMatrix(t); if(!x)return t; const m=x.m;
+  const rows=m[2].split(/\\\\/).map(r=>r.split('&'));
+  const cells=[]; rows.forEach((r,ri)=>r.forEach((c,ci)=>{if(!c.trim())return; if((kind==='col'&&ci===k)||(kind==='row'&&ri===k))cells.push([ri,ci]);}));
+  const all=cells.length&&cells.every(([ri,ci])=>/\\colorbox|\\boxed|\\textcolor/.test(rows[ri][ci]));
+  cells.forEach(([ri,ci])=>{const c=rows[ri][ci], core=c.trim(), pad=c.match(/^\s*/)[0], end=c.match(/\s*$/)[0]; rows[ri][ci]=pad+(all?strip(core):mark(strip(core)))+end;});
+  const inner=rows.map(r=>r.join('&')).join('\\\\');
+  return t.slice(0,m.index)+`\\begin{${m[1]}}${inner}\\end{${m[1]}}`+t.slice(m.index+m[0].length);
+}
 /* edycja wzoru w notatce: klik w wzór → okienko z zapisem LaTeX i podglądem na żywo (Enter zapisuje, Esc anuluje) */
 function texEdit(el){
   document.querySelector('.tex-pop')?.remove();
@@ -8589,12 +8644,14 @@ function texEdit(el){
   const disp=el.classList.contains('disp'), orig=el.dataset.tex||'';
   const pop=document.createElement('div'); pop.className='tex-pop'; pop.setAttribute('role','dialog'); pop.setAttribute('aria-label','Edycja wzoru');
   pop.innerHTML=`<div class="tp-h"><b>Wzór</b><label class="tp-d"><input type="checkbox" ${disp?'checked':''}> osobno, na środku</label></div>
-    <textarea spellcheck="false" rows="${orig.length>60?3:2}">${esc(orig)}</textarea>
+    <textarea spellcheck="false" rows="${Math.min(6,Math.max(2,Math.ceil(orig.length/48)))}">${esc(orig)}</textarea>
     <div class="tp-prev"></div>
     <div class="tp-hint">Np. <code>a_{ik}</code> indeks, <code>x^2</code> potęga, <code>\\frac{a}{b}</code> ułamek, <code>\\sqrt{x}</code>, <code>\\sum_{k=1}^{n}</code></div>
     <div class="tp-a"><button class="btn ghost sm danger tp-del">Usuń</button><span style="flex:1"></span><button class="btn ghost sm tp-x">Anuluj</button><button class="btn sm tp-ok">Zapisz</button></div>`;
   document.body.appendChild(pop);
   const ta=pop.querySelector('textarea'), pv=pop.querySelector('.tp-prev'), cb=pop.querySelector('.tp-d input');
+  const grow=()=>{ta.style.height='auto'; ta.style.height=Math.min(170,ta.scrollHeight+2)+'px';};   // pole rośnie razem z zapisem
+  ta.after(texTools(ta,()=>{grow();prev();place();})); ta.addEventListener('input',grow); setTimeout(grow,0);
   const prev=()=>{const t=ta.value.trim(); pv.classList.remove('err');
     if(!t){pv.innerHTML='<span class="muted">Podgląd pojawi się tutaj</span>';return;}
     try{pv.innerHTML=window.katex?katex.renderToString(texSpace(t),{throwOnError:true,displayMode:cb.checked}):esc(t);}
@@ -9411,6 +9468,7 @@ function buildLatex(d,b){
     </div>`;
   const ta=d.querySelector('.texin'), out=d.querySelector('.texout');
   const render=()=>{try{if(window.katex)katex.render(ta.value||'\\;',out,{displayMode:true,throwOnError:false});else out.textContent=ta.value;}catch(e){out.innerHTML='<span style="color:var(--neg)">błąd wzoru</span>';}};
+  const tools=texTools(ta,()=>{b.tex=ta.value;render();scheduleSave();}); tools.classList.add('tt-block'); ta.after(tools);
   ta.addEventListener('input',()=>{b.tex=ta.value;render();scheduleSave();});
   render();
 }
