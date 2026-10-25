@@ -525,11 +525,46 @@ class GeminiError(Exception):
 # ---------- zużycie AI (liczone lokalnie: Google nie udostępnia stanu limitu przez klucz) ----------
 USAGE = DATA_DIR / "ai_usage.json"
 _usage_lock = threading.Lock()
-_recent: list = []   # (czas, tokeny wejściowe) z ostatniej minuty — do RPM/TPM
-# limity darmowego planu wg AI Studio → Rate limits (Free tier); Google nie udostępnia ich przez klucz
+_recent: list = []   # (czas, tokeny wejściowe, model) z ostatniej minuty — do RPM/TPM
+# Limity Gemini są liczone na PROJEKT Google Cloud (wszystkie klucze z jednego projektu dzielą pulę) i OSOBNO dla każdego
+# modelu: zapytania/min (RPM), tokeny wejściowe/min (TPM), zapytania/dzień (RPD, odnowienie o północy czasu pacyficznego).
+# Wartości darmowego planu wg AI Studio → Rate limits; prawdziwe liczby aplikacja odczytuje z odpowiedzi 429 (quotaValue).
 FREE_LIMITS = {
     "gemini-3.6-flash": {"rpm": 5, "tpm": 250_000, "rpd": 20},
 }
+GUESS_LIMITS = {"lite": {"rpm": 15, "tpm": 250_000, "rpd": 1000}, "flash": {"rpm": 10, "tpm": 250_000, "rpd": 250}}
+
+
+def _limits_for(model: str, u: dict | None = None) -> dict:
+    """Limity modelu: odczytane z odpowiedzi Google > tabela darmowego planu > szacunek dla rodziny (lite / flash)."""
+    u = _usage_load() if u is None else u
+    base = dict(FREE_LIMITS.get(model) or GUESS_LIMITS["lite" if "lite" in model else "flash"])
+    seen = (u.get("limits_seen") or {}).get(model) or {}
+    base.update({k: v for k, v in seen.items() if k in ("rpm", "tpm", "rpd")})
+    base["source"] = "google" if seen else ("tabela" if model in FREE_LIMITS else "szacunek")
+    return base
+
+
+def _learn_limits(model: str, detail: str):
+    """Z odpowiedzi 429 (QuotaFailure) zapamiętaj prawdziwy limit dla modelu i tego projektu."""
+    try:
+        errs = json.loads(detail).get("error", {}).get("details", [])
+    except Exception:
+        return
+    got = {}
+    for dd in errs:
+        for v in dd.get("violations", []) or []:
+            qid, val = v.get("quotaId", ""), v.get("quotaValue")
+            mdl = (v.get("quotaDimensions") or {}).get("model") or model
+            if not val or mdl != model:
+                continue
+            key = "rpd" if "PerDay" in qid else ("tpm" if "Token" in qid or "token" in v.get("quotaMetric", "") else "rpm")
+            got[key] = int(val)
+    if got:
+        with _usage_lock:
+            u = _usage_load()
+            u.setdefault("limits_seen", {}).setdefault(model, {}).update(got)
+            USAGE.write_text(json.dumps(u), encoding="utf-8")
 
 
 def _pacific_now() -> datetime:
@@ -550,7 +585,7 @@ def _usage_load() -> dict:
         return {}
 
 
-def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit: bool = False):
+def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit: bool = False, model: str = ""):
     with _usage_lock:
         u = _usage_load()
         days = u.setdefault("days", {})
@@ -561,8 +596,16 @@ def _usage_add(kind: str, meta: dict | None = None, ok: bool = True, daily_limit
             d["err"] += 1
         if daily_limit:
             d["limit_hit"] = True
+        if model:   # każdy model ma osobny limit — licznik na model
+            m = d.setdefault("models", {}).setdefault(model, {"req": 0, "in": 0, "out": 0})
+            m["req"] += 1
+            if meta:
+                m["in"] += int(meta.get("promptTokenCount") or 0)
+                m["out"] += int(meta.get("candidatesTokenCount") or 0) + int(meta.get("thoughtsTokenCount") or 0)
+            if daily_limit:
+                m["limit_hit"] = True
         now = time.time()
-        _recent.append((now, int((meta or {}).get("promptTokenCount") or 0)))
+        _recent.append((now, int((meta or {}).get("promptTokenCount") or 0), model))
         _recent[:] = [r for r in _recent if now - r[0] < 60]
         if meta:
             d["in"] += int(meta.get("promptTokenCount") or 0)
@@ -643,8 +686,11 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
                 if e.code in (503, 429, 500) and attempt < n - 1 and not daily:
                     time.sleep(1.5 * (attempt + 1))
                     continue
-                if e.code == 429:   # odrzucone przez limit — liczy się do dziennego wykorzystania
-                    _usage_add(kind, ok=False, daily_limit=daily and mi == 0)
+                if e.code == 429:   # odrzucone przez limit — liczy się do dziennego wykorzystania tego modelu
+                    _learn_limits(model, detail)
+                    _usage_add(kind, ok=False, daily_limit=daily and mi == 0, model=model)
+                    if daily:
+                        _usage_mark_hit(model)
                 err = GeminiError(e.code, f"Gemini API błąd {e.code}: {detail[:300]}")
                 break
             except Exception as e:
@@ -657,7 +703,7 @@ def gemini(parts: list, max_tokens: int = 4096, temperature: float = 0.4, timeou
             if err and err.status in (400, 401, 403) and "not found" not in err.msg.lower():
                 raise err
             continue
-        _usage_add(kind, data.get("usageMetadata"))
+        _usage_add(kind, data.get("usageMetadata"), model=model)
         cand = (data.get("candidates") or [{}])[0]
         # modele 3.x mogą zwrócić kilka części (w tym „myśli”) — sklejamy sam tekst odpowiedzi
         text = "".join(p.get("text", "") for p in (cand.get("content") or {}).get("parts") or [] if not p.get("thought"))
@@ -785,8 +831,15 @@ def test_ai():
 
 
 def _limits() -> dict:
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-    return FREE_LIMITS.get(model, FREE_LIMITS["gemini-3.6-flash"])
+    return _limits_for(os.getenv("GEMINI_MODEL", "gemini-3.6-flash"))
+
+
+def _usage_mark_hit(model: str):
+    with _usage_lock:
+        u = _usage_load()
+        d = u.setdefault("days", {}).setdefault(_pacific_now().date().isoformat(), {"req": 0, "in": 0, "out": 0, "err": 0, "kinds": {}})
+        d.setdefault("models", {}).setdefault(model, {"req": 0, "in": 0, "out": 0})["limit_hit"] = True
+        USAGE.write_text(json.dumps(u), encoding="utf-8")
 
 
 @app.get("/api/settings/ai/usage")
@@ -801,7 +854,25 @@ def ai_usage():
     t = time.time()
     with _usage_lock:
         minute = [r for r in _recent if t - r[0] < 60]
-    return {"today": {**empty, **days.get(today, {})}, "limits": _limits(),
+    # łańcuch modeli (główny + zapasowe) — każdy z osobnym limitem; „pojemność” = ile jeszcze można zrobić
+    key = _gemini_key()
+    chain = _model_chain(key, os.getenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com")) if key else [os.getenv("GEMINI_MODEL", "gemini-3.6-flash")]
+    tm = (days.get(today, {}) or {}).get("models", {})
+    models = []
+    for mdl in chain:
+        L = _limits_for(mdl, u)
+        md = tm.get(mdl, {})
+        mm = [r for r in minute if len(r) > 2 and r[2] == mdl]
+        hit = bool(md.get("limit_hit"))
+        models.append({"model": mdl, "limits": L, "req": md.get("req", 0), "in": md.get("in", 0), "out": md.get("out", 0),
+                       "limit_hit": hit, "minute_req": len(mm), "minute_tok": sum(r[1] for r in mm),
+                       "left_today": 0 if hit else max(0, L["rpd"] - md.get("req", 0)),
+                       "tok_left_minute": max(0, L["tpm"] - sum(r[1] for r in mm)),
+                       "req_left_minute": max(0, L["rpm"] - len(mm))})
+    cap = {"req_left_today": sum(m["left_today"] for m in models),
+           "tok_left_minute": next((m["tok_left_minute"] for m in models if m["left_today"]), 0),
+           "model_now": next((m["model"] for m in models if m["left_today"]), None)}
+    return {"today": {**empty, **days.get(today, {})}, "limits": _limits(), "models": models, "capacity": cap,
             "minute": {"req": len(minute), "tok": sum(r[1] for r in minute)},
             "reset_at": reset.isoformat().replace("+00:00", "Z"),
             "history": [{"date": d, **{**empty, **days.get(d, {})}} for d in last],
