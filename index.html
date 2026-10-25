@@ -2987,6 +2987,64 @@ body[data-pbg=h1] .fl-h1,body[data-pbg=h2] .fl-h2,body[data-pbg=h3] .fl-h3{opaci
 .ctxmenu .cm-ai{color:var(--accent-text)!important}
 @media (prefers-reduced-motion:reduce){.ai-here,.b-text .ai-new{animation:none}}
 
+/* 1.9.28: Asystent nauki (czat o notatce) */
+.ch-fab{position:fixed;right:28px;bottom:28px;z-index:140;width:56px;height:56px;border:0;border-radius:18px;cursor:pointer;color:#fff;display:none;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#5E9BF4,#3F7BE0);box-shadow:0 14px 34px -10px rgba(90,150,242,.8),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.ch-fab svg{width:30px;height:30px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.ch-fab::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 0 rgba(141,182,255,.5);animation:chPulse 3.2s ease-out 1.5s 2}
+@keyframes chPulse{0%{box-shadow:0 0 0 0 rgba(141,182,255,.45)}100%{box-shadow:0 0 0 16px rgba(141,182,255,0)}}
+.ch-fab:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 18px 40px -10px rgba(90,150,242,.95)}
+body.ch-avail .ch-fab{display:flex}
+body.ch-open .ch-fab{transform:rotate(-8deg) scale(.92)}
+.ch-panel{position:fixed;right:28px;bottom:98px;z-index:150;width:420px;height:min(580px,calc(100vh - 140px));display:flex;flex-direction:column;border-radius:22px;
+  background:linear-gradient(160deg,rgba(24,29,40,.97),rgba(14,18,26,.98));border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);
+  opacity:0;transform:translateY(16px) scale(.97);transform-origin:bottom right;pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.ch-panel.on{opacity:1;transform:none;pointer-events:auto}
+.ch-panel header{display:flex;align-items:center;gap:9px;padding:14px 12px 10px 16px}
+.ch-panel header b{font-size:14.5px;white-space:nowrap}
+.ch-ic{width:28px;height:28px;border-radius:9px;background:rgba(141,182,255,.14);color:var(--accent-text);display:flex;align-items:center;justify-content:center;flex:none}.ch-ic svg{width:17px;height:17px}
+.ch-ic.big{width:46px;height:46px;border-radius:14px}.ch-ic.big svg{width:26px;height:26px}
+.ch-note{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:9px;background:rgba(255,255,255,.06);color:var(--ink-soft)}
+.ch-hb{margin-left:auto;width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--ink-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.ch-hb+.ch-hb{margin-left:0}.ch-hb:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.ch-hb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch-quote{display:flex;align-items:flex-start;gap:6px;margin:0 16px 4px;padding:9px 10px 9px 12px;border-radius:12px;border-left:3px solid var(--accent-text);background:rgba(141,182,255,.08);font-size:12.5px;color:var(--ink-dim)}
+.ch-quote[hidden]{display:none}
+.ch-quote i{flex:1;font-style:normal;color:var(--ink-soft);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ch-quote button{border:0;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px}
+.ch-msgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px 16px}
+.ch-m{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.6;animation:chIn .25s ease}
+@keyframes chIn{from{opacity:0;transform:translateY(6px)}}
+.ch-m.me{align-self:flex-end;background:#2A4A86;color:#EEF1F6;border-bottom-right-radius:6px;white-space:pre-wrap}
+.ch-m.me small{display:block;font-size:11.5px;opacity:.75;margin-bottom:3px}
+.ch-m.bot{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#D5DBE5;border-bottom-left-radius:6px}
+.ch-m.bot.err{border-color:rgba(229,103,95,.35);color:#F2C0BC}
+.ch-a p{margin:0 0 8px}.ch-a p:last-child{margin-bottom:0}.ch-a ul,.ch-a ol{margin:4px 0 8px;padding-left:20px}.ch-a li{margin:3px 0}.ch-a strong{color:#F1F4F9}
+.ch-a h3,.ch-a h4{margin:8px 0 6px;font-size:13.5px}.ch-a .itex .katex{font-size:1.1em}.ch-a .katex .msupsub{color:#8DB6FF}
+.ch-acts{display:flex;gap:6px;margin-top:9px}
+.ch-acts button{height:27px;padding:0 10px;border:0;border-radius:9px;background:rgba(255,255,255,.06);color:var(--ink-soft);font-weight:700;font-size:12px;font-family:inherit;cursor:pointer}
+.ch-acts button:first-child{background:rgba(141,182,255,.13);color:var(--accent-text)}.ch-acts button:hover{filter:brightness(1.2)}
+.ch-m.typing{display:flex;gap:5px;padding:14px}.ch-m.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent-text);animation:chDot 1.2s infinite}
+.ch-m.typing i:nth-child(2){animation-delay:.15s}.ch-m.typing i:nth-child(3){animation-delay:.3s}
+@keyframes chDot{0%,80%,100%{opacity:.25;transform:none}40%{opacity:1;transform:translateY(-3px)}}
+.ch-hello{margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 20px;color:var(--ink-dim)}.ch-hello b{color:var(--ink);font-size:15px}.ch-hello small{font-size:12.5px;line-height:1.5}
+.ch-sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 8px}.ch-sugg:empty{display:none}
+.ch-sugg button{height:30px;padding:0 12px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--ink-soft);font-weight:600;font-size:12.5px;font-family:inherit;cursor:pointer}
+.ch-sugg button:hover{border-color:rgba(141,182,255,.4);color:var(--ink)}
+.ch-inp{display:flex;align-items:flex-end;gap:8px;margin:6px 16px 16px;padding:7px 7px 7px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);transition:border-color .2s}
+.ch-inp:focus-within{border-color:rgba(141,182,255,.55)}
+.ch-inp textarea{flex:1;resize:none;border:0!important;box-shadow:none!important;outline:none!important;background:transparent!important;border-radius:0;min-height:0;color:var(--ink);font:inherit;font-size:14px;line-height:1.45;outline:none;padding:7px 0;max-height:140px}
+.ch-send{width:36px;height:36px;border:0;border-radius:11px;background:#E6EDF9;color:#0B0E14;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.ch-send svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch-selpop{position:fixed;z-index:170;display:none;gap:3px;padding:5px;border-radius:12px;background:rgba(17,21,30,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 34px -10px rgba(0,0,0,.7)}
+.ch-selpop.on{display:flex;animation:pop .14s ease}
+.ch-selpop button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:var(--ink-soft);font-weight:700;font-size:12px;font-family:inherit;cursor:pointer}
+.ch-selpop button:first-child{background:rgba(141,182,255,.14);color:var(--accent-text)}.ch-selpop button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+.ch-selpop svg{width:15px;height:15px}
+@media (max-width:820px){.ch-fab{right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:50px;height:50px}
+  .ch-panel{left:8px;right:8px;width:auto;bottom:calc(144px + env(safe-area-inset-bottom));height:min(70vh,560px)}}
+@media (prefers-reduced-motion:reduce){.ch-panel,.ch-m,.ch-fab{transition:none;animation:none}}
+
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -8566,6 +8624,109 @@ function insertAiBlock(id,html){
     if(el){document.querySelectorAll('#blocks .block.editing').forEach(x=>x.classList.remove('editing'));
       el.classList.add('editing'); el.scrollIntoView({block:'center'});}
 }
+
+/* ===== ASYSTENT NAUKI: czat z Gemini o otwartej notatce (pływający przycisk + pytanie o zaznaczony fragment) ===== */
+const ICO_HELPER='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3.2c.5 3.6 2.7 5.8 6.3 6.3-3.6.5-5.8 2.7-6.3 6.3-.5-3.6-2.7-5.8-6.3-6.3 3.6-.5 5.8-2.7 6.3-6.3z" fill="currentColor"/><path d="M18 13.6c.25 1.8 1.35 2.9 3.15 3.15-1.8.25-2.9 1.35-3.15 3.15-.25-1.8-1.35-2.9-3.15-3.15 1.8-.25 2.9-1.35 3.15-3.15z" fill="currentColor" opacity=".85"/><path d="M17.6 2.6c.15 1 .75 1.6 1.75 1.75-1 .15-1.6.75-1.75 1.75-.15-1-.75-1.6-1.75-1.75 1-.15 1.6-.75 1.75-1.75z" fill="currentColor" opacity=".7"/><path d="M5.2 17.4l-1.7 3.4 3.9-1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/></svg>';
+const CH={open:false,quote:'',hist:{},busy:false,bid:null};
+function chatNoteHtml(){   // treść notatki dla Gemini: tekst, nagłówki, tabele, wzory (bez obrazów)
+  if(!noteData)return '';
+  const out=[]; (noteData.content||[]).forEach(b=>{
+    if(b.type==='heading')out.push(`<h2>${esc(b.text||'')}</h2>`);
+    else if(b.html)out.push((b.summary?`<p><b>${b.summary}</b></p>`:'')+b.html);
+    else if(b.type==='table'&&Array.isArray(b.data))out.push('<table>'+b.data.map(r=>'<tr>'+r.map(c=>`<td>${esc(String(c??''))}</td>`).join('')+'</tr>').join('')+'</table>');
+    else if(b.type==='latex'&&b.tex)out.push(`<p>$$${esc(b.tex)}$$</p>`);
+    else if(b.type==='checklist'&&b.items)out.push('<ul>'+b.items.map(i=>`<li>${esc(i.text||'')}</li>`).join('')+'</ul>');});
+  const d=document.createElement('div'); d.innerHTML=out.join('\n');
+  d.querySelectorAll('.itex[data-tex]').forEach(e=>e.replaceWith(document.createTextNode('$'+e.dataset.tex+'$')));
+  return aiPackImages(d.innerHTML).out.slice(0,60000);
+}
+function chatUI(){
+  let fab=$('#ch-fab'); if(fab)return;
+  fab=document.createElement('button'); fab.id='ch-fab'; fab.className='ch-fab'; fab.title='Asystent nauki — zapytaj o notatkę'; fab.setAttribute('aria-label','Asystent nauki');
+  fab.innerHTML=ICO_HELPER; fab.onclick=()=>chatToggle(); document.body.appendChild(fab);
+  const p=document.createElement('section'); p.id='ch-panel'; p.className='ch-panel'; p.setAttribute('role','dialog'); p.setAttribute('aria-label','Asystent nauki');
+  p.innerHTML=`<header><span class="ch-ic">${ICO_HELPER}</span><b>Asystent nauki</b><span class="ch-note" id="ch-note"></span>
+      <button class="ch-hb" id="ch-clear" title="Nowa rozmowa" aria-label="Nowa rozmowa"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0113.7-5.6L20 8.5M20 4v4.5h-4.5"/></svg></button>
+      <button class="ch-hb" id="ch-min" title="Zwiń" aria-label="Zwiń"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button></header>
+    <div class="ch-quote" id="ch-quote" hidden><span>Zaznaczone:</span><i id="ch-qt"></i><button title="Usuń zaznaczenie" id="ch-qx">✕</button></div>
+    <div class="ch-msgs" id="ch-msgs"></div>
+    <div class="ch-sugg" id="ch-sugg"></div>
+    <form class="ch-inp" id="ch-form"><textarea id="ch-in" rows="1" placeholder="Zapytaj o tę notatkę…"></textarea><button class="ch-send" aria-label="Wyślij"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>`;
+  document.body.appendChild(p);
+  $('#ch-min').onclick=()=>chatToggle(false);
+  $('#ch-clear').onclick=()=>{CH.hist[noteActive]=[]; CH.quote=''; chatPaint();};
+  $('#ch-qx').onclick=()=>{CH.quote='';chatPaint();};
+  const ta=$('#ch-in'); ta.addEventListener('input',()=>{ta.style.height='auto'; ta.style.height=Math.min(140,ta.scrollHeight)+'px';});
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#ch-form').requestSubmit();} if(e.key==='Escape')chatToggle(false);});
+  $('#ch-form').onsubmit=e=>{e.preventDefault(); const q=ta.value.trim(); if(q){ta.value=''; ta.style.height='auto'; chatAsk(q);}};
+  // pływające „Zapytaj o to” nad zaznaczonym fragmentem notatki
+  const sp=document.createElement('div'); sp.id='ch-selpop'; sp.className='ch-selpop';
+  sp.innerHTML=`<button data-k="ask">${ICO_HELPER}Zapytaj o to</button><button data-k="explain">Wyjaśnij</button><button data-k="example">Przykład</button>`;
+  document.body.appendChild(sp);
+  sp.addEventListener('mousedown',e=>e.preventDefault());
+  sp.querySelectorAll('button').forEach(b=>b.onclick=()=>{const t=CH.selText, bid=CH.selBid; sp.classList.remove('on'); getSelection().removeAllRanges(); if(!t)return;
+    CH.quote=t; CH.bid=bid; chatToggle(true);
+    if(b.dataset.k==='explain')chatAsk('Wyjaśnij prosto ten fragment.');
+    else if(b.dataset.k==='example')chatAsk('Podaj konkretny przykład do tego fragmentu.');
+    else setTimeout(()=>$('#ch-in').focus(),60);});
+  document.addEventListener('mouseup',e=>setTimeout(()=>chatSel(e),0));
+  document.addEventListener('keyup',e=>{if(e.shiftKey)setTimeout(()=>chatSel(e),0);});
+  document.addEventListener('mousedown',e=>{if(!e.target.closest('#ch-selpop'))sp.classList.remove('on');});
+  setInterval(chatVisibility,700);
+}
+function chatSel(e){
+  const sp=$('#ch-selpop'); if(!sp)return; const sel=getSelection();
+  if(!sel.rangeCount||sel.isCollapsed){if(!e||!e.target.closest('#ch-selpop'))sp.classList.remove('on');return;}
+  const r=sel.getRangeAt(0), blk=(r.commonAncestorContainer.nodeType===1?r.commonAncestorContainer:r.commonAncestorContainer.parentElement).closest('#blocks .block');
+  const t=String(sel).trim(); if(!blk||t.length<2){sp.classList.remove('on');return;}
+  CH.selText=t.slice(0,1200); CH.selBid=blk.dataset.bid;
+  const q=r.getBoundingClientRect(); sp.classList.add('on');
+  sp.style.left=Math.max(8,Math.min(innerWidth-sp.offsetWidth-8,q.left+q.width/2-sp.offsetWidth/2))+'px';
+  sp.style.top=(q.top-sp.offsetHeight-8<60?q.bottom+8:q.top-sp.offsetHeight-8)+'px';
+}
+function chatVisibility(){
+  const on=!!(noteActive&&noteData&&$('#view-nauka')?.classList.contains('active')&&$('#ed-body')?.style.display!=='none');
+  document.body.classList.toggle('ch-avail',on);
+  if(!on&&CH.open)chatToggle(false);
+}
+function chatToggle(v){CH.open=v===undefined?!CH.open:v; $('#ch-panel').classList.toggle('on',CH.open); document.body.classList.toggle('ch-open',CH.open);
+  if(CH.open){chatPaint(); setTimeout(()=>$('#ch-in')?.focus(),80);}}
+function chatPaint(){
+  const H=CH.hist[noteActive]||(CH.hist[noteActive]=[]);
+  $('#ch-note').textContent=(noteData&&noteData.title)||'Notatka';
+  $('#ch-quote').hidden=!CH.quote; $('#ch-qt').textContent=CH.quote.length>140?CH.quote.slice(0,140)+'…':CH.quote;
+  const box=$('#ch-msgs');
+  box.innerHTML=H.length?H.map((m,i)=>m.role==='user'?`<div class="ch-m me">${m.quote?`<small>„${esc(m.quote.slice(0,90))}${m.quote.length>90?'…':''}”</small>`:''}${esc(m.text)}</div>`
+      :`<div class="ch-m bot${m.err?' err':''}"><div class="ch-a">${m.html}</div>${m.err?'':`<div class="ch-acts"><button data-i="${i}" data-a="ins">⤵ Wstaw do notatki</button><button data-i="${i}" data-a="copy">Kopiuj</button></div>`}</div>`).join('')
+    :`<div class="ch-hello"><span class="ch-ic big">${ICO_HELPER}</span><b>Zapytaj o „${esc((noteData&&noteData.title)||'notatkę')}”</b><small>Gemini zna treść tej notatki. Zaznacz fragment, żeby zapytać właśnie o niego.</small></div>`;
+  if(CH.busy)box.insertAdjacentHTML('beforeend','<div class="ch-m bot typing"><i></i><i></i><i></i></div>');
+  texHydrate(box);
+  box.querySelectorAll('.ch-acts button').forEach(b=>b.onclick=()=>{const m=H[+b.dataset.i];
+    if(b.dataset.a==='copy'){const d=document.createElement('div');d.innerHTML=m.html;navigator.clipboard?.writeText(d.innerText.trim()); b.textContent='Skopiowano ✓'; setTimeout(()=>b.textContent='Kopiuj',1500);}
+    else{const bid=m.bid&&getBlock(m.bid)?m.bid:(noteData.content.length?noteData.content[noteData.content.length-1].id:null);
+      if(bid)insertAiBlock(bid,m.raw); else{noteData.content.push({id:uid(),type:'text',html:aiFormat(m.raw)}); renderBlocks(); scheduleSave();}
+      b.textContent='Wstawiono ✓'; b.disabled=true;}});
+  const S=CH.quote?['Wyjaśnij prościej','Podaj przykład','Jak to zapamiętać?']:['Streść notatkę w 5 punktach','Przepytaj mnie z tej notatki','Co tu jest najtrudniejsze?'];
+  $('#ch-sugg').innerHTML=H.length&&!CH.quote?'':S.map(t=>`<button>${t}</button>`).join('');
+  $$('#ch-sugg button').forEach(b=>b.onclick=()=>chatAsk(b.textContent));
+  box.scrollTop=box.scrollHeight;
+}
+async function chatAsk(q){
+  if(CH.busy||!noteActive)return;
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  const H=CH.hist[noteActive]||(CH.hist[noteActive]=[]);
+  H.push({role:'user',text:q,quote:CH.quote});
+  if(!AIS.has_key){H.push({role:'bot',err:true,html:'Czat potrzebuje darmowego klucza Gemini. <button class="lnk" onclick="go(\'ustawienia\');setTimeout(keyGuide,300)">Jak go dodać? →</button>'}); chatPaint(); return;}
+  const quote=CH.quote, bid=CH.bid; CH.quote=''; CH.busy=true; chatPaint();
+  try{const r=await fetch('api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:(noteData&&noteData.title)||'',note:chatNoteHtml(),quote,
+        messages:H.filter(m=>!m.err).slice(-12).map(m=>({role:m.role==='user'?'user':'model',text:m.role==='user'?(m.quote?`[Zaznaczony fragment: „${m.quote}”] `:'')+m.text:(m.plain||'')}))})});
+    const d=await r.json(); if(!r.ok)throw new Error(d.detail||('Błąd '+r.status));
+    const div=document.createElement('div'); div.innerHTML=d.html; aiMath(div);
+    H.push({role:'bot',raw:d.html,html:div.innerHTML,plain:div.innerText.slice(0,4000),bid});}
+  catch(err){H.push({role:'bot',err:true,html:esc(err.message||'Nie udało się połączyć z Gemini.')});}
+  finally{CH.busy=false; chatPaint();}
+}
+chatUI();
 
 /* ===== QUIZ: pytania z notatki (Gemini), odpowiedź rozmyta, „Umiem” zdejmuje z puli, „Pomiń” odkłada na później ===== */
 let QZ=null;
