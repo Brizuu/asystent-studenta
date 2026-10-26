@@ -1,4 +1,4 @@
-// Asystent na Androida: natywne okno (WebView) z wersją webową zenfix.pl/asystent/app — konto, synchronizacja, Dojazd, AI.
+// Asystent na Androida: natywne okno (WebView) z wersją webową zenexus.pl/asystent/app — konto, synchronizacja, Dojazd, AI.
 // Wersja z pliku VERSION w katalogu głównym repozytorium (ta sama co aplikacji na Windows).
 plugins {
     id "com.android.application"
@@ -8,6 +8,7 @@ def appVersion = new File(rootDir.parentFile, "VERSION").text.trim()
 def (vMaj, vMin, vPat) = appVersion.tokenize(".").collect { it as int }
 
 android {
+    // identyfikator pakietu zostaje „pl.zenfix.asystent” mimo zmiany domeny — inny = osobna aplikacja bez aktualizacji
     namespace "pl.zenfix.asystent"
     compileSdk 34
 

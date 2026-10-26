@@ -5277,7 +5277,7 @@ window.alert=msg=>{const [t,...rest]=String(msg).split('\n');
 /* ===== KONTA: logowanie, profil, znajomi, udostępnianie (serwer kont: cloud/) ===== */
 const LS={get:k=>{try{return localStorage.getItem(k);}catch(_){return null;}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(_){}}};
 let ME=null, FR=null, authTab='login';
-const cloudUrl=()=>APP.web?location.origin+location.pathname.replace(/\/app\/.*$/,''):(APP.cloud_url||'https://zenfix.pl/asystent');   // wersja webowa: serwer kont pod tym samym adresem
+const cloudUrl=()=>APP.web?location.origin+location.pathname.replace(/\/app\/.*$/,''):(APP.cloud_url||'https://zenexus.pl/asystent');   // wersja webowa: serwer kont pod tym samym adresem
 async function cloud(path,{method='GET',body}={}){
   let r; const tok=LS.get('asys_token');
   try{ r=await fetch(cloudUrl()+path,{method,headers:{'Content-Type':'application/json',...(tok?{Authorization:'Bearer '+tok}:{})},body:body?JSON.stringify(body):undefined}); }

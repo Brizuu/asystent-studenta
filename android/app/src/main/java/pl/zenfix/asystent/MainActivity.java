@@ -39,13 +39,18 @@ import java.net.URL;
 import java.util.Scanner;
 
 /**
- * Asystent na Androida: natywne okno z wersją webową (zenfix.pl/asystent/app).
+ * Asystent na Androida: natywne okno z wersją webową (zenexus.pl/asystent/app).
  * Konto, synchronizacja, notatki, plan, Dojazd i AI działają jak w przeglądarce, a aplikacja dokłada to,
  * czego zwykła strona nie ma: wybór plików, zapis pobranych plików, lokalizację, przycisk Wstecz i aktualizacje.
  */
 public class MainActivity extends Activity {
-    static final String START = "https://zenfix.pl/asystent/app/";
-    static final String HOST = "zenfix.pl";
+    static final String START = "https://zenexus.pl/asystent/app/";
+    static final String HOST = "zenexus.pl";
+    static final String OLD_HOST = "zenfix.pl";   // stara domena: linki i zakładki przenosimy na nową
+
+    static Uri moved(Uri u) {
+        return u != null && OLD_HOST.equals(u.getHost()) ? u.buildUpon().authority(HOST).build() : u;
+    }
     static final String RELEASES = "https://api.github.com/repos/Brizuu/asystent-studenta/releases/latest";
     static final int REQ_FILE = 1, REQ_GEO = 2;
 
@@ -84,7 +89,7 @@ public class MainActivity extends Activity {
     }
 
     String startUrl(Intent i) {
-        Uri u = i != null ? i.getData() : null;
+        Uri u = moved(i != null ? i.getData() : null);
         return u != null && HOST.equals(u.getHost()) ? u.toString() : START;
     }
 
@@ -134,13 +139,17 @@ public class MainActivity extends Activity {
         }
     }
 
-    /* ---------- strony: zenfix.pl w aplikacji, reszta (Spotify, PKP, mapy) w przeglądarce ---------- */
+    /* ---------- strony: zenexus.pl w aplikacji, reszta (Spotify, PKP, mapy) w przeglądarce ---------- */
     class Client extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
             Uri u = req.getUrl();
             String scheme = u.getScheme() == null ? "" : u.getScheme();
             if ((scheme.equals("https") || scheme.equals("http")) && HOST.equals(u.getHost())) return false;
+            if ((scheme.equals("https") || scheme.equals("http")) && OLD_HOST.equals(u.getHost())) {
+                view.loadUrl(moved(u).toString());
+                return true;
+            }
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, u));
             } catch (ActivityNotFoundException e) {

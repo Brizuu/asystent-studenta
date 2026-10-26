@@ -870,7 +870,7 @@ def geocode(q: str):
             time.sleep(wait)
         _geo_last[0] = time.time()
         try:
-            data = json.loads(_get(GEOCODE_URL + "?" + params, {"User-Agent": UA + " (zenfix.pl/asystent)"}, timeout=10))
+            data = json.loads(_get(GEOCODE_URL + "?" + params, {"User-Agent": UA + " (zenexus.pl/asystent)"}, timeout=10))
         except Exception:
             raise HTTPException(502, "Wyszukiwarka adresów chwilowo nie odpowiada.")
     out = []
