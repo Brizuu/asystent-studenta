@@ -649,7 +649,7 @@ body.on-social .head .eyebrow,body.on-social .head .date{color:#e6e1f2;text-shad
 .fpick:hover{background:rgba(255,255,255,.06)} .fpick input{width:18px!important;height:18px;flex:none;padding:0;margin:0;accent-color:var(--accent)}
 .fpick .who{flex:1}
 .pv{max-height:62vh;overflow:auto;padding:4px 2px;line-height:1.6}
-.pv h3.pvh{font-size:19px;margin:16px 0 6px} .pv .pvb{margin:8px 0} .pv table{border-collapse:collapse;margin:8px 0} .pv td{border:1px solid var(--line);padding:5px 9px}
+.pv h3.pvh{font-size:19px;margin:16px 0 6px} .pv .pvb{margin:8px 0} .pv .b-text{padding:0;min-height:0;color:var(--ink-soft)} .pv .pvc{padding:12px 14px;border-radius:12px;background:var(--glass);border-left:3px solid var(--accent)} .pv .pvl{text-align:center;padding:6px 0;overflow-x:auto} .pv table{border-collapse:collapse;margin:8px 0} .pv td{border:1px solid var(--line);padding:5px 9px}
 .pv pre{background:rgba(0,0,0,.3);padding:10px 12px;border-radius:10px;overflow:auto;font-size:13px}
 .pv .pvc{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.05);border-left:3px solid var(--accent)}
 .pv .muted{color:var(--ink-dim);font-size:13px;font-style:italic}
@@ -6433,6 +6433,7 @@ async function delShare(sid,fid){ await cloud('/shares/'+sid,{method:'DELETE'});
 /* --- bezpieczeństwo: HTML z cudzej notatki tylko z dozwolonych znaczników, bez skryptów i złych linków --- */
 const SAFE_TAGS=new Set('P BR B STRONG I EM U S STRIKE DEL H1 H2 H3 H4 H5 H6 UL OL LI A SPAN DIV CODE PRE BLOCKQUOTE MARK SUB SUP HR TABLE THEAD TBODY TR TD TH IMG FONT'.split(' '));
 const DROP_TAGS=new Set('SCRIPT STYLE IFRAME OBJECT EMBED LINK META TEMPLATE FORM INPUT BUTTON TEXTAREA SELECT SVG MATH NOSCRIPT'.split(' '));
+const SAFE_CLASS=/^(noteimg|al-(left|right|center|inline))$/;   // układ obrazów z notatki
 function sanitizeHtml(html){
   const root=new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html').body.firstChild;
   const walk=n=>[...n.childNodes].forEach(c=>{
@@ -6440,11 +6441,15 @@ function sanitizeHtml(html){
     if(c.nodeType!==1)return;
     const tag=c.tagName.toUpperCase();
     if(DROP_TAGS.has(tag)){c.remove();return;}
+    // wzór: zostaje zapis LaTeX (data-tex), wyrenderowany KaTeX z cudzej notatki wyrzucamy — rysujemy go od nowa u siebie
+    if(tag==='SPAN'&&c.classList.contains('itex')&&c.getAttribute('data-tex')){const tex=c.getAttribute('data-tex'), disp=c.classList.contains('disp');
+      [...c.attributes].forEach(a=>c.removeAttribute(a.name)); c.textContent=''; c.className='itex'+(disp?' disp':''); c.setAttribute('data-tex',tex); c.setAttribute('contenteditable','false'); return;}
     walk(c);
     if(!SAFE_TAGS.has(tag)){c.replaceWith(...c.childNodes);return;}
     [...c.attributes].forEach(a=>{const k=a.name.toLowerCase(),v=a.value.trim();
       const keep=(k==='href'&&/^(https?:|mailto:)/i.test(v))||(k==='src'&&tag==='IMG'&&(/^(https?:|data:image\/(png|jpe?g|gif|webp);)/i.test(v)||/^uploads\/[\w.-]+$/.test(v)))
         ||(k==='style'&&!/url\(|expression|position|@import|behavior/i.test(v))||['color','colspan','rowspan','alt','title'].includes(k);
+      if(k==='class'){const cl=v.split(/\s+/).filter(x=>SAFE_CLASS.test(x)); if(cl.length){c.setAttribute('class',cl.join(' '));return;}}
       if(!keep)c.removeAttribute(a.name);});
     if(tag==='A'){c.setAttribute('target','_blank');c.setAttribute('rel','noopener noreferrer');}
   });
@@ -6462,18 +6467,20 @@ function previewBlocks(content){
   return sanitizeBlocks(content).map(b=>{
     switch(b.type){
       case 'heading':return `<h3 class="pvh">${esc(b.text||'')}</h3>`;
-      case 'text':return `<div class="pvb">${b.html||''}</div>`;
-      case 'callout':return `<div class="pvb pvc">${b.html||''}</div>`;
+      case 'text':return `<div class="pvb b-text">${b.html||''}</div>`;
+      case 'callout':return `<div class="pvb pvc b-text">${b.html||''}</div>`;
       case 'toggle':return `<details class="pvb"${b.open?' open':''}><summary>${b.summary||''}</summary>${b.html||''}</details>`;
       case 'checklist':return `<ul class="pvb" style="list-style:none;padding:0">${(b.items||[]).map(i=>`<li>${i.done?'☑':'☐'} ${esc(i.text||'')}</li>`).join('')}</ul>`;
       case 'table':return `<table class="pvb">${(b.data||[]).map(r=>`<tr>${r.map(c=>`<td>${esc(String(c??''))}</td>`).join('')}</tr>`).join('')}</table>`;
       case 'code':return `<pre class="pvb">${esc(b.code||'')}</pre>`;
-      case 'latex':return `<pre class="pvb">${esc(b.tex||'')}</pre>`;
+      case 'latex':return b.tex?`<div class="pvb pvl"><span class="itex disp" data-tex="${escAttr(b.tex)}"></span></div>`:'';
       case 'embed':return b.url?`<p class="pvb"><a href="${escAttr(b.url)}" target="_blank" rel="noopener noreferrer">${esc(b.url)}</a></p>`:'';
       case 'divider':return '<hr>';
       default:return `<p class="muted pvb">[${esc(b.type==='chart'?'wykres':b.type||'blok')} — widoczny po imporcie]</p>`;
     }}).join('')||'<p class="muted">Pusta notatka.</p>';
 }
+/* wzory w podglądzie: zapis $…$ ze starszych notatek → wzór, potem KaTeX dla wszystkich .itex */
+function pvMath(root){if(!root)return; if(window.katex)root.querySelectorAll('.b-text').forEach(t=>{if(/\$|\\[([]/.test(t.textContent))aiMath(t);}); texHydrate(root);}
 async function previewShare(sid){
   let sh; try{sh=await cloud('/shares/'+sid);}catch(e){popout({icon:'warn',title:'Nie udało się otworzyć',text:e.message});return;}
   const P=sh.payload||{};
@@ -6493,6 +6500,7 @@ async function previewShare(sid){
   $('#modal').innerHTML=`<h3>${esc(sh.title)}</h3><div class="msub">${sh.kind==='notebook'?`Zeszyt · ${(P.notes||[]).length} ${plural((P.notes||[]).length,'notatka','notatki','notatek')}`:'Notatka'} · podgląd tylko do odczytu</div>
     <div class="pv">${body}</div>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Zamknij</button><button class="btn" onclick="importShare(${sh.id})">Importuj do moich notatek</button></div>`;
+  const pv=$('#modal .pv'); pvMath(pv);
   openModal();
 }
 const planShareTasks=P=>(Array.isArray(P.tasks)?P.tasks:[]).filter(t=>t&&typeof t.title==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(t.date||''))
