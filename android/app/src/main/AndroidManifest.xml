@@ -27,11 +27,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- linki zenfix.pl/asystent otwierają się w aplikacji -->
+            <!-- linki zenexus.pl/asystent (i stare zenfix.pl/asystent) otwierają się w aplikacji -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="zenexus.pl" android:pathPrefix="/asystent" />
                 <data android:scheme="https" android:host="zenfix.pl" android:pathPrefix="/asystent" />
             </intent-filter>
         </activity>

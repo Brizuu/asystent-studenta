@@ -1,5 +1,5 @@
 """Buduje cloud/site/index.html — samodzielną stronę pobierania Asystenta (serwowaną przez serwer kont
-pod https://zenfix.pl/asystent/). Układ „I2 · Wybierz urządzenie”: po lewej trzy sposoby na start
+pod https://zenexus.pl/asystent/). Układ „I2 · Wybierz urządzenie”: po lewej trzy sposoby na start
 (Windows, Android, przeglądarka), po prawej żywy podgląd aplikacji, niżej opowieść o trzech najważniejszych
 rzeczach (tekst przewija się, podgląd stoi i zmienia się razem z nim), krótkie pytania i stopka z autorem.
 Logo bierzemy wprost z aplikacji (index.html), wersję i rozmiar plików strona dociąga sama z GitHuba.
