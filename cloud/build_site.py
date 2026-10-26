@@ -321,7 +321,17 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
   .rv,.in-up,.pop,.slide,.type span,.lines span,.m-plan>div,.dv{opacity:1!important;transform:none!important;filter:none!important}.draw{stroke-dashoffset:0}.hl{background-size:100% 100%}.scene{transition:none}}
 /* mniejsze ekrany */
 @media (max-width:1180px){.hero{flex-direction:column;align-items:stretch;min-height:0}.h-txt{max-width:640px}.h-vis{height:540px;max-width:900px;width:100%;margin:0 auto}}
-@media (max-width:980px){.pin{height:auto}.pin-view{position:static;height:auto;display:block;padding-top:0}.s-head{margin-bottom:40px}.s-hint{display:none}.steps{height:auto}.s-grid{display:block}.stage{display:none}.step{position:static;opacity:1;transform:none;filter:none;pointer-events:auto;margin-bottom:72px}.m-inline{display:block;margin-top:24px;padding:22px;border-radius:20px;position:relative}
+.m-dots{display:none}
+@media (max-width:980px){.pin{height:auto}.pin-view{position:static;height:auto;display:block;padding-top:0}.s-head{margin-bottom:28px}.s-hint{display:none}.s-grid{display:block}.stage{display:none}
+  /* telefon: karuzela — jedno przesunięcie palcem = jedna funkcja, brzeg następnej karty podpowiada gest */
+  .steps{height:auto;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin:0 -32px;padding:4px 32px 8px;scroll-padding:0 32px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .steps::-webkit-scrollbar{display:none}
+  .step{position:static;flex:0 0 min(560px,calc(100vw - 92px));scroll-snap-align:start;scroll-snap-stop:always;opacity:.55;transform:scale(.97);filter:none;pointer-events:auto;margin:0;transition:opacity .35s var(--ease),transform .45s var(--ease)}
+  .step.m-on{opacity:1;transform:none}
+  .m-inline{display:block;margin-top:22px;padding:20px;border-radius:20px;position:relative}
+  .m-dots{display:flex;justify-content:center;gap:8px;margin-top:18px}
+  .m-dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.22);transition:width .35s var(--ease),background .35s;cursor:pointer}
+  .m-dots i.on{width:24px;background:var(--acc2)}
   .step .m-inline .lines span,.step .m-inline .m-plan>div,.step .m-inline .dv{opacity:1;transform:none}.step .m-inline .draw{stroke-dashoffset:0}}
 @media (max-width:820px){
   .h-vis .beam,.h-vis .hz{display:none}
@@ -330,7 +340,8 @@ footer{margin-top:80px;border-top:1px solid rgba(255,255,255,.07)}
   .tile{padding:14px 16px;gap:12px}.tile .mk{width:42px;height:42px}.tile .cta{font-size:13px}
   .h-vis{height:auto;perspective:none}.tilt{position:relative}.h-vis .glow{display:none}.h-vis .win{display:none}
   .phone{position:relative;right:auto;top:auto;margin:0 auto;height:380px}
-  .story{padding-top:40px}.s-head h2{font-size:32px}.step h3{font-size:28px}.step p{font-size:16px}
+  .story{padding-top:40px}.s-head h2{font-size:30px}.step h3{font-size:25px;margin:8px 0 10px}.step p{font-size:15.5px;line-height:1.6}
+  .steps{margin:0 -16px;padding:4px 16px 8px;scroll-padding:0 16px}.step{flex-basis:calc(100vw - 52px)}.chips{margin-top:16px}.chips span{height:30px;font-size:12px;padding:0 11px}
   .m-note{flex-direction:column}.fig.big{align-self:center}
   .faq{padding:70px 16px 0}.faq h2{font-size:28px}
   .end{margin:70px 16px 0;flex-direction:column;align-items:flex-start;padding:28px 22px}.end .btn{margin-left:0}
@@ -380,14 +391,16 @@ if(!RM){let raf=0; addEventListener('pointermove',e=>{if(raf)return; raf=request
   const idx=()=>Math.max(0,Math.min(N-1,Math.round((scrollY-top())/vh())));
   addEventListener('scroll',()=>{if(desk()&&!anim)set(idx());},{passive:true}); set(0);
   // płynny przejazd (własna krzywa, bez szarpania) do pozycji
-  let anim=null; const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  const glide=(to,ms=760)=>{if(RM){scrollTo(0,to);return;} const from=scrollY, d=to-from, t0=performance.now(); document.documentElement.style.scrollBehavior='auto';
-    cancelAnimationFrame(anim); const step=now=>{const k=Math.min(1,(now-t0)/ms); scrollTo(0,from+d*ease(k)); if(k<1)anim=requestAnimationFrame(step); else{anim=null; document.documentElement.style.scrollBehavior=''; set(idx()); quietUntil=performance.now()+260;}};
+  let anim=null, queued=0; const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const glide=(to,ms=560)=>{if(RM){scrollTo(0,to);return;} const from=scrollY, d=to-from, t0=performance.now(); document.documentElement.style.scrollBehavior='auto';
+    cancelAnimationFrame(anim); const step=now=>{const k=Math.min(1,(now-t0)/ms); scrollTo(0,from+d*ease(k)); if(k<1)anim=requestAnimationFrame(step); else{anim=null; document.documentElement.style.scrollBehavior=''; set(idx()); quietUntil=performance.now()+(lastMouse?0:220);
+      if(queued){const q=queued; queued=0; route(q);}}};
     anim=requestAnimationFrame(step);};
   const goStep=i=>{set(i); glide(top()+i*vh());};
   dots.forEach(d=>d.onclick=()=>goStep(+d.dataset.i));
-  // kółko: każdy nowy ruch (nawet mały) = jedna scena; bezwładność touchpada po przejeździe jest ignorowana
-  let lastWheel=0, quietUntil=0, used=false;
+  // mysz: każdy ząbek kółka = jedna scena (ruch w trakcie przejazdu czeka w kolejce, nic nie przepada);
+  // touchpad: jeden gest = jedna scena, jego bezwładność po przejeździe jest ignorowana
+  let lastWheel=0, quietUntil=0, used=false, lastMouse=false;
   const route=(dir,e)=>{const y=scrollY, T=top(), H=vh(), end=T+(N-1)*H;
     if(dir>0&&y<T-2&&y>T-H*.8){e&&e.preventDefault(); goStep(0); return true;}                       // wejście z góry → pierwsza scena
     if(dir<0&&y>end+2&&y<end+H*.8){e&&e.preventDefault(); goStep(N-1); return true;}                  // powrót z dołu → ostatnia scena
@@ -398,11 +411,19 @@ if(!RM){let raf=0; addEventListener('pointermove',e=>{if(raf)return; raf=request
     return false;};
   addEventListener('wheel',e=>{if(!desk()||e.ctrlKey||Math.abs(e.deltaY)<Math.abs(e.deltaX))return; const now=performance.now(), gap=now-lastWheel; lastWheel=now;
     const y=scrollY, T=top(), H=vh(); if(y<T-H||y>T+(N-1)*H+H)return;                                // poza opowieścią — zwykłe przewijanie
+    const mouse=e.deltaMode===1||Math.abs(e.deltaY)>=50; lastMouse=mouse; const dir=Math.sign(e.deltaY);
+    if(mouse){if(anim){e.preventDefault(); queued=dir; return;} used=route(dir,e); return;}
     if(anim||now<quietUntil){e.preventDefault(); return;}
-    if(used&&gap<180){e.preventDefault(); return;}                                                     // ten sam ruch, który już przełączył scenę
-    used=route(Math.sign(e.deltaY),e);},{passive:false});
+    if(used&&gap<140){e.preventDefault(); return;}                                                     // ten sam gest, który już przełączył scenę
+    used=route(dir,e);},{passive:false});
   addEventListener('keydown',e=>{if(!desk()||e.target.closest('input,textarea'))return; const k=e.key, dir=(k==='ArrowDown'||k==='PageDown'||(k===' '&&!e.shiftKey))?1:(k==='ArrowUp'||k==='PageUp'||(k===' '&&e.shiftKey))?-1:0;
     if(!dir||anim)return; route(dir,e);});
+  // telefon: karuzela kart — kropki i licznik idą za przesunięciem, stuknięcie w kropkę przewija do karty
+  const row=$('.steps'), md=$$('.m-dots i'); let mi=-1;
+  const mset=i=>{if(i===mi)return; mi=i; steps.forEach(s=>s.classList.toggle('m-on',+s.dataset.i===i)); md.forEach(d=>d.classList.toggle('on',+d.dataset.i===i)); if(!desk())$('#s-no').textContent=String(i+1).padStart(2,'0');};
+  const mcur=()=>{let b=0,bd=1e9; const L=row.getBoundingClientRect().left; steps.forEach((s,k)=>{const d=Math.abs(s.getBoundingClientRect().left-L-parseFloat(getComputedStyle(row).paddingLeft)); if(d<bd){bd=d;b=k;}}); return b;};
+  row.addEventListener('scroll',()=>{if(!desk())mset(mcur());},{passive:true}); mset(0);
+  md.forEach(d=>d.onclick=()=>{const s=steps[+d.dataset.i]; row.scrollTo({left:s.offsetLeft-row.offsetLeft-parseFloat(getComputedStyle(row).paddingLeft),behavior:RM?'auto':'smooth'});});
   // na telefonie podgląd jest pod tekstem — animacje startują, gdy wjedzie na ekran
   const mo=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');mo.unobserve(x.target);}}),{threshold:.3}); $$('.m-inline').forEach(m=>mo.observe(m));})();
 // sekcje pojawiają się przy przewijaniu, rodzeństwo z opóźnieniem
@@ -456,6 +477,7 @@ page = f"""<!DOCTYPE html>
   <div class="pin" style="--n:{len(STORY)}"><div class="pin-view">
    <div class="s-head"><div class="lab">Najważniejsze · <span id="s-no">01</span> / 0{len(STORY)}</div><h2>Trzy rzeczy, które robią różnicę.</h2></div>
    <div class="s-grid"><div class="steps">{steps}</div><div class="stage">{stage}<div class="dots">{dots}</div></div></div>
+   <div class="m-dots" aria-hidden="true">{dots}</div>
    <div class="s-hint" aria-hidden="true"><i></i>przewiń</div>
   </div></div>
  </section>

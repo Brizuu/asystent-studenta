@@ -1120,6 +1120,60 @@ def ai_pdf_note(a: AIDocNote):
     return {"html": _clean_ai_html(out)}
 
 
+class AIPhotos(BaseModel):
+    images: list[str]          # zdjęcia JPEG/PNG/WebP (base64 albo data:…), już zmniejszone w przeglądarce
+    topic: str = ""
+    instructions: str = ""
+    style: str = ""
+
+
+MAX_PHOTOS = 30
+MAX_PHOTOS_BYTES = 18 * 1024 * 1024    # zapytanie do Gemini z plikami w treści może mieć do 20 MB
+
+
+@app.post("/api/ai/photos-note")
+def ai_photos_note(a: AIPhotos):
+    """Notatka do nauki z kilku–kilkunastu zdjęć (tablica, zeszyt, slajdy, książka, zadania) — także pismo odręczne."""
+    if not a.images:
+        raise HTTPException(400, "Dodaj przynajmniej jedno zdjęcie.")
+    if len(a.images) > MAX_PHOTOS:
+        raise HTTPException(400, f"Najwyżej {MAX_PHOTOS} zdjęć naraz — podziel je na dwie notatki.")
+    parts, total = [], 0
+    for i, raw in enumerate(a.images, 1):
+        mt = "image/jpeg"
+        m = re.match(r"data:(image/(?:jpeg|png|webp));base64,", raw)
+        if m:
+            mt, raw = m.group(1), raw[m.end():]
+        elif raw.startswith("data:"):
+            raise HTTPException(400, f"Zdjęcie {i}: nieobsługiwany format (JPG, PNG albo WebP).")
+        total += len(raw) * 3 // 4
+        if total > MAX_PHOTOS_BYTES:
+            raise HTTPException(413, "Zdjęcia są razem za duże — dodaj mniej zdjęć naraz.")
+        parts += [{"text": f"Zdjęcie {i}:"}, {"inline_data": {"mime_type": mt, "data": raw}}]
+    topic = a.topic.strip()
+    n = len(a.images)
+    prompt = ("Jesteś doświadczonym korepetytorem akademickim. Powyżej jest " + (f"{n} zdjęć" if n > 1 else "zdjęcie")
+              + " materiałów do nauki (np. tablica z wykładu, odręczne notatki z zeszytu, slajdy z rzutnika, strony książki, "
+              "kartka z zadaniami) — w podanej kolejności. Na ich podstawie przygotuj PEŁNĄ, uporządkowaną notatkę do nauki na studia.\n"
+              + (f"Temat: „{topic}”.\n" if topic else "")
+              + _instr_line(a.instructions) +
+              "Zasady:\n- Pisz po polsku, rzeczowo i zrozumiale.\n"
+              "- Odczytaj dokładnie CAŁĄ treść ze wszystkich zdjęć, także pismo odręczne, wzory, tabele i podpisy rysunków. "
+              "Zdjęcia mogą być krzywe, pod kątem albo z odbiciami — odczytaj tekst mimo to. Fragment naprawdę nieczytelny oznacz [nieczytelne] "
+              "zamiast zgadywać.\n"
+              "- Treść z kolejnych zdjęć połącz w jedną spójną notatkę: bez powtórzeń, w logicznej kolejności, bez pisania „na zdjęciu 3”.\n"
+              "- Opieraj się na treści zdjęć; nie zmyślaj faktów. Zachowaj definicje, wzory, oznaczenia, przykłady i wyniki.\n"
+              "- Gdy na zdjęciach są zadania lub przykłady obliczeniowe — rozpisz rozwiązanie krok po kroku, każde przekształcenie osobno, "
+              "z krótkim wyjaśnieniem, co robimy i dlaczego; sprawdź wynik. Błąd w zapisie z tablicy lub zeszytu popraw i zaznacz to.\n"
+              "- Jeśli są pytania (kontrolne, egzaminacyjne) — wypisz je wyraźnie i podaj odpowiedzi.\n"
+              + READABLE_RULE + _style_rule(a.style)
+              + FIGURE_RULE.replace("z dokumentu", "ze zdjęć").replace("N to numer strony PDF (od 1)", "N to numer zdjęcia (od 1)")
+                           .replace("względem tej strony", "względem tego zdjęcia").replace("Najwyżej 12", "Najwyżej 8")
+              + HTML_RULE)
+    out = _ai_call(parts + [{"text": prompt}], kind="photos", max_tokens=32768, timeout=420, complete=True)
+    return {"html": _clean_ai_html(out)}
+
+
 # układ notatki do czytania: numerowane sekcje (nagłówek na środku), podsekcje WERSALIKAMI, listy „pojęcie – wyjaśnienie”
 # rysunki z PDF: AI wskazuje stronę i ramkę, aplikacja wycina obraz ze strony i wstawia go do notatki
 FIGURE_RULE = ("- Elementy graficzne z dokumentu, których nie da się dobrze oddać samym tekstem lub tabelą, a pomagają w nauce — "

@@ -2763,7 +2763,7 @@ a{transition:color .15s}
 .tab-icon{padding:9px 12px!important;gap:0!important}
 .tab-icon svg{width:18px!important;height:18px!important;margin:0}
 .tab-toc{margin-left:auto}.tab-toc[hidden]{display:none}
-.tab-toc+.tab-calc{margin-left:0}
+.tab-toc:not([hidden])+.tab-calc{margin-left:0}
 .tab-toc.on{color:var(--ink);background:color-mix(in srgb,var(--accent) 16%,transparent)!important;border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
 .outline{position:fixed;z-index:140;width:290px;max-height:min(60vh,520px);overflow:auto;padding:12px 10px;border-radius:16px;
   background:rgba(17,21,30,.94);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 70px -26px rgba(0,0,0,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:popIn .18s cubic-bezier(.2,.8,.3,1)}
@@ -3093,6 +3093,21 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 .ai-styles button.on{border-color:rgba(141,182,255,.55)!important;background:rgba(90,150,242,.12)!important}
 .blockmenu .bm-ai{color:var(--accent-text)!important;border-bottom:1px solid rgba(255,255,255,.07);border-radius:8px 8px 0 0;margin-bottom:2px}
 .blockmenu .bm-ai .bmi{color:var(--accent-text)}
+.blockmenu .bm-ai+.bm-ai2{border-radius:0;margin-top:-2px}
+.ai-empty-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ph-drop{border:1.5px dashed var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .15s,background .15s}
+.ph-drop.over{border-color:var(--accent);background:rgba(90,150,242,.08)}
+.ph-empty{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 2px;color:var(--ink-soft);text-align:center}.ph-empty[hidden]{display:none}
+.ph-empty svg{color:var(--ink-dim);margin-bottom:2px}.ph-empty b{color:var(--ink);font-weight:600;font-size:14.5px}.ph-empty small{color:var(--ink-dim);font-size:12.5px}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;width:100%}.ph-grid:empty{display:none}
+.ph-it{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:var(--glass-2);border:1px solid var(--line)}
+.ph-it img{position:absolute;inset:0;width:100%;height:100%;max-width:none;margin:0;border-radius:0;object-fit:cover;display:block}
+.ph-n{position:absolute;left:6px;top:6px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:rgba(11,14,20,.78);color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.ph-act{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
+.ph-act button{width:26px;height:26px;border-radius:8px;border:0;background:rgba(11,14,20,.78);color:#fff;font:inherit;font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.ph-act button:hover{background:rgba(11,14,20,.95)} .ph-act button[data-a="x"]:hover{background:#E5675F}
+.ph-busy{display:grid;place-items:center}
+.ph-info{font-size:13px;color:var(--ink-soft);margin-top:8px;min-height:18px}
 .ai-empty{display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:16px;border:1px dashed rgba(141,182,255,.3);background:rgba(90,150,242,.05);margin:6px 0 14px}
 .ai-empty>div{flex:1}.ai-empty b{display:block;font-size:15px}.ai-empty small{display:block;color:var(--ink-dim);font-size:13px;margin-top:2px;line-height:1.5}
 .ai-empty-ic{width:42px;height:42px;border-radius:13px;background:rgba(141,182,255,.14);color:var(--accent-text);display:flex;align-items:center;justify-content:center;flex:none}.ai-empty-ic svg{width:24px;height:24px}
@@ -3891,6 +3906,7 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
               <button class="btn ghost sm" onclick="toggleAddMenu(event)">+ Dodaj blok</button>
               <div class="menu blockmenu glass">
                 <button class="bm-ai" onclick="const i=addAfterIndex();closeAddMenu();aiTopicNote(i)"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M10.5 3.2c.5 3.6 2.7 5.8 6.3 6.3-3.6.5-5.8 2.7-6.3 6.3-.5-3.6-2.7-5.8-6.3-6.3 3.6-.5 5.8-2.7 6.3-6.3z"/><path d="M18 13.6c.25 1.8 1.35 2.9 3.15 3.15-1.8.25-2.9 1.35-3.15 3.15-.25-1.8-1.35-2.9-3.15-3.15 1.8-.25 2.9-1.35 3.15-3.15z" opacity=".8"/></svg></span><span>Notatka AI od zera…</span></button>
+                <button class="bm-ai bm-ai2" onclick="const i=addAfterIndex();closeAddMenu();aiPhotosNote(i)"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 016.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0120 8.5v8a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg></span><span>Notatka AI ze zdjęć…</span></button>
                 <button onclick="addBlock('heading')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5v14M15 5v14M5 12h10M18 9v10M18 9l2-1"/></svg></span><span>Nagłówek</span></button>
                 <button onclick="addBlock('text')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span>Tekst (pełne formatowanie)</span></button>
                 <button onclick="addBlock('table')"><span class="bmi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M3 14.5h18M9 5v14M15 5v14"/></svg></span><span>Tabela (Excel)</span></button>
@@ -6892,7 +6908,7 @@ async function loadUsage(){
   const reset=new Date(U.reset_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
   const bar=(key,pct,tone,cls='')=>`<div class="ubar${cls}" style="--c1:${tone[0]};--c2:${tone[1]}"><i data-k="${key}" data-w="${pct}" style="width:${_usagePrev[key]??0}%"></i></div>`;
   const rows=[['rpm','Zapytania na minutę',m.req,L.rpm,String],['tpm','Tokeny na minutę',m.tok,L.tpm,fmtTok]];
-  const K=[['note','Notatki AI'],['pdf','Notatki z PDF'],['improve','Poprawki AI'],['chat','Asystent nauki'],['insert','Dopisz tutaj'],['quiz','Quizy'],['tasks','Zadania z notatek'],['transcribe','Nagrania → tekst'],['test','Test połączenia'],['other','Inne']].filter(k=>t.kinds[k[0]]);
+  const K=[['note','Notatki AI'],['pdf','Notatki z PDF'],['improve','Poprawki AI'],['chat','Asystent nauki'],['insert','Dopisz tutaj'],['photos','Notatki ze zdjęć'],['quiz','Quizy'],['tasks','Zadania z notatek'],['transcribe','Nagrania → tekst'],['test','Test połączenia'],['other','Inne']].filter(k=>t.kinds[k[0]]);
   const kmax=Math.max(1,...K.map(k=>t.kinds[k[0]])), hmax=Math.max(1,...U.history.map(d=>d.in+d.out));
     box.innerHTML=`<div class="us-top"><h3>Zużycie AI</h3><span class="mdl">${esc(U.model)}</span><span class="us-tier">Darmowy plan</span>
       <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/usage','_blank')">AI Studio ↗</button></div>
@@ -7659,8 +7675,9 @@ function renderBlocks(){
     el.appendChild(rowEl(rid,g));
   }
   if(!arr.length&&noteMode!=='study'){const e=document.createElement('div'); e.className='ai-empty';
-    e.innerHTML=`<span class="ai-empty-ic">${typeof ICO_HELPER!=='undefined'?ICO_HELPER:'✦'}</span><div><b>Pusta notatka</b><small>Napisz temat, a Gemini przygotuje notatkę od zera — np. „Macierze odwrotne, wytłumacz jak dla laika”.</small></div>
-      <button class="btn sm">✦ Notatka AI od zera</button>`; e.querySelector('button').onclick=()=>aiTopicNote(0); el.appendChild(e);}
+    e.innerHTML=`<span class="ai-empty-ic">${typeof ICO_HELPER!=='undefined'?ICO_HELPER:'✦'}</span><div><b>Pusta notatka</b><small>Napisz temat, a Gemini przygotuje notatkę od zera — np. „Macierze odwrotne, wytłumacz jak dla laika” — albo dodaj zdjęcia tablicy, zeszytu czy zadań.</small></div>
+      <div class="ai-empty-btns"><button class="btn sm" data-a="t">✦ Notatka AI od zera</button><button class="btn ghost sm" data-a="p">📷 Ze zdjęć</button></div>`;
+    e.querySelector('[data-a="t"]').onclick=()=>aiTopicNote(0); e.querySelector('[data-a="p"]').onclick=()=>aiPhotosNote(0); el.appendChild(e);}
   wireBlockDnd();
   // starsze notatki AI z surowym zapisem $…$ — pokaż jako wzory (zapis LaTeX zostaje w data-tex)
   if(window.katex)el.querySelectorAll('.b-text').forEach(t=>{if(/\$|\\[([]/.test(t.textContent))aiMath(t);});
@@ -8665,12 +8682,12 @@ function aiProgAttach(){
 }
 async function aiBusy(btn,on,label){if(!btn)return;if(on){btn._h=btn.innerHTML;btn.classList.add('busy');btn.innerHTML=label||'⏳ AI…';}else{btn.classList.remove('busy');if(btn._h!=null)btn.innerHTML=btn._h;}}
 /* rysunki wskazane przez AI ([[RYSUNEK strona=N ramka=y0,x0,y1,x1 | podpis]]) wycinamy ze strony PDF i wstawiamy jako obraz */
-async function aiFigures(html,url){
+async function aiFigures(html,url,imgs){   // imgs: płótna zdjęć (notatka ze zdjęć) — „strona=N” to wtedy numer zdjęcia
   const re=/(?:<p>\s*)?\[\[\s*RYSUNEK\s+strona\s*=\s*(\d+)\s+ramka\s*=\s*([\d.\s,]+?)\s*(?:\|\s*([^\]|]*?))?\s*(?:\|\s*(obok|środek|srodek)\s*)?\]\](?:\s*<\/p>)?/gi;
   const found=[...html.matchAll(re)]; if(!found.length)return html;
-  let pdf=null; try{if(window.pdfjsLib)pdf=await pdfjsLib.getDocument(url).promise;}catch(_){}
-  const cache={};
-  const cut=async(n,box)=>{if(!pdf||n<1||n>pdf.numPages)return null;
+  let pdf=null; if(!imgs)try{if(window.pdfjsLib)pdf=await pdfjsLib.getDocument(url).promise;}catch(_){}
+  const cache={}; if(imgs)imgs.forEach((c,i)=>cache[i+1]=c);
+  const cut=async(n,box)=>{if(imgs?!cache[n]:(!pdf||n<1||n>pdf.numPages))return null;
     if(!cache[n]){const pg=await pdf.getPage(n), vp=pg.getViewport({scale:2.2}), c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
       await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise; cache[n]=c;}
     const c=cache[n]; let [y0,x0,y1,x1]=box; if(!(y1>y0&&x1>x0)){y0=0;x0=0;y1=1000;x1=1000;}
@@ -8703,13 +8720,92 @@ async function aiTopicNote(at){   // at: indeks w notatce (domyślnie na końcu)
   const nb=(allNotebooks||[]).find(x=>x.id===noteData.notebook_id);
   const body={topic:r.topic,instructions:r.instructions,style:r.style,context:[nb&&nb.name,noteData.title].filter(Boolean).join(' · ')};
   const put=html=>{const blk={id:uid(),type:'text',html:aiFormat(html)}; const i=at==null?noteData.content.length:Math.max(0,Math.min(at,noteData.content.length));
-    noteData.content.splice(i,0,blk); if(!noteData.title||noteData.title==='Nowa notatka'){noteData.title=r.topic.slice(0,80); const t=$('#note-title'); if(t)t.value=noteData.title;}
+    noteData.content.splice(i,0,blk); if(!noteData.title||noteData.title==='Nowa notatka'){noteData.title=r.topic.slice(0,80); const t=$('#note-title'); if(t){t.value=noteData.title; t.dispatchEvent(new Event('input'));}}
     renderBlocks(); scheduleSave(); const el=[...$('#blocks').children].find(x=>x.dataset.bid===blk.id); el&&el.scrollIntoView({block:'start',behavior:reduceMotion()?'auto':'smooth'});};
   if(AIS.mode==='chat'||!AIS.has_key){const html=await aiNoteViaChat('',r.topic,r.instructions,'/ai/topic-note/prompt',body); if(html)put(html); return;}
   const stop=aiProgress({title:'Gemini pisze notatkę od zera',stages:['Wysyłam temat','Gemini zbiera najważniejsze',r.style==='math'?'Rozpisuję obliczenia krok po kroku':'Układam notatkę do nauki','Dodaję przykłady i pytania']});
   try{const res=await fetch('api/ai/topic-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d=await res.json(); if(!res.ok)throw new Error(d.detail||('Błąd '+res.status)); stop(); put(d.html);}
   catch(err){stop(); popout({icon:'warn',title:'Nie udało się utworzyć notatki',text:err.message});}
+}
+/* Notatka AI ze zdjęć: kilka–kilkanaście zdjęć (telefon, aparat, zrzuty) → Gemini odczytuje wszystko (także pismo odręczne)
+   i układa jedną notatkę; rysunki i wykresy ze zdjęć wycina do notatki. Zdjęcia zmniejszamy w przeglądarce (limit zapytania ~20 MB). */
+const PH_MAX=24, PH_SIDE=1600;
+async function phLoad(file){
+  const url=URL.createObjectURL(file);
+  try{const img=await new Promise((res,rej)=>{const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error('format')); i.src=url;});
+    const k=Math.min(1,PH_SIDE/Math.max(img.naturalWidth,img.naturalHeight)), c=document.createElement('canvas');
+    c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
+    const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+    return {name:file.name,canvas:c,data:c.toDataURL('image/jpeg',.82)};}
+  finally{URL.revokeObjectURL(url);}
+}
+function aiPhotosPick(){
+  return new Promise(res=>{
+    const P=[]; let busy=0, done=false;
+    const mob=matchMedia('(pointer:coarse)').matches;
+    $('#modal').style.maxWidth='620px';
+    $('#modal').innerHTML=`<h3>✦ Notatka AI ze zdjęć</h3>
+      <div class="msub">Dodaj zdjęcia tablicy, zeszytu, slajdów, książki albo zadań — nawet kilkanaście. Gemini przeczyta wszystko (także pismo odręczne i wzory) i <b>napisze z tego notatkę do nauki</b> — zdjęć nie wkleja, wycina z nich tylko rysunki i wykresy.</div>
+      <div class="ph-drop" id="ph-drop">
+        <div class="ph-grid" id="ph-grid"></div>
+        <div class="ph-empty" id="ph-empty"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 016.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0120 8.5v8a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg>
+          <b>${mob?'Zrób zdjęcia albo wybierz z galerii':'Upuść tutaj zdjęcia albo wybierz z dysku'}</b><small>JPG, PNG, WebP · do ${PH_MAX} zdjęć · kolejność = kolejność w notatce</small></div>
+        <div class="imp-btns">${mob?'<button type="button" class="btn sm" id="ph-cam">📷 Zrób zdjęcie</button>':''}<button type="button" class="btn ${mob?'ghost ':''}sm" id="ph-pick">Wybierz zdjęcia</button></div>
+        <input type="file" id="ph-f" accept="image/*" multiple hidden><input type="file" id="ph-c" accept="image/*" capture="environment" hidden>
+      </div>
+      <div class="ph-info" id="ph-info"></div>
+      <div class="actions"><button class="btn ghost" id="ph-cancel">Anuluj</button><button class="btn" id="ph-go" disabled>Dalej</button></div>`;
+    openModal();
+    const paint=()=>{
+      $('#ph-grid').innerHTML=P.map((p,i)=>`<div class="ph-it" data-i="${i}"><img src="${p.data}" alt=""><span class="ph-n">${i+1}</span>
+        <div class="ph-act">${i?`<button type="button" data-a="l" title="Wcześniej">‹</button>`:''}${i<P.length-1?`<button type="button" data-a="r" title="Później">›</button>`:''}<button type="button" data-a="x" title="Usuń">✕</button></div></div>`).join('')
+        +(busy?`<div class="ph-it ph-busy"><span class="ai-spin"></span></div>`:'');
+      $('#ph-empty').hidden=!!(P.length||busy);
+      $('#ph-info').textContent=P.length?`${P.length} ${plural(P.length,'zdjęcie','zdjęcia','zdjęć')}${P.length>=PH_MAX?' — to maksimum na jedną notatkę':''}`:'';
+      $('#ph-go').disabled=!P.length||!!busy;
+      $$('#ph-grid .ph-it[data-i] button').forEach(b=>b.onclick=e=>{e.stopPropagation(); const i=+b.closest('.ph-it').dataset.i, a=b.dataset.a;
+        if(a==='x')P.splice(i,1); else{const j=a==='l'?i-1:i+1; [P[i],P[j]]=[P[j],P[i]];} paint();});
+    };
+    const add=async files=>{
+      files=[...files].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(f.name)).slice(0,Math.max(0,PH_MAX-P.length));
+      let bad=0; busy+=files.length; paint();
+      for(const f of files){try{P.push(await phLoad(f));}catch(_){bad++;} busy--; paint();}
+      if(bad)popout({icon:'warn',title:`Nie udało się otworzyć ${bad} ${plural(bad,'zdjęcia','zdjęć','zdjęć')}`,text:'Ten format nie jest obsługiwany w przeglądarce (np. HEIC z iPhone’a na komputerze). Zapisz je jako JPG albo wyślij z telefonu.'});
+    };
+    $('#ph-pick').onclick=()=>$('#ph-f').click(); if($('#ph-cam'))$('#ph-cam').onclick=()=>$('#ph-c').click();
+    $('#ph-f').onchange=e=>{add(e.target.files); e.target.value='';}; $('#ph-c').onchange=e=>{add(e.target.files); e.target.value='';};
+    const dz=$('#ph-drop');
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+    dz.addEventListener('dragleave',e=>{if(!dz.contains(e.relatedTarget))dz.classList.remove('over');});
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');add(e.dataTransfer.files);});
+    const onPaste=e=>{if(!$('#ph-drop')){fin(null);return;} const fs=[...(e.clipboardData?.files||[])]; if(fs.length){e.preventDefault(); add(fs);}};   // Ctrl+V zrzutu ekranu
+    document.addEventListener('paste',onPaste);
+    const fin=v=>{if(done)return; done=true; document.removeEventListener('paste',onPaste); res(v);};
+    $('#ph-cancel').onclick=()=>{closeModal(); fin(null);};
+    $('#ph-go').onclick=()=>fin(P.slice());
+    paint();
+  });
+}
+async function aiPhotosNote(at){
+  if(!noteData)return;
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  if(!AIS.has_key){popout({icon:'warn',title:'Potrzebny klucz Gemini',text:'Notatka ze zdjęć wymaga klucza Gemini (Ustawienia → AI) — darmowy klucz wystarczy.'});return;}
+  const photos=await aiPhotosPick(); if(!photos||!photos.length)return;
+  const r=await aiInstrDialog({title:'Notatka AI ze zdjęć',sub:`${photos.length} ${plural(photos.length,'zdjęcie','zdjęcia','zdjęć')} — powiedz jeszcze, jaka ma być notatka.`,
+    topic:true,styles:true,presets:['Rozwiąż zadania krok po kroku','Przepisz dokładnie i uporządkuj','Wytłumacz jak dla laika','Krótko — ściąga przed kolokwium','Dodaj pytania do samosprawdzenia'],
+    placeholder:'np. to notatki z tablicy z analizy — rozpisz przykłady krok po kroku',go:'Utwórz notatkę'});
+  if(!r)return;
+  const stop=aiProgress({title:`Gemini czyta ${photos.length} ${plural(photos.length,'zdjęcie','zdjęcia','zdjęć')}`,stages:['Wysyłam zdjęcia','Gemini odczytuje tekst i wzory',r.style==='math'?'Rozpisuję obliczenia krok po kroku':'Układam notatkę do nauki','Wycinam rysunki ze zdjęć']});
+  try{
+    const res=await fetch('api/ai/photos-note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({images:photos.map(p=>p.data),topic:r.topic,instructions:r.instructions,style:r.style})});
+    const d=await res.json().catch(()=>({})); if(!res.ok)throw new Error(d.detail||('Błąd '+res.status));
+    const html=aiFormat(await aiFigures(d.html,null,photos.map(p=>p.canvas))); stop();
+    const blk={id:uid(),type:'text',html}; const i=at==null?noteData.content.length:Math.max(0,Math.min(at,noteData.content.length));
+    noteData.content.splice(i,0,blk);
+    if(!noteData.title||noteData.title==='Nowa notatka'){noteData.title=(r.topic||'Notatka ze zdjęć').slice(0,80); const t=$('#note-title'); if(t){t.value=noteData.title; t.dispatchEvent(new Event('input'));}}
+    renderBlocks(); scheduleSave(); const el=[...$('#blocks').children].find(x=>x.dataset.bid===blk.id); el&&el.scrollIntoView({block:'start',behavior:reduceMotion()?'auto':'smooth'});
+  }catch(err){stop(); popout({icon:'warn',title:'Nie udało się utworzyć notatki',text:err.message});}
 }
 async function aiPdfNote(url,bid,btn){
   if(!url)return;
