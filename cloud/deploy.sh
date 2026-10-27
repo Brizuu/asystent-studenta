@@ -58,4 +58,4 @@ else
   echo "i sprawdź:  curl $PUBLIC_URL/health    (ma zwrócić {\"ok\":true})"
 fi
 echo
-echo "Logi: docker compose logs -f   ·   Kopia bazy: docker compose cp api:/data/cloud.db ./kopia.db"
+echo "Logi: docker compose logs -f   ·   Kopia bazy: docker compose exec api python -c \"import sqlite3;sqlite3.connect('/data/cloud.db').backup(sqlite3.connect('/data/kopia.db'))\" && docker compose cp api:/data/kopia.db ./kopia.db"

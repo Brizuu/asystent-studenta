@@ -1397,7 +1397,11 @@ def import_data(u: ImportData):
     if not db.startswith(b"SQLite format 3\x00"):
         raise HTTPException(400, "To nie jest kopia Asystenta (brak bazy asystent.db).")
     if DB_PATH.exists():
+        with get_conn() as c:   # baza w trybie WAL: najpierw wszystko do głównego pliku, potem kopia zapasowa
+            c.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         shutil.copy2(DB_PATH, DB_PATH.with_suffix(".db.bak"))   # stara baza na wszelki wypadek
+    for suf in ("-wal", "-shm"):   # dziennik starej bazy nie może trafić do nowej
+        Path(str(DB_PATH) + suf).unlink(missing_ok=True)
     DB_PATH.write_bytes(db)
     for n, b in files.items():
         if n.startswith("uploads/"):

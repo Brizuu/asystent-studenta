@@ -13,29 +13,10 @@
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Asystent">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<!-- dodatkowe języki (poza zestawem „common") -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dart.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/scala.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/matlab.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/julia.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/haskell.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/elixir.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/groovy.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/fortran.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/delphi.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- ciężkie biblioteki (wykresy, kolorowanie kodu, PDF, Excel, eksport) ładujemy dopiero przy pierwszym użyciu — loadLib() -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <style>
 /* ciemne natywne elementy: podpowiedzi autouzupełniania (e-mail), kalendarz w polach daty, paski przewijania */
 :root{color-scheme:dark}
@@ -3137,6 +3118,72 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 .imp-prog.ind .bar i{width:35%!important;animation:impInd 1.2s ease-in-out infinite} @keyframes impInd{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
 #imp-fold{display:flex;width:100%} #imp-fold button{flex:1}
 @media (max-width:560px){.imp-src{grid-template-columns:repeat(2,1fr)} #imp-row{display:flex;flex-direction:column;gap:0} #imp-fold button{padding:10px 8px;font-size:13.5px}}
+/* ===== tryb oszczędny (html.lite) i lżejsze szkło na telefonach ===== */
+html.lite{--glass-pop:rgba(22,27,38,.97);--blur-pop:none}
+html.lite *,html.lite *::before,html.lite *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lite .glass{background:rgba(19,24,33,.94)}
+html.lite .modal-bd{background:rgba(6,9,15,.74)}
+html.lite .flare i{animation:none!important}
+html.lite .ai-spin{animation-duration:1.2s}
+@media (pointer:coarse){html:not(.lite) .glass{backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%)}
+  :root{--blur-pop:blur(16px) saturate(140%)}}
+/* ===== CZAT (znajomi i grupy) ===== */
+.cv{display:flex;flex-direction:column;height:min(780px,calc(100vh - 230px));height:min(780px,calc(100dvh - 230px));min-height:440px;border-radius:24px;overflow:hidden;padding:0}
+.cv-host{padding:0!important;background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;min-height:0!important}
+.cv-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.cv-head .m{flex:1;min-width:0}.cv-head .m b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv-head .m small{display:flex;align-items:center;gap:6px;color:var(--ink-dim);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv-head .gr-mem{display:inline-flex}.cv-head .gr-mem>span{margin-right:-6px}
+.cv-back{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:22px;line-height:1;cursor:pointer;flex:none}
+.cv-ib{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;flex:none;font-size:18px;line-height:1}
+.cv-ib:hover{background:var(--glass-2);color:var(--ink)} .cv-ib.on{color:#E3B25C;border-color:rgba(227,178,92,.4)}
+.cv-tabs{display:flex;gap:4px;padding:8px 12px 0;border-bottom:1px solid var(--line)}
+.cv-tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--ink-dim);font:inherit;font-weight:600;font-size:13.5px;padding:8px 10px 9px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cv-tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.cv-cnt{font-style:normal;font-size:11px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--glass-2);color:var(--ink-soft);display:inline-grid;place-items:center}
+.cv-pane{flex:1;min-height:0;position:relative}.cv-pane[hidden]{display:none}
+.cv-shared{overflow:auto;padding:14px}
+.cv-list{position:absolute;inset:0;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain}
+.cv-empty{margin:auto;text-align:center;color:var(--ink-dim);font-size:14px;max-width:360px;padding:30px 10px;line-height:1.55}
+.cv-empty svg{vertical-align:-4px}
+.cv-more{text-align:center;color:var(--ink-dim);font-size:12px;padding:4px 0 10px}
+.cv-day{text-align:center;margin:12px 0 8px}.cv-day span{font-size:11.5px;font-weight:600;color:var(--ink-dim);padding:3px 10px;border-radius:99px;background:var(--glass)}
+.cv-m{display:flex;align-items:flex-end;gap:8px;margin-top:8px;max-width:100%}.cv-m.cont{margin-top:2px}
+.cv-m.mine{justify-content:flex-end}
+.cv-av{width:30px;flex:none}
+.cv-col{display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:min(78%,560px);min-width:0}
+.cv-m.mine .cv-col{align-items:flex-end}
+.cv-who{font-size:11.5px;color:var(--ink-dim);margin:0 0 0 10px}
+.cv-b{padding:8px 13px;border-radius:18px;background:rgba(255,255,255,.07);color:var(--ink);font-size:14.5px;line-height:1.45;overflow-wrap:anywhere;white-space:normal}
+.cv-m:not(.mine).cont .cv-b{border-top-left-radius:6px}
+.cv-m.mine .cv-b{background:#2F5FA8;color:#fff}.cv-m.mine.cont .cv-b{border-top-right-radius:6px}
+.cv-m.mine .cv-b a{color:#fff}.cv-b a{color:var(--accent-text);text-decoration:underline}
+.cv-m.men:not(.mine) .cv-b{box-shadow:inset 0 0 0 1.5px rgba(227,178,92,.6)}
+.mn{font-weight:700;color:var(--accent-text)}.mn.me{color:#E3B25C}.cv-m.mine .mn{color:#fff;text-decoration:underline}
+.cv-seen{font-size:11px;color:var(--ink-dim);margin-right:4px}
+.cv-share{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);max-width:420px;width:100%}
+.cv-share .m{flex:1;min-width:0}.cv-share b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cv-share small{color:var(--ink-dim);font-size:12px}
+.cv-share .acts{display:flex;gap:6px;flex:none}.cv-share.gone{color:var(--ink-dim);font-size:13px;font-style:italic}
+.cv-new{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);border:0;border-radius:99px;padding:7px 14px;background:var(--accent);color:#fff;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 8px 20px -8px rgba(0,0,0,.6)}
+.cv-new[hidden]{display:none}
+.cv-comp{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}.cv-comp[hidden]{display:none}
+.cv-comp textarea{flex:1;resize:none;min-height:40px;max-height:150px;padding:9px 14px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font:inherit;font-size:14.5px;line-height:1.45;outline:none}
+.cv-comp textarea:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.cv-send{width:40px;height:40px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none}
+.cv-pop{position:fixed;z-index:300;min-width:200px;padding:6px;border-radius:14px;display:flex;flex-direction:column}
+.cv-pop button{background:none;border:0;color:var(--ink);font:inherit;font-size:14px;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}.cv-pop button:hover{background:var(--glass-2)}
+.cv-pop button.danger{color:#E5675F}
+#cv-mn{z-index:320;max-width:min(360px,calc(100vw - 20px))}#cv-mn .mrow{gap:10px}
+.cv-toast{position:fixed;right:18px;bottom:18px;z-index:330;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 10px;border-radius:16px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(22,27,38,.97);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:0 20px 50px -20px rgba(0,0,0,.8);transform:translateY(140%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.cv-toast.on{transform:none;opacity:1}.cv-toast b{display:block;font-size:14px}.cv-toast small{color:var(--ink-dim);font-size:12.5px}
+.cv-t-ic{width:34px;height:34px;border-radius:11px;background:rgba(90,150,242,.18);display:grid;place-items:center;font-weight:800;color:var(--accent-text)}
+.fr-last{flex:1;min-width:0;display:flex;align-items:center;gap:8px;color:var(--ink-dim);font-size:13px;white-space:nowrap;overflow:hidden;justify-content:flex-end}
+.fr-last i{font-style:normal;font-size:11.5px;flex:none}.fr-last.un{color:var(--ink);font-weight:600}
+.fr-un{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#E5675F;color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center;flex:none}
+.fr-un.men,.gr-n.men,.nav-badge.men{background:#E3B25C;color:#111}
+.fr-mute{color:var(--ink-dim);display:grid;place-items:center}
+.fr-row.click .who{flex:0 1 auto;min-width:0}.fr-row.click>svg:last-child{margin-left:auto;flex:none}
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -3302,7 +3349,37 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
     background:rgba(16,20,28,.88);padding:6px 8px;max-width:calc(100vw - 20px)}
   .navlist button.active,.rail .bell.active{background:rgba(90,150,242,.18);color:#fff}
   .navlist button.active svg,.rail .bell.active svg{stroke:var(--accent-text)}
-  .main{padding-bottom:110px}
+  body[class] .main{padding-bottom:calc(122px + env(safe-area-inset-bottom))}   /* także w Nauce i na Pulpicie (tam były własne, zerowe marginesy) */
+  /* klawiatura otwarta (pisanie w notatce, czacie, formularzu): dolne menu znika — nie wisi nad klawiaturą i nie zasłania pola */
+  body.kb .rail,body.kb .ch-fab{display:none!important}
+  body[class].kb .main{padding-bottom:20px}
+  /* czat ze znajomymi / grupą: cała wysokość ekranu, bez nagłówka widoku */
+  #view-znajomi.conv-open>.head,#view-grupy.conv-open>.head{display:none}
+  #view-grupy.conv-open .gr-side{display:none}
+  .gr-main[hidden]{display:none}
+  .cv{height:calc(100vh - 186px);height:calc(100dvh - 186px - env(safe-area-inset-bottom));min-height:0;border-radius:20px}
+  body.kb .cv{height:calc(100dvh - 86px)}
+  .cv-head{padding:10px 12px;gap:10px}
+  .cv-col{max-width:86%}
+  .cv-share{flex-wrap:wrap}.cv-share .acts{width:100%}.cv-share .acts .btn{flex:1;justify-content:center}
+  .fr-row.click{flex-wrap:wrap}.fr-last{order:5;flex-basis:100%;justify-content:flex-start;padding-left:56px;margin-top:-6px}
+  .cv-toast{left:10px;right:10px;bottom:calc(98px + env(safe-area-inset-bottom))}
+  /* karty kont w panelu administratora: przycisk pod danymi, plakietka obok imienia bez nachodzenia */
+  .adm-top{flex-wrap:wrap}
+  .adm-top .m b{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;line-height:1.25}
+  .adm-top .m b .adm-badge{margin-left:0}
+  .adm-top .m small{display:block;white-space:normal;overflow-wrap:anywhere}
+  .adm-top>.btn{flex-basis:100%;justify-content:center}
+  .fr-head{flex-wrap:wrap}.fr-head>.btn{flex-basis:100%;justify-content:center}
+  /* notatka na całą szerokość telefonu: cieńsze marginesy panelu, edytora i bloków (przenoszenie bloków zostaje w pasku nad blokiem) */
+  #pane-note{margin-left:-10px;margin-right:-10px;border-radius:18px}
+  #pane-note .editor{padding-left:3px;padding-right:3px}
+  #blocks .block{padding-left:5px;padding-right:3px}
+  #blocks .block .bgrip{display:none}
+  #blocks .b-text{padding-left:5px;padding-right:5px}
+  /* asystent nauki (AI): pełny ekran nad menu, Pomodoro i Spotify nie wchodzą na nagłówek */
+  .ch-panel{left:0;right:0;top:0;bottom:0;width:auto;height:auto!important;border-radius:0;padding-top:env(safe-area-inset-top);z-index:400}
+  body.ch-open .pomo,body.ch-open .spoti,body.ch-open .rail,body.ch-open .ch-fab{display:none!important}
 }
 </style>
 </head>
@@ -3392,7 +3469,7 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
       </button>
       <button data-v="grupy" class="nav-groups">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="2.8"/><circle cx="5.5" cy="10" r="2.2"/><circle cx="18.5" cy="10" r="2.2"/><path d="M7.5 19a4.5 4.5 0 019 0M2 18.5a3.6 3.6 0 015.2-3.2M22 18.5a3.6 3.6 0 00-5.2-3.2"/></svg>
-        <span class="lbl">Grupy</span>
+        <span class="lbl">Grupy</span><span class="nav-badge" id="groups-badge" hidden></span>
       </button>
       <button data-v="dojazd">
         <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3.5"/><path d="M5 11h14M9 20.5l-1.5-3.5M15 20.5l1.5-3.5"/><circle cx="8.8" cy="14" r=".6" fill="currentColor"/><circle cx="15.2" cy="14" r=".6" fill="currentColor"/></svg>
@@ -3789,6 +3866,8 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
             <button data-b="h2"><span class="pbg-pv pv-h2"><i></i></span><b>Horyzont planety</b><small>łuk planety z poświatą u dołu</small></button>
             <button data-b="h3"><span class="pbg-pv pv-h3"><i></i><i></i></span><b>Zorza</b><small>ukośne smugi zorzy za szkłem</small></button>
           </div></div>
+        <div class="st-card glass"><div class="st-h"><h3>Wydajność <span class="adm-n" id="perf-st"></span></h3><p>Na słabszym komputerze lub telefonie tryb oszczędny wyłącza rozmycie tła pod kartami, ruchome flary i ciężkie animacje — aplikacja działa płynniej i mniej grzeje urządzenie. „Automatycznie” włącza go sam na słabym sprzęcie.</p></div>
+          <div class="seg" id="perf-pick" style="display:flex;margin-top:12px"><button type="button" data-p="auto" style="flex:1">Automatycznie</button><button type="button" data-p="lite" style="flex:1">Oszczędny</button><button type="button" data-p="full" style="flex:1">Pełne efekty</button></div></div>
       </div>
       <div class="st-pane" id="st-ai">
         <div class="st-card glass" id="st-status"></div>
@@ -3969,6 +4048,30 @@ body.has-tbar .ch-panel{height:min(580px,calc(100vh - 80px - 116px))}
 <button class="recpill" id="recpill" hidden onclick="recStop()" title="Zatrzymaj nagrywanie"></button>
 
 <script>
+/* ===== tryb oszczędny (słaby sprzęt): bez rozmycia tła, animowanych flar i ciężkich animacji =====
+   auto: słaby procesor/mało pamięci albo system prosi o mniej ruchu; można wymusić w Ustawieniach → Wygląd */
+function perfPref(){try{return localStorage.getItem('perf_mode')||'auto';}catch(_){return 'auto';}}
+function perfWeak(){const c=navigator.hardwareConcurrency||8, m=navigator.deviceMemory||8;
+  return c<=2||m<=2||(c<=4&&m<=4)||matchMedia('(prefers-reduced-motion: reduce)').matches;}
+function applyPerf(){const p=perfPref(); document.documentElement.classList.toggle('lite',p==='lite'||(p==='auto'&&perfWeak()));}
+applyPerf();
+function setPerf(p){try{localStorage.setItem('perf_mode',p);}catch(_){} applyPerf(); paintPerf();}
+function paintPerf(){const p=perfPref(); $$('#perf-pick button').forEach(x=>{x.classList.toggle('on',x.dataset.p===p); x.onclick=()=>setPerf(x.dataset.p);});
+  const st=$('#perf-st'); if(st)st.textContent=document.documentElement.classList.contains('lite')?'Teraz: oszczędny':'Teraz: pełne efekty';}
+/* ===== biblioteki na żądanie: start aplikacji bez ~2 MB skryptów (ważne na słabym sprzęcie i telefonie) ===== */
+const LIBS={chart:['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'],
+  hljs:['https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dart.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/scala.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/matlab.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/julia.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/haskell.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/elixir.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/groovy.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/fortran.min.js','https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/delphi.min.js'],
+  pdf:['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'], xlsx:['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'],
+  jspdf:['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'], h2c:['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js']};
+const _libP={};
+function _addRes(u){return new Promise((res,rej)=>{
+  if(u.endsWith('.css')){const l=document.createElement('link'); l.rel='stylesheet'; l.href=u; l.onload=l.onerror=()=>res(); document.head.appendChild(l); return;}
+  const sc=document.createElement('script'); sc.src=u; sc.async=false; sc.onload=()=>res(); sc.onerror=()=>rej(new Error('Nie udało się wczytać potrzebnej biblioteki — sprawdź połączenie z internetem.')); document.head.appendChild(sc);});}
+function loadLib(...keys){return Promise.all(keys.map(k=>_libP[k]||(_libP[k]=(async()=>{
+    const [first,...rest]=LIBS[k]; await _addRes(first); if(k==='hljs'){await _addRes(rest[0]); await Promise.all(rest.slice(1).map(_addRes));} else await Promise.all(rest.map(_addRes));
+    if(k==='pdf'&&window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  })().catch(e=>{delete _libP[k]; throw e;}))));}
+
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const api=async(u,o)=>{const r=await fetch('api'+u,o&&{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});return r.json();};
 const zl=n=>new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(n||0);
@@ -5361,9 +5464,9 @@ async function initAccount(){
     else ME=null; } }
   paintNavAccount(); refreshFriendsBadge(); if(ME)startAutoSync();
 }
-async function refreshFriendsBadge(){
-  const b=$('#friends-badge'); if(!ME){b.hidden=true;return;}
-  try{FR=await cloud('/friends'); const n=FR.incoming.length; b.hidden=!n; b.textContent=n;}catch(_){b.hidden=true;}
+async function refreshFriendsBadge(){   // zaproszenia + nieprzeczytane wiadomości (czat), odświeżane w tle
+  if(!ME){clearInterval(CHAT.timer); CHAT.timer=null; CHAT.unread=null; CHAT.C=null; chatBadges(); return;}
+  if(!CHAT.timer)chatStartPolling(); else chatUnreadPoll();
 }
 /* --- widok Konto --- */
 function renderAccount(){
@@ -5945,7 +6048,7 @@ function djTick(){
     if(el.dataset.fmt==='inline'){const t=L.now?'teraz':L.u?`za ${L.n} ${L.u}`:L.n; if(el.textContent!==t)el.textContent=t; return;}
     const html=`<b>${L.n}</b>${L.u?` <small>${L.u}</small>`:''}`; if(el.dataset.h!==html){el.dataset.h=html;el.innerHTML=html;el.closest('.dj-cd')?.classList.toggle('now',!!L.now);}});
 }
-setInterval(djTick,1000);
+setInterval(()=>{if(!document.hidden&&document.querySelector('[data-ts]'))djTick();},1000);   // karta w tle / brak odjazdów — nic nie liczymy
 function djTrainRow(x,o={}){
   const L=djLeft(x.ts), dl=x.delay_min;
   const late=d=>d>=1?` <span class="dj-late">+${d}</span>`:'';
@@ -6399,12 +6502,15 @@ async function loadFriends(){
       <p>Dodawaj znajomych, wysyłaj im notatki i całe zeszyty,<br>importuj to, co udostępnią Tobie.</p></div>
       <div class="auth-card glass" style="text-align:center"><p style="color:var(--ink-soft);margin-bottom:16px">Do tego potrzebne jest konto — zajmie chwilę.</p>
       <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
-  try{FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
-  refreshFriendsBadge();
+  let CH=[]; try{[FR,CH]=await Promise.all([cloud('/friends'),cloud('/chats').catch(()=>[])]);}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
+  refreshFriendsBadge(); CHAT.C=null; $('#view-znajomi').classList.remove('conv-open');
+  const chOf=f=>CH.find(c=>c.key===dmKey(f.id,ME.id)), ago=s=>{const d=cvDate(s),n=(Date.now()-d)/6e4; return n<1?'teraz':n<60?Math.round(n)+' min':n<1440&&new Date().getDate()===d.getDate()?cvTime(d):d.toLocaleDateString('pl-PL',{day:'numeric',month:'short'});};
+  const lastLine=c=>!c||!c.last?'':(c.last.sender===ME.id?'Ty: ':'')+(c.last.share?'📄 '+c.last.share.title:(c.last.body||'').slice(0,80));
+  FR.friends.sort((a,b)=>((chOf(b)||{}).last||{id:0}).id-((chOf(a)||{}).last||{id:0}).id);
   const row=(f,acts,click)=>`<div class="fr-row${click?' click':''}" ${click?`onclick="openFriend(${f.id})"`:''}>${avatarHTML(f)}<div class="who"><b>${esc(f.display_name)}</b><small>${studyLine(f)?`<span class="st">${esc(studyLine(f))}</span> · `:''}${esc(f.email||'')}</small></div>${acts}</div>`;
   el.innerHTML=`<form class="fr-add glass" onsubmit="event.preventDefault();addFriend()"><input id="fr-user" type="email" placeholder="E-mail znajomego"><button class="btn" type="submit">Dodaj znajomego</button></form>
     ${FR.incoming.length?`<div class="fr-sec"><h4>Zaproszenia</h4><div class="fr-list">${FR.incoming.map(f=>row(f,`<div class="acts"><button class="btn sm" onclick="frAct('accept',${f.fid})">Akceptuj</button><button class="btn ghost sm" onclick="frAct('del',${f.fid})">Odrzuć</button></div>`)).join('')}</div></div>`:''}
-    <div class="fr-sec"><h4>Znajomi</h4><div class="fr-list">${FR.friends.length?FR.friends.map(f=>row(f,`${f.shared_with_me?`<span class="fr-pill">${f.shared_with_me} ${plural(f.shared_with_me,'udostępnienie','udostępnienia','udostępnień')}</span>`:''}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-dim)"><path d="M9 6l6 6-6 6"/></svg>`,true)).join('')
+    <div class="fr-sec"><h4>Znajomi i rozmowy</h4><div class="fr-list">${FR.friends.length?FR.friends.map(f=>{const c=chOf(f); return row(f,`${c&&c.last?`<span class="fr-last${c.unread?' un':''}">${esc(lastLine(c))}<i>${ago(c.last.created_at)}</i></span>`:''}${c&&c.muted?`<span class="fr-mute" title="Wyciszona">${ICO_MUTE}</span>`:''}${c&&c.unread?`<span class="fr-un${c.mention?' men':''}">${c.mention?'@':c.unread}</span>`:''}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-dim)"><path d="M9 6l6 6-6 6"/></svg>`,true);}).join('')
       :'<div class="empty-soft">Nie masz jeszcze znajomych. Dodaj kogoś po adresie e-mail.</div>'}</div></div>
     ${FR.outgoing.length?`<div class="fr-sec"><h4>Wysłane zaproszenia</h4><div class="fr-list">${FR.outgoing.map(f=>row(f,`<button class="btn ghost sm" onclick="frAct('del',${f.fid})">Anuluj</button>`)).join('')}</div></div>`:''}`;
 }
@@ -6416,17 +6522,12 @@ async function addFriend(){
 }
 async function frAct(a,fid){ try{ a==='accept'?await cloud(`/friends/${fid}/accept`,{method:'POST'}):await cloud('/friends/'+fid,{method:'DELETE'}); }catch(e){popout({icon:'warn',title:'Nie udało się',text:e.message});} loadFriends(); }
 async function openFriend(id){
-  const f=FR.friends.find(x=>x.id===id); if(!f)return;
-  const list=await cloud('/shares?from_user='+id), el=$('#fr');
-  el.innerHTML=`<button class="btn ghost sm" style="align-self:flex-start" onclick="loadFriends()">← Wszyscy znajomi</button>
-    <div class="fr-head glass">${avatarHTML(f,64)}<div class="who"><h2>${esc(f.display_name)}</h2>${eduHTML(f,28)}<div class="un" style="color:var(--ink-dim)">${esc(f.email||'')}</div></div>
-      <button class="btn ghost sm" onclick="removeFriend(${f.fid},'${escAttr(f.display_name)}')">Usuń ze znajomych</button></div>
-    <div class="fr-sec"><h4>Udostępnione Tobie</h4><div class="fr-list">${list.length?list.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
-      return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
-        <div class="who"><b>${esc(sh.title)}</b><small>${SH_KIND[sh.kind]||'Notatka'} · ${new Date(sh.created_at.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{day:'numeric',month:'short'})}</small></div>
-        <div class="acts"><button class="btn ghost sm" onclick="previewShare(${sh.id})">Podgląd</button><button class="btn sm" onclick="importShare(${sh.id})">Importuj</button>
-        <button class="btn ghost sm" title="Usuń z listy" onclick="delShare(${sh.id},${id})">✕</button></div></div>`;}).join('')
-      :`<div class="empty-soft">${esc(f.display_name)} nic Ci jeszcze nie udostępnił(a).</div>`}</div></div>`;
+  const f=FR&&FR.friends.find(x=>x.id===id); if(!f){loadFriends();return;}
+  const el=$('#fr'); $('#view-znajomi').classList.add('conv-open');
+  convMount(el,{key:dmKey(f.id,ME.id),kind:'dm',ref:f.id,title:f.display_name,back:()=>loadFriends(),
+    avatar:avatarHTML(f,42),sub:esc(studyLine(f)||f.email||''),
+    share:()=>groupSend(null,{friend:f}),
+    menu:[{label:'Usuń ze znajomych',danger:true,act:()=>removeFriend(f.fid,f.display_name)}]});
 }
 async function removeFriend(fid,name){ if(!await confirmPop('Usunąć '+name+' ze znajomych?','Udostępnione materiały znikną z listy.'))return; await cloud('/friends/'+fid,{method:'DELETE'}); loadFriends(); }
 async function delShare(sid,fid){ await cloud('/shares/'+sid,{method:'DELETE'}); openFriend(fid); }
@@ -6680,6 +6781,198 @@ async function impRun(){
     pr.hidden=true; popout({icon:'warn',title:'Import nie powiódł się',text:err.message});
   }finally{ if(IMP){IMP.busy=false; const g=$('#imp-go'); if(g){g.textContent='Importuj'; g.disabled=!IMP.files.size;}} }
 }
+/* telefon: przy pisaniu (fokus w polu) chowamy dolne menu i przycisk asystenta — klawiatura nie wypycha ich na treść */
+const _isPhone=()=>matchMedia('(max-width:820px)').matches;
+document.addEventListener('focusin',e=>{const t=e.target; if(_isPhone()&&t&&(t.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),textarea,select')||t.isContentEditable))document.body.classList.add('kb');});
+document.addEventListener('focusout',()=>setTimeout(()=>{const t=document.activeElement; if(!(t&&(t.matches('input,textarea,select')||t.isContentEditable)))document.body.classList.remove('kb');},120));
+/* ===================== CZAT: znajomi i grupy =====================
+   Rozmowa 1:1 (klucz d<id>_<id>) albo czat grupy (g<id>). Udostępnienia trafiają do rozmowy jako karty i do zakładki
+   „Udostępnione”, więc nie giną między wiadomościami. Liczniki nieprzeczytanych na ikonach jak w komunikatorze. */
+const CHAT={unread:null,timer:null,C:null,toastKey:null};
+const dmKey=(a,b)=>{const [x,y]=a<b?[a,b]:[b,a]; return `d${x}_${y}`;};
+const ICO_MUTE='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0110.6-3.9M18 10.5c.3 4.2 2.5 6 2.5 6H8"/><path d="M10 20a2.2 2.2 0 004 0M3 3l18 18"/></svg>';
+const ICO_BELL='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10 20a2.2 2.2 0 004 0"/></svg>';
+const ICO_SEND='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg>';
+const ICO_CLIP='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h9l4 4V20a.5.5 0 01-.5.5h-12A.5.5 0 015 20z"/><path d="M14 3.5V8h4M12 11v6M9 14h6"/></svg>';
+
+/* ---- liczniki: lekkie odpytywanie serwera (karta w tle — nic) ---- */
+async function chatUnreadPoll(){
+  if(!ME){CHAT.unread=null; chatBadges(); return;}
+  let u; try{u=await cloud('/chats/unread');}catch(_){return;}
+  const prev=CHAT.unread; CHAT.unread=u; chatBadges();
+  // nowa wiadomość w rozmowie, której nie masz otwartej — krótka informacja (wyciszone tylko przy oznaczeniu)
+  if(prev){for(const [k,x] of Object.entries(u.chats)){const p=prev.chats[k]; if((x.n>(p?p.n:0))&&(!x.muted||x.mention)&&!(CHAT.C&&CHAT.C.key===k&&chatVisibleNow()))chatToast(k,x);}}
+  if(CHAT.C&&chatVisibleNow())convPoll();
+}
+function chatStartPolling(){clearInterval(CHAT.timer); if(!ME){chatUnreadPoll();return;} chatUnreadPoll(); CHAT.timer=setInterval(()=>{if(!document.hidden)chatUnreadPoll();},25000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ME)chatUnreadPoll();});
+function chatBadges(){
+  const u=CHAT.unread, set=(el,n,men)=>{if(!el)return; el.hidden=!n; el.textContent=n>99?'99+':n; el.classList.toggle('men',!!men);};
+  const dm=u?u.dm+u.invites:0, gr=u?u.groups:0, men=k=>u&&Object.entries(u.chats).some(([c,x])=>c[0]===k&&x.mention);
+  set($('#friends-badge'),dm,men('d')); set($('#groups-badge'),gr,men('g'));
+  const t=document.title.replace(/^\(\d+\+?\)\s*/,''); document.title=(dm+gr?`(${dm+gr}) `:'')+t;
+}
+function chatVisibleNow(){return !document.hidden&&CHAT.C&&CHAT.C.el&&CHAT.C.el.isConnected&&CHAT.C.tab==='chat';}
+function chatToast(k,x){
+  const name=k[0]==='g'?((GRP||[]).find(g=>'g'+g.id===k)||{}).name:((FR&&FR.friends||[]).find(f=>dmKey(f.id,ME.id)===k)||{}).display_name;
+  let t=$('#cv-toast'); if(!t){t=document.createElement('button'); t.id='cv-toast'; t.className='cv-toast'; document.body.appendChild(t);}
+  t.innerHTML=`<span class="cv-t-ic">${x.mention?'@':'💬'}</span><span><b>${esc(name||'Nowa wiadomość')}</b><small>${x.mention?'Oznaczono Cię w rozmowie':x.n>1?`${x.n} nowe wiadomości`:'Nowa wiadomość'}</small></span>`;
+  t.onclick=()=>{t.classList.remove('on'); chatOpenKey(k);}; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),6000);
+}
+async function chatOpenKey(k){
+  if(k[0]==='g'){grSel=+k.slice(1); go('grupy'); return;}
+  const [a,b]=k.slice(1).split('_').map(Number), other=a===ME.id?b:a; go('znajomi'); setTimeout(()=>openFriend(other),120);
+}
+
+/* ---- rozmowa ---- */
+const cvDate=s=>new Date(String(s).replace(' ','T')+'Z');
+function cvDay(d){const t=new Date(); t.setHours(0,0,0,0); const x=new Date(d); x.setHours(0,0,0,0); const n=Math.round((t-x)/864e5);
+  return n===0?'Dziś':n===1?'Wczoraj':d.toLocaleDateString('pl-PL',{weekday:n<7?'long':undefined,day:'numeric',month:'long',year:d.getFullYear()!==t.getFullYear()?'numeric':undefined});}
+const cvTime=d=>d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+function cvBody(m,C){
+  let h=esc(m.body||'');
+  h=h.replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+  for(const id of m.mentions||[]){const u=C.members.find(x=>x.id===id); if(!u)continue;
+    const nm=esc(u.display_name).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); h=h.replace(new RegExp('@'+nm,'g'),`<span class="mn${id===ME.id?' me':''}">@${esc(u.display_name)}</span>`);}
+  return h.replace(/\n/g,'<br>');
+}
+function cvShareCard(s,mine){
+  if(!s)return ''; if(s.kind==='gone')return `<div class="cv-share gone">${esc(s.title)}</div>`;
+  const [c,ic]=ICON_SH[s.kind]||ICON_SH.note;
+  return `<div class="cv-share"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span><div class="m"><b>${esc(s.title)}</b><small>${SH_KIND[s.kind]||'Notatka'}</small></div>
+    <div class="acts"><button type="button" class="btn ghost sm" onclick="previewShare(${s.id})">Podgląd</button>${mine?'':`<button type="button" class="btn sm" onclick="importShare(${s.id})">${s.kind==='plan'?'Do planu':'Importuj'}</button>`}</div></div>`;
+}
+function cvMsgsHTML(list,C,prevMsg){
+  let out='', prev=prevMsg||null;
+  const lastMine=[...C.msgs].reverse().find(m=>m.sender===ME.id);
+  for(const m of list){
+    const d=cvDate(m.created_at), pd=prev&&cvDate(prev.created_at);
+    if(!prev||pd.toDateString()!==d.toDateString())out+=`<div class="cv-day"><span>${cvDay(d)}</span></div>`;
+    const mine=m.sender===ME.id, u=C.members.find(x=>x.id===m.sender)||{display_name:'Ktoś',id:m.sender};
+    const cont=prev&&prev.sender===m.sender&&(d-pd)<5*60000&&pd.toDateString()===d.toDateString();
+    const men=(m.mentions||[]).includes(ME.id);
+    out+=`<div class="cv-m${mine?' mine':''}${cont?' cont':''}${men?' men':''}" data-id="${m.id}">
+      ${!mine&&C.kind==='group'?`<span class="cv-av">${cont?'':avatarHTML(u,30)}</span>`:''}
+      <div class="cv-col">${!mine&&C.kind==='group'&&!cont?`<span class="cv-who">${esc(u.display_name)}</span>`:''}
+        ${m.body?`<div class="cv-b"${matchMedia('(hover:hover)').matches?` title="${cvTime(d)}"`:''}>${cvBody(m,C)}</div>`:''}${cvShareCard(m.share,mine)}
+        ${lastMine&&m.id===lastMine.id&&C.kind==='dm'?`<span class="cv-seen">${C.seen>=m.id?'Wyświetlono':'Wysłano'} · ${cvTime(d)}</span>`:''}</div></div>`;
+    prev=m;
+  }
+  return out;
+}
+function convPaint(keep){
+  const C=CHAT.C, box=C.el.querySelector('.cv-list'); if(!box)return;
+  const atBottom=keep||box.scrollHeight-box.scrollTop-box.clientHeight<80;
+  box.innerHTML=(C.more?'<div class="cv-more">Przewiń w górę, aby wczytać starsze</div>':'')
+    +(C.msgs.length?cvMsgsHTML(C.msgs,C):`<div class="cv-empty">${C.kind==='dm'?'Napisz pierwszą wiadomość albo udostępnij notatkę.':'Nikt tu jeszcze nic nie napisał — zacznij rozmowę.'}</div>`);
+  if(atBottom)box.scrollTop=box.scrollHeight;
+  C.el.querySelector('.cv-new').hidden=atBottom;
+}
+async function convMount(el,conf){
+  const C=CHAT.C={...conf,el,msgs:[],members:[],more:false,muted:false,seen:0,tab:'chat',mention:new Map(),timer:null,shares:null};
+  el.innerHTML=`<div class="cv glass">
+    <div class="cv-head">${conf.back?`<button type="button" class="cv-back" aria-label="Wstecz">‹</button>`:''}${conf.avatar}<div class="m"><b>${esc(conf.title)}</b><small>${conf.sub||''}</small></div>
+      <button type="button" class="cv-ib cv-mute" title="Wycisz rozmowę"></button>${conf.menu&&conf.menu.length?`<button type="button" class="cv-ib cv-menu" title="Więcej" aria-label="Więcej">⋯</button>`:''}</div>
+    <div class="cv-tabs"><button type="button" data-t="chat" class="on">Czat</button><button type="button" data-t="shared">Udostępnione <i class="cv-cnt" hidden></i></button></div>
+    <div class="cv-pane cv-chat"><div class="cv-list"><div class="cv-empty"><span class="ai-spin"></span></div></div><button type="button" class="cv-new" hidden>↓ Nowe wiadomości</button></div>
+    <div class="cv-pane cv-shared" hidden></div>
+    <form class="cv-comp"><button type="button" class="cv-ib cv-att" title="Udostępnij notatkę, zeszyt albo plan">${ICO_CLIP}</button>
+      <textarea rows="1" maxlength="4000" placeholder="${C.kind==='group'?'Napisz do grupy…':'Napisz wiadomość…'}" title="Enter — wyślij, Shift+Enter — nowa linia, @ — oznacz osobę"></textarea>
+      <button type="submit" class="cv-send" title="Wyślij" aria-label="Wyślij">${ICO_SEND}</button></form></div>`;
+  const $c=s=>el.querySelector(s), ta=$c('textarea'), list=$c('.cv-list');
+  if(conf.back)$c('.cv-back').onclick=conf.back;
+  $c('.cv-att').onclick=()=>conf.share();
+  if($c('.cv-menu'))$c('.cv-menu').onclick=e=>convMenu(e.currentTarget,conf.menu);
+  $c('.cv-mute').onclick=async()=>{try{const r=await cloud(`/chats/${C.key}/mute`,{method:'POST',body:{muted:!C.muted}}); C.muted=r.muted; convHead(); chatUnreadPoll();}catch(e){popout({icon:'warn',title:'Nie udało się',text:e.message});}};
+  $$('.cv-tabs button',el).forEach(b=>b.onclick=()=>convTab(b.dataset.t));
+  $c('.cv-new').onclick=()=>{list.scrollTop=list.scrollHeight;};
+  list.addEventListener('scroll',()=>{if(list.scrollTop<60&&C.more&&!C.loadingOld)convOlder(); if(list.scrollHeight-list.scrollTop-list.clientHeight<80){$c('.cv-new').hidden=true; convRead();}},{passive:true});
+  const grow=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,150)+'px';};
+  ta.addEventListener('input',()=>{grow(); convMentionAsk(ta);});
+  ta.addEventListener('keydown',e=>{if(cvMn.on&&cvMnKey(e))return;
+    if(e.key==='Enter'&&!e.shiftKey&&!matchMedia('(pointer:coarse)').matches){e.preventDefault(); $c('form').requestSubmit();}});
+  ta.addEventListener('blur',()=>setTimeout(cvMnHide,150));
+  $c('form').onsubmit=e=>{e.preventDefault(); convSend(ta);};
+  try{const d=await cloud(`/chats/${C.key}/messages`); if(CHAT.C!==C)return; Object.assign(C,{msgs:d.messages,members:d.members,more:d.more,muted:d.muted,seen:d.seen}); convHead(); convPaint(true); convRead();}
+  catch(e){list.innerHTML=`<div class="cv-empty">${esc(e.message)}</div>`; return;}
+  convShares(true);
+  clearInterval(C.timer); C.timer=setInterval(()=>{if(CHAT.C!==C||!C.el.isConnected){clearInterval(C.timer);return;} if(chatVisibleNow())convPoll();},4000);
+}
+function convHead(){const C=CHAT.C, b=C.el.querySelector('.cv-mute'); b.innerHTML=C.muted?ICO_MUTE:ICO_BELL; b.classList.toggle('on',C.muted); b.title=C.muted?'Wyciszona — kliknij, aby włączyć powiadomienia':'Wycisz rozmowę';}
+async function convPoll(){
+  const C=CHAT.C; if(!C||C.polling)return; C.polling=true;
+  try{const last=C.msgs.length?C.msgs[C.msgs.length-1].id:0; const d=await cloud(`/chats/${C.key}/messages?after=${last}`);
+    if(CHAT.C!==C)return; const fresh=d.messages.filter(m=>!C.msgs.some(x=>x.id===m.id)); const seenCh=d.seen!==C.seen; C.seen=d.seen;
+    if(fresh.length||seenCh){C.msgs.push(...fresh); convPaint(); if(fresh.some(m=>m.share))convShares(true);} convRead();}
+  catch(_){} finally{C.polling=false;}
+}
+async function convOlder(){
+  const C=CHAT.C, list=C.el.querySelector('.cv-list'); C.loadingOld=true;
+  try{const d=await cloud(`/chats/${C.key}/messages?before=${C.msgs[0].id}`); if(CHAT.C!==C)return; const h=list.scrollHeight;
+    C.msgs.unshift(...d.messages); C.more=d.more; convPaint(); list.scrollTop=list.scrollHeight-h;}catch(_){} finally{C.loadingOld=false;}
+}
+let _rdT=0;
+function convRead(){const C=CHAT.C; if(!C||!C.msgs.length||!chatVisibleNow())return; const last=C.msgs[C.msgs.length-1].id;
+  if(C.readTo>=last)return; const list=C.el.querySelector('.cv-list'); if(list.scrollHeight-list.scrollTop-list.clientHeight>120)return;
+  C.readTo=last; clearTimeout(_rdT); _rdT=setTimeout(async()=>{try{await cloud(`/chats/${C.key}/read`,{method:'POST',body:{last_id:last}}); chatUnreadPoll();}catch(_){}} ,400);}
+async function convSend(ta){
+  const C=CHAT.C, body=ta.value.trim(); if(!body||C.sending)return;
+  const mentions=[...C.mention.entries()].filter(([id,nm])=>body.includes('@'+nm)).map(([id])=>id);
+  C.sending=true; const tmp={id:1e15,sender:ME.id,body,mentions,created_at:new Date().toISOString().slice(0,19).replace('T',' '),pending:true};
+  C.msgs.push(tmp); ta.value=''; ta.style.height='auto'; convPaint(true);
+  try{const m=await cloud(`/chats/${C.key}/messages`,{method:'POST',body:{body,mentions}}); const i=C.msgs.indexOf(tmp); if(i>=0)C.msgs.splice(i,1,m); C.mention.clear(); convPaint(true);}
+  catch(e){C.msgs.splice(C.msgs.indexOf(tmp),1); convPaint(true); ta.value=body; popout({icon:'warn',title:'Nie wysłano wiadomości',text:e.message});}
+  finally{C.sending=false;}
+}
+function convTab(t){const C=CHAT.C; C.tab=t; $$('.cv-tabs button',C.el).forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  C.el.querySelector('.cv-chat').hidden=t!=='chat'; C.el.querySelector('.cv-shared').hidden=t!=='shared'; C.el.querySelector('.cv-comp').hidden=t!=='chat';
+  if(t==='shared')convShares(); else{convRead(); const l=C.el.querySelector('.cv-list'); l.scrollTop=l.scrollHeight;}}
+async function convShares(countOnly){
+  const C=CHAT.C; let list; try{list=await cloud(`/chats/${C.key}/shares`);}catch(_){return;} if(CHAT.C!==C)return;
+  const cnt=C.el.querySelector('.cv-cnt'); cnt.hidden=!list.length; cnt.textContent=list.length;
+  if(countOnly&&C.tab!=='shared')return;
+  const dt=s=>cvDate(s).toLocaleDateString('pl-PL',{day:'numeric',month:'short'});
+  C.el.querySelector('.cv-shared').innerHTML=list.length?`<div class="fr-list">${list.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
+    return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
+      <div class="who"><b>${esc(sh.title)}</b><small>${SH_KIND[sh.kind]||'Notatka'} · ${sh.mine?'wysłane przez Ciebie':esc(sh.sender_name)} · ${dt(sh.created_at)}</small></div>
+      <div class="acts"><button class="btn ghost sm" onclick="previewShare(${sh.id})">Podgląd</button>${sh.mine?'':`<button class="btn sm" onclick="importShare(${sh.id})">${sh.kind==='plan'?'Do planu':'Importuj'}</button>`}</div></div>`;}).join('')}</div>`
+    :`<div class="cv-empty">Tu zbiera się wszystko, co sobie udostępnicie — notatki, zeszyty i plany. Kliknij ${ICO_CLIP} przy polu wiadomości.</div>`;
+}
+function convMenu(btn,items){
+  document.querySelector('.cv-pop')?.remove();
+  const p=document.createElement('div'); p.className='cv-pop pop'; p.innerHTML=items.map((it,i)=>`<button type="button" data-i="${i}" class="${it.danger?'danger':''}">${esc(it.label)}</button>`).join('');
+  document.body.appendChild(p); const r=btn.getBoundingClientRect(); p.style.top=(r.bottom+6)+'px'; p.style.right=Math.max(8,innerWidth-r.right)+'px';
+  p.querySelectorAll('button').forEach(b=>b.onclick=()=>{p.remove(); items[+b.dataset.i].act();});
+  setTimeout(()=>document.addEventListener('click',function off(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',off);}}),0);
+}
+/* ---- oznaczanie: @ + imię, nazwisko, nick albo e-mail ---- */
+const cvMn={on:false,list:[],i:0,ta:null,start:0};
+function convMentionAsk(ta){
+  const C=CHAT.C, pos=ta.selectionStart, before=ta.value.slice(0,pos), m=before.match(/(^|\s)@([^\s@]{0,40})$/);
+  if(!m){cvMnHide();return;}
+  const q=norm(m[2]); cvMn.list=C.members.filter(u=>u.id!==ME.id&&(!q||[u.display_name,u.username,u.email].some(x=>norm(x||'').includes(q))
+    ||norm(u.display_name).split(' ').some(w=>w.startsWith(q)))).slice(0,6);
+  if(!cvMn.list.length){cvMnHide();return;}
+  cvMn.on=true; cvMn.i=0; cvMn.ta=ta; cvMn.start=pos-m[2].length-1; cvMnPaint();
+}
+function cvMnPaint(){
+  let p=$('#cv-mn'); if(!p){p=document.createElement('div'); p.id='cv-mn'; p.className='mention'; document.body.appendChild(p);}
+  p.innerHTML=`<div class="mhint">Oznacz osobę</div>`+cvMn.list.map((u,i)=>`<div class="mrow ${i===cvMn.i?'on':''}" data-i="${i}">${avatarHTML(u,24)}<span><b>${esc(u.display_name)}</b> <small style="color:var(--ink-dim)">${esc(u.email||'@'+u.username)}</small></span></div>`).join('');
+  const r=cvMn.ta.getBoundingClientRect(); p.style.display='block'; p.style.left=r.left+'px'; p.style.top='auto'; p.style.bottom=(innerHeight-r.top+8)+'px';
+  p.querySelectorAll('.mrow').forEach(x=>x.onmousedown=e=>{e.preventDefault(); cvMnPick(cvMn.list[+x.dataset.i]);});
+}
+function cvMnHide(){cvMn.on=false; const p=$('#cv-mn'); if(p)p.style.display='none';}
+function cvMnKey(e){
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault(); cvMn.i=(cvMn.i+(e.key==='ArrowDown'?1:-1)+cvMn.list.length)%cvMn.list.length; cvMnPaint(); return true;}
+  if(e.key==='Enter'||e.key==='Tab'){e.preventDefault(); cvMnPick(cvMn.list[cvMn.i]); return true;}
+  if(e.key==='Escape'){e.preventDefault(); cvMnHide(); return true;}
+  return false;
+}
+function cvMnPick(u){
+  const ta=cvMn.ta, pos=ta.selectionStart, ins='@'+u.display_name+' ';
+  ta.value=ta.value.slice(0,cvMn.start)+ins+ta.value.slice(pos); const c=cvMn.start+ins.length; ta.setSelectionRange(c,c); ta.focus();
+  CHAT.C.mention.set(u.id,u.display_name); cvMnHide(); ta.dispatchEvent(new Event('input'));
+}
 /* --- odbiorcy udostępnienia: znajomi i grupy --- */
 let GRP=null;
 async function loadGroupsData(){try{GRP=await cloud('/groups');}catch(_){GRP=GRP||[];}return GRP;}
@@ -6689,10 +6982,10 @@ function targetsHTML(){
   return `<div class="pick-list">${g}${f}</div>`;
 }
 const pickedTargets=()=>({to:$$('.fpick input[data-f]:checked').map(i=>+i.dataset.f),groups:$$('.fpick input[data-g]:checked').map(i=>+i.dataset.g)});
-async function sendShare(kind,title,payload,{to=[],groups=[]}){
+async function sendShare(kind,title,payload,{to=[],groups=[],note=''}){
   await pushFilesToCloud(); let sent=0;
-  if(to.length)sent+=(await cloud('/shares',{method:'POST',body:{to,kind,title,payload}})).sent;
-  for(const g of groups)sent+=(await cloud('/shares',{method:'POST',body:{group_id:g,kind,title,payload}})).sent;
+  if(to.length)sent+=(await cloud('/shares',{method:'POST',body:{to,kind,title,payload,note}})).sent;
+  for(const g of groups)sent+=(await cloud('/shares',{method:'POST',body:{group_id:g,kind,title,payload,note}})).sent;
   return sent;
 }
 async function notePayload(id){const n=await api('/notes/'+id);const title=n.title||'Bez tytułu';return {title,payload:{title,purpose:n.purpose,description:n.description,content:n.content}};}
@@ -6780,28 +7073,26 @@ async function loadGroups(){
     <div style="display:flex;gap:10px"><button class="btn" style="flex:1" onclick="authTab='login';go('konto')">Zaloguj się</button><button class="btn ghost" style="flex:1" onclick="authTab='register';go('konto')">Załóż konto</button></div></div></div>`;return;}
   el.innerHTML='<div class="empty-soft">Ładowanie…</div>';
   try{await loadGroupsData(); FR=await cloud('/friends');}catch(e){el.innerHTML=`<div class="empty-soft">${esc(e.message)}</div>`;return;}
-  if(grSel&&!GRP.some(g=>g.id===grSel))grSel=null; if(!grSel&&GRP.length)grSel=GRP[0].id;
+  const narrow=matchMedia('(max-width:900px)').matches;
+  if(grSel>0&&!GRP.some(g=>g.id===grSel))grSel=null; if((!grSel||grSel<0)&&GRP.length&&!narrow)grSel=GRP[0].id;
+  $('#view-grupy').classList.toggle('conv-open',narrow&&grSel>0);
   const g=GRP.find(x=>x.id===grSel);
   el.innerHTML=`<div class="gr">
     <aside class="gr-side glass">${GRP.map(x=>`<button class="gr-item${x.id===grSel?' on':''}" onclick="grSel=${x.id};loadGroups()"><span class="gr-av" style="--c:${x.color}">${esc(x.name[0].toUpperCase())}</span>
-        <span class="m"><b>${esc(x.name)}</b><small>${x.members.length} ${plural(x.members.length,'osoba','osoby','osób')}</small></span>${x.received?`<i class="gr-n">${x.received}</i>`:''}</button>`).join('')||'<div class="gr-none">Nie masz jeszcze grup.</div>'}
+        <span class="m"><b>${esc(x.name)}</b><small>${x.members.length} ${plural(x.members.length,'osoba','osoby','osób')}</small></span>${(()=>{const u=CHAT.unread&&CHAT.unread.chats['g'+x.id]; return u&&u.n?`<i class="gr-n${u.mention?' men':''}">${u.mention?'@':u.n}</i>`:'';})()}</button>`).join('')||'<div class="gr-none">Nie masz jeszcze grup.</div>'}
       <button class="btn ghost sm gr-new" onclick="openGroup()">+ Nowa grupa</button></aside>
-    <div class="gr-main glass" id="gr-main">${g?'<div class="empty-soft">Ładowanie…</div>':`<div class="gr-empty"><b>Utwórz pierwszą grupę</b><p>Np. „Projekt z Zarządzania” albo „Rok I — Ekonomia”. Dodaj do niej znajomych, a potem wysyłaj notatki, zeszyty i plany całej grupie naraz.</p><button class="btn" onclick="openGroup()">+ Nowa grupa</button></div>`}</div></div>`;
+    <div class="gr-main glass" id="gr-main" ${narrow&&!g&&GRP.length?'hidden':''}>${g?'<div class="empty-soft">Ładowanie…</div>':`<div class="gr-empty"><b>Utwórz pierwszą grupę</b><p>Np. „Projekt z Zarządzania” albo „Rok I — Ekonomia”. Dodaj do niej znajomych, a potem wysyłaj notatki, zeszyty i plany całej grupie naraz.</p><button class="btn" onclick="openGroup()">+ Nowa grupa</button></div>`}</div></div>`;
   if(g)renderGroup(g);
 }
 async function renderGroup(g){
-  let feed=[]; try{feed=await cloud('/groups/'+g.id+'/shares');}catch(_){}
-  const box=$('#gr-main'); if(!box)return;
-  const dt=s=>new Date(s.replace(' ','T')+'Z').toLocaleDateString('pl-PL',{day:'numeric',month:'short'});
-  box.innerHTML=`<div class="gr-head" style="--c:${g.color}"><span class="gr-av lg" style="--c:${g.color}">${esc(g.name[0].toUpperCase())}</span>
-      <div class="m"><h2>${esc(g.name)}</h2><div class="gr-mem">${g.members.map(m=>`<span title="${escAttr(m.display_name)}">${avatarHTML(m,26)}</span>`).join('')}<small>${g.members.map(m=>esc(m.display_name.split(' ')[0])).join(', ')}</small></div></div>
-      <div class="gr-acts"><button class="btn sm" onclick="groupSend(${g.id})">Wyślij do grupy</button><button class="btn ghost sm" onclick="openGroup(${g.id})">${g.is_owner?'Edytuj':'Dodaj osoby'}</button>
-        <button class="btn ghost sm" onclick="leaveGroup(${g.id})">${g.is_owner?'Usuń grupę':'Opuść'}</button></div></div>
-    <div class="fr-sec"><h4>W grupie</h4><div class="fr-list">${feed.length?feed.map(sh=>{const [c,ic]=ICON_SH[sh.kind]||ICON_SH.note;
-      return `<div class="fr-row"><span class="sh-ic" style="--c:${c}"><svg viewBox="0 0 24 24">${ic}</svg></span>
-        <div class="who"><b>${esc(sh.title)}</b><small>${SH_KIND[sh.kind]||'Notatka'} · ${sh.mine?'wysłane przez Ciebie':esc(sh.sender_name)} · ${dt(sh.created_at)}</small></div>
-        <div class="acts">${sh.mine?'':`<button class="btn ghost sm" onclick="previewShare(${sh.id})">Podgląd</button><button class="btn sm" onclick="importShare(${sh.id})">${sh.kind==='plan'?'Dodaj do planu':'Importuj'}</button>`}</div></div>`;}).join('')
-      :'<div class="empty-soft">Nic tu jeszcze nie ma — kliknij „Wyślij do grupy”.</div>'}</div></div>`;
+  const box=$('#gr-main'); if(!box)return; box.classList.add('cv-host');
+  const names=g.members.map(m=>esc(m.display_name.split(' ')[0])).join(', ');
+  convMount(box,{key:'g'+g.id,kind:'group',ref:g.id,title:g.name,
+    back:matchMedia('(max-width:900px)').matches?()=>{grSel=-1;loadGroups();}:null,
+    avatar:`<span class="gr-av" style="--c:${g.color}">${esc(g.name[0].toUpperCase())}</span>`,
+    sub:`<span class="gr-mem">${g.members.slice(0,5).map(m=>`<span title="${escAttr(m.display_name)}">${avatarHTML(m,20)}</span>`).join('')}</span>${g.members.length} ${plural(g.members.length,'osoba','osoby','osób')} · ${names}`,
+    share:()=>groupSend(g.id),
+    menu:[{label:g.is_owner?'Edytuj grupę':'Dodaj osoby',act:()=>openGroup(g.id)},{label:g.is_owner?'Usuń grupę':'Opuść grupę',danger:true,act:()=>leaveGroup(g.id)}]});
 }
 function openGroup(id=null){
   const g=id?GRP.find(x=>x.id===id):null, mine=!g||g.is_owner, inG=new Set(g?g.members.map(m=>m.id):[]);
@@ -6832,15 +7123,16 @@ async function leaveGroup(id){
   if(!await confirmPop(g.is_owner?'Usunąć grupę?':'Opuścić grupę?',g.is_owner?'Grupa zniknie u wszystkich członków. Zaimportowane notatki zostają.':'Przestaniesz dostawać to, co trafia do „'+g.name+'”.',g.is_owner?'Usuń':'Opuść'))return;
   await cloud('/groups/'+id,{method:'DELETE'}); grSel=null; loadGroups();
 }
-async function groupSend(gid){
-  const g=GRP.find(x=>x.id===gid); let kind='note', range='week';
+async function groupSend(gid,{friend=null}={}){
+  const g=friend?{name:friend.display_name,members:[0,0]}:GRP.find(x=>x.id===gid); let kind='note', range='week';
   const nbs=await api('/notebooks'); const notes=(await Promise.all(nbs.map(n=>api('/notes?notebook_id='+n.id).then(l=>l.map(x=>({...x,nb:n})))))).flat();
   $('#modal').style.maxWidth='500px';
-  $('#modal').innerHTML=`<h3>Wyślij do „${esc(g.name)}”</h3><div class="msub">Każdy członek grupy (${g.members.length-1} ${plural(g.members.length-1,'osoba','osoby','osób')} poza Tobą) dostanie kopię i może ją dodać do siebie.</div>
+  $('#modal').innerHTML=`<h3>Wyślij do „${esc(g.name)}”</h3><div class="msub">${friend?'Pojawi się w Waszej rozmowie i w zakładce „Udostępnione” — możesz ją potem podejrzeć.':`Każdy członek grupy (${g.members.length-1} ${plural(g.members.length-1,'osoba','osoby','osób')} poza Tobą) dostanie kopię i może ją dodać do siebie.`}</div>
     <div class="seg" id="gs-kind" style="display:flex;margin-bottom:14px">${[['note','Notatkę'],['notebook','Zeszyt'],['plan','Plan']].map(([k,l])=>`<button type="button" data-k="${k}" style="flex:1">${l}</button>`).join('')}</div>
     <div class="field" id="gs-note-w"><span>Notatka</span><div id="gs-note"></div></div>
     <div class="field" id="gs-nb-w"><span>Zeszyt</span><div id="gs-nb"></div></div>
     <div class="field" id="gs-plan-w"><span>Zakres planu (od dziś)</span><div class="seg" id="gs-range" style="display:flex">${[['day','Dzień'],['week','Tydzień'],['month','Miesiąc'],['all','Wszystko']].map(([k,l])=>`<button type="button" data-k="${k}" style="flex:1">${l}</button>`).join('')}</div></div>
+    <label class="field"><span>Komentarz (opcjonalnie)</span><input id="gs-note-txt" maxlength="500" placeholder="np. Tu masz notatkę z dzisiejszego wykładu"></label>
     <div class="actions"><button class="btn ghost" onclick="closeModal()">Anuluj</button><button class="btn" id="gs-go">Wyślij</button></div>`;
   const cbN=notes.length?combo($('#gs-note'),{items:notes.map(n=>({v:n.id,label:n.title||'Bez tytułu',group:n.nb.name,icon:ICONS.nauka,color:n.nb.color})),value:(noteActive&&notes.some(n=>n.id===noteActive))?noteActive:notes[0].id,placeholder:'Szukaj notatki…'}):null;
   const cbB=nbs.length?combo($('#gs-nb'),{items:nbs.map(n=>({v:n.id,label:n.name,icon:ICONS.nauka,color:n.color})),value:nbs[0].id,readonly:true}):null;
@@ -6854,7 +7146,9 @@ async function groupSend(gid){
     else if(kind==='notebook'){if(!cbB)return;d=await nbPayload(+cbB.get());}
     else{d=await planPayload(range,todayISO()); if(!d.count){popout({icon:'info',title:'W tym okresie nie ma wpisów'});return;}}
     $('#gs-go').disabled=true; $('#gs-go').textContent='Wysyłam…';
-    try{const n=await sendShare(kind,d.title,d.payload,{groups:[gid]}); closeModal(); popout({icon:'ok',title:'Wysłano do grupy',text:`„${d.title}” → ${n} ${plural(n,'osoba','osoby','osób')}.`}); loadGroups();}
+    try{const note=($('#gs-note-txt')?.value||'').trim(); const n=await sendShare(kind,d.title,d.payload,friend?{to:[friend.id],note}:{groups:[gid],note}); closeModal();
+      if(CHAT.C&&CHAT.C.el.isConnected){convPoll(); convShares(true);} else if(!friend)loadGroups();
+      popout({icon:'ok',title:friend?'Wysłano':'Wysłano do grupy',text:`„${d.title}” → ${friend?esc(friend.display_name):n+' '+plural(n,'osoba','osoby','osób')}.`});}
     catch(e){$('#gs-go').disabled=false;$('#gs-go').textContent='Wyślij';popout({icon:'warn',title:'Nie wysłano',text:e.message.includes('Nieznany rodzaj')||e.message.includes('Not Found')?'Serwer kont trzeba zaktualizować do nowej wersji.':e.message});}
   };
 }
@@ -6893,7 +7187,7 @@ function stTab(t){$$('#st-tabs button').forEach(b=>b.classList.toggle('on',b.dat
 /* tło Pulpitu (projekty H): wiązka / horyzont / zorza — zamiast dawnego nieba */
 function pulpitBg(){let b='h1'; try{b=localStorage.getItem('pulpit_bg')||'h1';}catch(_){} return /^h[123]$/.test(b)?b:'h1';}
 function setPulpitBg(b){try{localStorage.setItem('pulpit_bg',b);}catch(_){} document.body.dataset.pbg=b; paintPbg();}
-function paintPbg(){const b=pulpitBg(); $$('#pbg-pick button').forEach(x=>{x.classList.toggle('on',x.dataset.b===b); x.onclick=()=>setPulpitBg(x.dataset.b);});}
+function paintPbg(){paintPerf(); const b=pulpitBg(); $$('#pbg-pick button').forEach(x=>{x.classList.toggle('on',x.dataset.b===b); x.onclick=()=>setPulpitBg(x.dataset.b);});}
 document.body.dataset.pbg=pulpitBg();
 async function paintWinPrefs(){
   const box=$('#st-win'); if(!box||!APP.desktop)return; let w; try{w=await api('/desktop/window');}catch(_){return;}
@@ -7284,7 +7578,7 @@ const THEMES=[
    pojawia się z miejsca kliknięcia (transform-origin), znika tą samą drogą, zamykanie da się przerwać */
 const SPRING=(()=>{const w=2*Math.PI/.35, x=t=>1-(1+w*t)*Math.exp(-w*t); let T=0; while(x(T)<.999)T+=.005;
   return {easing:`linear(${Array.from({length:33},(_,i)=>x(i/32*T).toFixed(4)).join(',')})`,duration:Math.round(T*1000)};})();
-const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduceMotion=()=>document.documentElement.classList.contains('lite')||matchMedia('(prefers-reduced-motion: reduce)').matches;   // tryb oszczędny: bez ciężkich animacji
 document.documentElement.style.setProperty('--spring',SPRING.easing);
 let lastPress=null, modalAnim=null, modalClosing=false;
 addEventListener('pointerdown',e=>{lastPress={x:e.clientX,y:e.clientY};},true);
@@ -7619,7 +7913,7 @@ function alignFabs(){const c=document.querySelector('#view-nauka.active .tab-cal
   if(logo&&(logo.matches(':hover')||document.querySelector('.spoti.open')))return;   // podczas najechania logo jest powiększone
   if(!logo||!logo.offsetParent){B.setProperty('--fab-r',Math.max(8,Math.round(document.documentElement.clientWidth-r.right))+'px');return;}
   const d=logo.getBoundingClientRect().right-r.right; if(Math.abs(d)>.5)B.setProperty('--fab-r',Math.max(4,Math.round(cur+d))+'px');}
-const alignSoon=()=>[0,300,700,1200].forEach(t=>setTimeout(alignFabs,t));   // widoki wjeżdżają z animacją — mierzymy też po jej końcu
+let _alT=[]; const alignSoon=()=>{_alT.forEach(clearTimeout); _alT=[0,300,700,1200].map(t=>setTimeout(alignFabs,t));};   // widoki wjeżdżają z animacją — mierzymy też po jej końcu (kolejne kliknięcia nie mnożą pomiarów)
 addEventListener('resize',()=>requestAnimationFrame(alignFabs));
 new MutationObserver(alignSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
 document.addEventListener('click',alignSoon,true);
@@ -7897,6 +8191,7 @@ function buildTextBlock(d,b){
   ed.className='b-text'; ed.contentEditable='true'; ed.dataset.block=b.id; ed.spellcheck=(typeof correctionMode==='undefined'||correctionMode!=='off');
   ed.setAttribute('data-ph','Pisz…  ( # link do zeszytu · [[ link do notatki )');
   ed.innerHTML=b.html||'';
+  ed.querySelectorAll('img').forEach(i=>{i.loading='lazy'; i.decoding='async';});   // długie notatki z obrazami: dekodowanie dopiero przy przewinięciu
   if(b.fontSize)ed.style.fontSize=b.fontSize+'px';
 
   // ===== własna historia bloku (Ctrl+Z / Ctrl+Y): formatowanie robione na DOM nie trafia na stos przeglądarki =====
@@ -8693,7 +8988,7 @@ async function aiBusy(btn,on,label){if(!btn)return;if(on){btn._h=btn.innerHTML;b
 async function aiFigures(html,url,imgs){   // imgs: płótna zdjęć (notatka ze zdjęć) — „strona=N” to wtedy numer zdjęcia
   const re=/(?:<p>\s*)?\[\[\s*RYSUNEK\s+strona\s*=\s*(\d+)\s+ramka\s*=\s*([\d.\s,]+?)\s*(?:\|\s*([^\]|]*?))?\s*(?:\|\s*(obok|środek|srodek)\s*)?\]\](?:\s*<\/p>)?/gi;
   const found=[...html.matchAll(re)]; if(!found.length)return html;
-  let pdf=null; if(!imgs)try{if(window.pdfjsLib)pdf=await pdfjsLib.getDocument(url).promise;}catch(_){}
+  let pdf=null; if(!imgs)try{await loadLib('pdf'); pdf=await pdfjsLib.getDocument(url).promise;}catch(_){}
   const cache={}; if(imgs)imgs.forEach((c,i)=>cache[i+1]=c);
   const cut=async(n,box)=>{if(imgs?!cache[n]:(!pdf||n<1||n>pdf.numPages))return null;
     if(!cache[n]){const pg=await pdf.getPage(n), vp=pg.getViewport({scale:2.2}), c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height;
@@ -8822,7 +9117,7 @@ async function aiPdfNote(url,bid,btn){
   if(!r)return;
   if(!AIS.mode)AIS=await api('/settings/ai');
   if(AIS.mode==='chat'||!AIS.has_key){   // bez klucza: tekst z PDF → polecenie do zwykłego czatu
-    let text=''; try{const pdf=await pdfjsLib.getDocument(url).promise;
+    let text=''; try{await loadLib('pdf'); const pdf=await pdfjsLib.getDocument(url).promise;
       for(let p=1;p<=pdf.numPages&&text.length<150000;p++){const tc=await (await pdf.getPage(p)).getTextContent();text+=tc.items.map(i=>i.str).join(' ')+'\n\n';}}catch(_){}
     if(text.trim().length<20){popout({icon:'warn',title:'Nie da się odczytać tekstu z PDF',text:'To pewnie skan. Dodaj klucz Gemini w Ustawieniach — wtedy AI przeczyta też skany.'});return;}
     const html=await aiNoteViaChat(text,r.topic,r.instructions); if(html)insertAiBlock(bid,html); return;
@@ -9119,7 +9414,7 @@ function chatUI(){
   document.addEventListener('mouseup',e=>setTimeout(()=>chatSel(e),0));
   document.addEventListener('keyup',e=>{if(e.shiftKey)setTimeout(()=>chatSel(e),0);});
   document.addEventListener('mousedown',e=>{if(!e.target.closest('#ch-selpop'))sp.classList.remove('on');});
-  setInterval(chatVisibility,700);
+  setInterval(()=>{if(!document.hidden)chatVisibility();},1200);
 }
 function chatSel(e){
   const sp=$('#ch-selpop'); if(!sp)return; const sel=getSelection();
@@ -9395,8 +9690,10 @@ async function ensurePdfFont(pdf){
   return 'RobotoPdf';
 }
 async function renderNotePdf(mode){
-  if(!window.html2canvas||!window.jspdf){alert('Biblioteki eksportu jeszcze się ładują — spróbuj za chwilę.');return;}
+  try{await loadLib('jspdf','h2c');}catch(e){popout({icon:'warn',title:'Eksport niedostępny',text:e.message});return;}
   const body=document.getElementById('ed-body'); if(!body)return;
+  const imgs=[...body.querySelectorAll('img')]; imgs.forEach(i=>i.loading='eager');   // obrazy z leniwego ładowania — wszystkie muszą być w PDF
+  await Promise.all(imgs.map(i=>i.complete?0:(i.decode?i.decode().catch(()=>{}):0)));
   const editor=document.getElementById('editor');
   const theme=mode==='white'?'paper':(editor.getAttribute('data-theme')||'midnight');
   const title=(noteData&&noteData.title)||'Notatka';
@@ -9517,7 +9814,7 @@ const PICO={ // ikony SVG
   close:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
 };
 async function openPdfViewer(url,blockId){
-  if(!window.pdfjsLib){alert('Podgląd PDF jeszcze się ładuje — spróbuj za chwilę.');return;}
+  try{await loadLib('pdf');}catch(e){popout({icon:'warn',title:'Podgląd PDF niedostępny',text:e.message});return;}
   const blk=blockId?getBlock(blockId):null;
   const annots = (blk&&blk.pdfAnnots) ? JSON.parse(JSON.stringify(blk.pdfAnnots)) : {strokes:[],notes:[]};
   if(!annots.strokes)annots.strokes=[]; if(!annots.notes)annots.notes=[];
@@ -9649,8 +9946,8 @@ function pdfNotePopup(el,note,annots){
   setTimeout(()=>t.focus(),20);
   setTimeout(()=>{const out=ev=>{if(!p.contains(ev.target)&&ev.target!==el){p.remove();document.removeEventListener('mousedown',out);}};document.addEventListener('mousedown',out);},0);
 }
-function pdfDownload(pageObjs,annots,v){
-  if(!window.jspdf){alert('Biblioteka PDF do zapisu jeszcze się ładuje.');return;}
+async function pdfDownload(pageObjs,annots,v){
+  try{await loadLib('jspdf');}catch(e){popout({icon:'warn',title:'Zapis PDF niedostępny',text:e.message});return;}
   const {jsPDF}=window.jspdf; let doc;
   try{
     pageObjs.forEach((po,idx)=>{
@@ -9691,6 +9988,7 @@ function buildCode(d,b){
   const src=d.querySelector('.src'), hl=d.querySelector('.hl');
   src.textContent=b.code||'';
   const render=()=>{try{hl.innerHTML=(window.hljs&&hljs.getLanguage(b.lang))?hljs.highlight(src.textContent,{language:b.lang,ignoreIllegals:true}).value:esc(src.textContent);}catch(_){hl.textContent=src.textContent;}};
+  if(!window.hljs)loadLib('hljs').then(render).catch(()=>{});   // kolorowanie dociąga się w tle
   src.addEventListener('input',()=>{b.code=src.textContent;render();scheduleSave();});
   src.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();document.execCommand('insertText',false,'  ');}});
   const dd=makeLangDropdown(b.lang,id=>{b.lang=id;render();scheduleSave();});
@@ -9857,7 +10155,7 @@ async function renderInlinePdf(box,on,btn){
   if(host.dataset.rendered==='1')return;
   host.innerHTML='<div class="pdf-inline-load">Ładowanie podglądu…</div>';
   try{
-    const pdf=await pdfjsLib.getDocument(box.dataset.url).promise; host.innerHTML='';
+    await loadLib('pdf'); const pdf=await pdfjsLib.getDocument(box.dataset.url).promise; host.innerHTML='';
     for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const vp=page.getViewport({scale:1.25});
       const cv=document.createElement('canvas');cv.className='pdf-inline-pg';cv.width=vp.width;cv.height=vp.height;
       host.appendChild(cv);page.render({canvasContext:cv.getContext('2d'),viewport:vp});}
@@ -10002,8 +10300,8 @@ function importCsv(id){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,.tsv,.xlsx,.xls';
   inp.onchange=()=>{const f=inp.files[0]; if(!f)return; const rd=new FileReader();
     const isX=/\.xlsx?$/i.test(f.name);
-    rd.onload=()=>{
-      try{
+    rd.onload=async()=>{
+      try{ if(isX)await loadLib('xlsx');
         if(isX && window.XLSX){const wb=XLSX.read(rd.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
           const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}).map(r=>r.map(c=>String(c)));
           b.data=normGrid(rows);}
@@ -10062,7 +10360,8 @@ function chartRow(id,dir){const b=getBlock(id);
   else if(b.chart.labels.length>1){b.chart.labels.pop();b.chart.values.pop();}
   renderBlocks();scheduleSave();}
 function drawChart(b){
-  const cv=document.getElementById('c_'+b.id); if(!cv||!window.Chart)return;
+  if(!window.Chart){loadLib('chart').then(()=>drawChart(b)).catch(()=>{}); return;}
+  const cv=document.getElementById('c_'+b.id); if(!cv)return;
   if(charts[b.id])charts[b.id].destroy();
   const pie=b.chart.type==='pie'||b.chart.type==='doughnut';
   charts[b.id]=new Chart(cv,{type:b.chart.type,
