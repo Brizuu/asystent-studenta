@@ -158,14 +158,21 @@ _MIGRATIONS = [
 
 
 def get_conn() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    # szybciej na wolnym dysku: przy WAL zapis bez pełnego fsync przy każdej zmianie (bezpieczne przy awarii prądu do ostatniej transakcji)
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA temp_store = MEMORY")
     return conn
 
 
 def init_db() -> None:
     with get_conn() as conn:
+        try:
+            conn.execute("PRAGMA journal_mode = WAL")   # odczyty nie czekają na zapis (synchronizacja w tle + praca w aplikacji)
+        except sqlite3.OperationalError:
+            pass
         conn.executescript(SCHEMA)
         for table, col, ddl in _MIGRATIONS:
             have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}

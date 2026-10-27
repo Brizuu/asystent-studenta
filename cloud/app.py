@@ -24,6 +24,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
@@ -45,6 +46,16 @@ app.add_middleware(
     allow_origin_regex=r"http://(127\.0\.0\.1|localhost)(:\d+)?",
     allow_methods=["*"], allow_headers=["*"],
 )
+class _Gzip(GZipMiddleware):
+    """gzip tylko dla tekstu (strona aplikacji ~1 MB, JSON synchronizacji i czatu) — PDF-y i obrazy są już skompresowane."""
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "") if scope["type"] == "http" else ""
+        if "/files/" in path or "/uploads/" in path or re.search(r"\.(png|jpe?g|gif|webp|pdf|zip|exe|apk|ogg|webm)$", path, re.I):
+            return await self.app(scope, receive, send)
+        return await super().__call__(scope, receive, send)
+
+
+app.add_middleware(_Gzip, minimum_size=1024)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -104,9 +115,10 @@ CREATE TABLE IF NOT EXISTS shares (
 
 
 def db() -> sqlite3.Connection:
-    c = sqlite3.connect(DB_PATH)
+    c = sqlite3.connect(DB_PATH, timeout=15)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys = ON")
+    c.execute("PRAGMA synchronous = NORMAL")
     return c
 
 
@@ -138,10 +150,39 @@ CREATE TABLE IF NOT EXISTS suggestions (
 );
 """
 
+SCHEMA += """
+CREATE TABLE IF NOT EXISTS messages (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat       TEXT NOT NULL,                     -- d<min id>_<max id> (rozmowa 1:1) | g<id grupy>
+    sender     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    body       TEXT NOT NULL DEFAULT '',
+    share_id   INTEGER,                           -- wiadomość z udostępnioną notatką / zeszytem / planem
+    mentions   TEXT DEFAULT '',                   -- ,id,id, oznaczonych osób
+    created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_msg_chat ON messages(chat, id);
+CREATE TABLE IF NOT EXISTS chat_state (
+    user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    chat      TEXT NOT NULL,
+    last_read INTEGER DEFAULT 0,
+    muted     INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, chat)
+);
+CREATE INDEX IF NOT EXISTS ix_shares_rcpt ON shares(recipient, id);
+CREATE INDEX IF NOT EXISTS ix_shares_sender ON shares(sender, id);
+CREATE INDEX IF NOT EXISTS ix_gm_user ON group_members(user_id);
+CREATE INDEX IF NOT EXISTS ix_sessions_user ON sessions(user_id);
+"""
+
 with db() as _c:
+    _c.execute("PRAGMA journal_mode = WAL")   # wielu użytkowników naraz: czytanie (czat, synchronizacja) nie czeka na zapis
     _c.executescript(SCHEMA)
-    if "group_id" not in {r[1] for r in _c.execute("PRAGMA table_info(shares)")}:
+    _sh = {r[1] for r in _c.execute("PRAGMA table_info(shares)")}
+    if "group_id" not in _sh:
         _c.execute("ALTER TABLE shares ADD COLUMN group_id INTEGER")
+    if "hidden" not in _sh:   # odbiorca usunął z listy, ale wiadomość w czacie nadal ją pokazuje
+        _c.execute("ALTER TABLE shares ADD COLUMN hidden INTEGER DEFAULT 0")
+    _c.execute("CREATE INDEX IF NOT EXISTS ix_shares_group ON shares(group_id)")
     # migracje: kolumny dodane później (istniejące konta zostają)
     _have = {r[1] for r in _c.execute("PRAGMA table_info(users)")}
     for _col in ("university", "field", "study_year", "last_login"):
@@ -416,6 +457,7 @@ class Share(BaseModel):
     kind: str                     # note | notebook
     title: str
     payload: dict
+    note: str = ""                # opcjonalny komentarz — trafia do czatu razem z kartą udostępnienia
 
 
 @app.post("/shares")
@@ -435,9 +477,16 @@ def share(p: Share, u=Depends(current_user)):
             targets.discard(u["id"])
         if not targets:
             raise HTTPException(400, "Wybierz co najmniej jednego znajomego." if not p.group_id else "W tej grupie nie ma jeszcze nikogo poza Tobą.")
-        for t in targets:
-            c.execute("INSERT INTO shares(sender,recipient,kind,title,payload,group_id) VALUES(?,?,?,?,?,?)",
-                      (u["id"], t, p.kind, p.title.strip()[:120] or "Bez tytułu", data, p.group_id))
+        first = None
+        note = (p.note or "").strip()[:2000]
+        for t in sorted(targets):
+            sid = c.execute("INSERT INTO shares(sender,recipient,kind,title,payload,group_id) VALUES(?,?,?,?,?,?)",
+                            (u["id"], t, p.kind, p.title.strip()[:120] or "Bez tytułu", data, p.group_id)).lastrowid
+            first = first or sid
+            if not p.group_id:   # rozmowa 1:1 — karta udostępnienia w czacie, nie ginie w liście
+                _post(c, _dm_key(u["id"], t), u["id"], note, sid)
+        if p.group_id:
+            _post(c, f"g{p.group_id}", u["id"], note, first)
     return {"sent": len(targets)}
 
 
@@ -445,15 +494,23 @@ def share(p: Share, u=Depends(current_user)):
 def shares(from_user: int | None = None, u=Depends(current_user)):
     """Udostępnione MNIE (opcjonalnie tylko od jednego znajomego) — bez treści, sama lista."""
     q = ("SELECT s.id, s.kind, s.title, s.created_at, s.sender, s.group_id, length(s.payload) size FROM shares s "
-         "WHERE s.recipient=?" + (" AND s.sender=?" if from_user else "") + " ORDER BY s.id DESC")
+         "WHERE s.recipient=? AND COALESCE(s.hidden,0)=0" + (" AND s.sender=?" if from_user else "") + " ORDER BY s.id DESC")
     with db() as c:
         return [dict(r) for r in c.execute(q, (u["id"], from_user) if from_user else (u["id"],))]
+
+
+def _share_row(c, sid: int, uid: int):
+    """Udostępnienie widzi odbiorca, nadawca i — gdy poszło do grupy — każdy jej członek (karta w czacie grupy)."""
+    r = c.execute("SELECT * FROM shares WHERE id=?", (sid,)).fetchone()
+    if r and (uid in (r["recipient"], r["sender"]) or (r["group_id"] and _is_member(c, r["group_id"], uid))):
+        return r
+    return None
 
 
 @app.get("/shares/{sid}")
 def share_get(sid: int, u=Depends(current_user)):
     with db() as c:
-        r = c.execute("SELECT * FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"])).fetchone()
+        r = _share_row(c, sid, u["id"])
     if not r:
         raise HTTPException(404, "Nie znaleziono.")
     return {"id": r["id"], "kind": r["kind"], "title": r["title"], "created_at": r["created_at"],
@@ -463,7 +520,10 @@ def share_get(sid: int, u=Depends(current_user)):
 @app.delete("/shares/{sid}")
 def share_delete(sid: int, u=Depends(current_user)):
     with db() as c:
-        c.execute("DELETE FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"]))
+        if c.execute("SELECT 1 FROM messages WHERE share_id=? LIMIT 1", (sid,)).fetchone():   # jest w czacie: tylko znika z mojej listy
+            c.execute("UPDATE shares SET hidden=1 WHERE id=? AND recipient=?", (sid, u["id"]))
+        else:
+            c.execute("DELETE FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"]))
     return {"ok": True}
 
 
@@ -843,6 +903,8 @@ def group_delete(gid: int, u=Depends(current_user)):
         if g["owner"] == u["id"]:
             c.execute("DELETE FROM groups WHERE id=?", (gid,))
             c.execute("UPDATE shares SET group_id=NULL WHERE group_id=?", (gid,))
+            c.execute("DELETE FROM messages WHERE chat=?", (f"g{gid}",))
+            c.execute("DELETE FROM chat_state WHERE chat=?", (f"g{gid}",))
         else:
             c.execute("DELETE FROM group_members WHERE group_id=? AND user_id=?", (gid, u["id"]))
     return {"ok": True}
@@ -865,6 +927,219 @@ def group_shares(gid: int, u=Depends(current_user)):
                 continue
             seen.add(k)
         out.append({k: r[k] for k in ("id", "kind", "title", "created_at", "sender", "sender_name")} | {"mine": r["sender"] == u["id"]})
+    return out
+
+
+# ---------- CZAT: rozmowy 1:1 ze znajomymi i czaty grup (wiadomości, udostępnienia, oznaczenia, wyciszenie) ----------
+MAX_MSG = 4000
+_msg_rate: dict[int, deque] = defaultdict(deque)
+
+
+def _dm_key(a: int, b: int) -> str:
+    a, b = sorted((a, b))
+    return f"d{a}_{b}"
+
+
+def _chat_access(c, key: str, uid: int):
+    """('dm', id znajomego) albo ('group', id grupy); inaczej 404/403."""
+    m = re.fullmatch(r"d(\d+)_(\d+)", key or "")
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        if a < b and uid in (a, b):
+            other = b if uid == a else a
+            if other not in _friend_ids(c, uid):
+                raise HTTPException(403, "Pisać możecie, gdy jesteście znajomymi.")
+            return "dm", other
+    m = re.fullmatch(r"g(\d+)", key or "")
+    if m and _is_member(c, int(m.group(1)), uid):
+        return "group", int(m.group(1))
+    raise HTTPException(404, "Nie ma takiej rozmowy.")
+
+
+def _chat_member_ids(c, kind: str, ref: int, uid: int) -> list[int]:
+    if kind == "dm":
+        return [uid, ref]
+    return [r[0] for r in c.execute("SELECT user_id FROM group_members WHERE group_id=?", (ref,))]
+
+
+def _post(c, key: str, uid: int, body: str, share_id: int | None = None, mentions: list[int] | None = None) -> int:
+    mid = c.execute("INSERT INTO messages(chat,sender,body,share_id,mentions) VALUES(?,?,?,?,?)",
+                    (key, uid, body, share_id, ("," + ",".join(map(str, mentions)) + ",") if mentions else "")).lastrowid
+    c.execute("INSERT INTO chat_state(user_id,chat,last_read) VALUES(?,?,?) "
+              "ON CONFLICT(user_id,chat) DO UPDATE SET last_read=MAX(last_read,excluded.last_read)", (uid, key, mid))
+    return mid
+
+
+def _msg_out(c, r, share_cache: dict) -> dict:
+    d = {"id": r["id"], "sender": r["sender"], "body": r["body"], "created_at": r["created_at"],
+         "mentions": [int(x) for x in (r["mentions"] or "").split(",") if x]}
+    if r["share_id"]:
+        sid = r["share_id"]
+        if sid not in share_cache:
+            s = c.execute("SELECT id, kind, title FROM shares WHERE id=?", (sid,)).fetchone()
+            share_cache[sid] = dict(s) if s else {"id": sid, "kind": "gone", "title": "Udostępnienie usunięte"}
+        d["share"] = share_cache[sid]
+    return d
+
+
+def _my_chats(c, uid: int) -> list[tuple[str, str, int]]:
+    """Wszystkie moje rozmowy: (klucz, rodzaj, id znajomego/grupy)."""
+    out = [(_dm_key(uid, f), "dm", f) for f in _friend_ids(c, uid)]
+    out += [(f"g{g}", "group", g) for (g,) in c.execute("SELECT group_id FROM group_members WHERE user_id=?", (uid,))]
+    return out
+
+
+def _unread(c, uid: int, keys: list[str]) -> dict:
+    if not keys:
+        return {}
+    q = ",".join("?" * len(keys))
+    rows = c.execute(f"""SELECT m.chat, COUNT(*) n, SUM(CASE WHEN m.mentions LIKE ? THEN 1 ELSE 0 END) men
+        FROM messages m LEFT JOIN chat_state s ON s.user_id=? AND s.chat=m.chat
+        WHERE m.chat IN ({q}) AND m.id > COALESCE(s.last_read, 0) AND m.sender != ?
+        GROUP BY m.chat""", (f"%,{uid},%", uid, *keys, uid)).fetchall()
+    return {r["chat"]: {"n": r["n"], "mention": bool(r["men"])} for r in rows}
+
+
+@app.get("/chats/unread")
+def chats_unread(u=Depends(current_user)):
+    """Lekkie odpytywanie (co ~20 s): liczniki na ikonach Znajomi / Grupy. Wyciszona rozmowa liczy się tylko przy oznaczeniu."""
+    with db() as c:
+        chats = _my_chats(c, u["id"])
+        un = _unread(c, u["id"], [k for k, _, _ in chats])
+        muted = {r[0] for r in c.execute("SELECT chat FROM chat_state WHERE user_id=? AND muted=1", (u["id"],))}
+        invites = c.execute("SELECT COUNT(*) FROM friendships WHERE addressee=? AND status='pending'", (u["id"],)).fetchone()[0]
+        last = c.execute("SELECT MAX(id) FROM messages WHERE chat IN (%s)" % ",".join("?" * len(chats)), [k for k, _, _ in chats]).fetchone()[0] if chats else 0
+    dm = grp = 0
+    out = {}
+    for k, kind, _ in chats:
+        x = un.get(k)
+        if not x:
+            continue
+        cnt = x["n"] if k not in muted else (1 if x["mention"] else 0)
+        out[k] = {**x, "muted": k in muted}
+        if kind == "dm":
+            dm += cnt
+        else:
+            grp += cnt
+    return {"dm": dm, "groups": grp, "invites": invites, "chats": out, "last": last or 0}
+
+
+@app.get("/chats")
+def chats_list(u=Depends(current_user)):
+    """Lista rozmów z ostatnią wiadomością i liczbą nieprzeczytanych (od najświeższej)."""
+    with db() as c:
+        chats = _my_chats(c, u["id"])
+        un = _unread(c, u["id"], [k for k, _, _ in chats])
+        state = {r["chat"]: r for r in c.execute("SELECT * FROM chat_state WHERE user_id=?", (u["id"],))}
+        out, cache = [], {}
+        for k, kind, ref in chats:
+            last = c.execute("SELECT * FROM messages WHERE chat=? ORDER BY id DESC LIMIT 1", (k,)).fetchone()
+            item = {"key": k, "kind": kind, "ref": ref, "unread": (un.get(k) or {}).get("n", 0),
+                    "mention": (un.get(k) or {}).get("mention", False), "muted": bool(state.get(k) and state[k]["muted"]),
+                    "last": _msg_out(c, last, cache) if last else None}
+            if last:
+                item["last"]["sender_name"] = c.execute("SELECT display_name FROM users WHERE id=?", (last["sender"],)).fetchone()[0]
+            out.append(item)
+    out.sort(key=lambda x: x["last"]["id"] if x["last"] else 0, reverse=True)
+    return out
+
+
+@app.get("/chats/{key}/messages")
+def chat_messages(key: str, after: int = 0, before: int = 0, limit: int = 50, u=Depends(current_user)):
+    limit = max(1, min(limit, 100))
+    with db() as c:
+        kind, ref = _chat_access(c, key, u["id"])
+        if after:
+            rows = c.execute("SELECT * FROM messages WHERE chat=? AND id>? ORDER BY id LIMIT ?", (key, after, limit)).fetchall()
+        else:
+            rows = c.execute("SELECT * FROM messages WHERE chat=?" + (" AND id<?" if before else "") + " ORDER BY id DESC LIMIT ?",
+                             (key, before, limit) if before else (key, limit)).fetchall()[::-1]
+        cache = {}
+        ids = _chat_member_ids(c, kind, ref, u["id"])
+        members = [public(r) for r in c.execute(f"SELECT * FROM users WHERE id IN ({','.join('?' * len(ids))})", ids)]
+        st = c.execute("SELECT * FROM chat_state WHERE user_id=? AND chat=?", (u["id"], key)).fetchone()
+        # do kiedy przeczytał rozmówca (w rozmowie 1:1 — „Przeczytane” pod ostatnią wiadomością)
+        seen = c.execute("SELECT last_read FROM chat_state WHERE user_id=? AND chat=?", (ref, key)).fetchone() if kind == "dm" else None
+        return {"messages": [_msg_out(c, r, cache) for r in rows], "members": members, "muted": bool(st and st["muted"]),
+                "last_read": st["last_read"] if st else 0, "seen": seen[0] if seen else 0, "more": len(rows) == limit and not after}
+
+
+class MsgIn(BaseModel):
+    body: str
+    mentions: list[int] = []
+
+
+@app.post("/chats/{key}/messages")
+def chat_send(key: str, p: MsgIn, u=Depends(current_user)):
+    body = (p.body or "").strip()
+    if not body:
+        raise HTTPException(400, "Pusta wiadomość.")
+    if len(body) > MAX_MSG:
+        raise HTTPException(413, f"Za długa wiadomość (limit {MAX_MSG} znaków).")
+    q, now = _msg_rate[u["id"]], time.time()
+    while q and q[0] < now - 60:
+        q.popleft()
+    if len(q) >= 40:
+        raise HTTPException(429, "Za dużo wiadomości naraz — chwilę poczekaj.")
+    q.append(now)
+    with db() as c:
+        kind, ref = _chat_access(c, key, u["id"])
+        members = set(_chat_member_ids(c, kind, ref, u["id"])) - {u["id"]}
+        mentions = sorted({m for m in p.mentions if m in members})
+        mid = _post(c, key, u["id"], body, None, mentions)
+        return _msg_out(c, c.execute("SELECT * FROM messages WHERE id=?", (mid,)).fetchone(), {})
+
+
+class ReadIn(BaseModel):
+    last_id: int
+
+
+@app.post("/chats/{key}/read")
+def chat_read(key: str, p: ReadIn, u=Depends(current_user)):
+    with db() as c:
+        _chat_access(c, key, u["id"])
+        top = c.execute("SELECT COALESCE(MAX(id),0) FROM messages WHERE chat=?", (key,)).fetchone()[0]
+        c.execute("INSERT INTO chat_state(user_id,chat,last_read) VALUES(?,?,?) "
+                  "ON CONFLICT(user_id,chat) DO UPDATE SET last_read=MAX(last_read,excluded.last_read)", (u["id"], key, min(p.last_id, top)))
+    return {"ok": True}
+
+
+class MuteIn(BaseModel):
+    muted: bool
+
+
+@app.post("/chats/{key}/mute")
+def chat_mute(key: str, p: MuteIn, u=Depends(current_user)):
+    with db() as c:
+        _chat_access(c, key, u["id"])
+        c.execute("INSERT INTO chat_state(user_id,chat,muted) VALUES(?,?,?) "
+                  "ON CONFLICT(user_id,chat) DO UPDATE SET muted=excluded.muted", (u["id"], key, int(p.muted)))
+    return {"muted": p.muted}
+
+
+@app.get("/chats/{key}/shares")
+def chat_shares(key: str, u=Depends(current_user)):
+    """Zakładka „Udostępnione”: wszystko, co wymieniliście w tej rozmowie (także wysłane przeze mnie — z podglądem)."""
+    with db() as c:
+        kind, ref = _chat_access(c, key, u["id"])
+        if kind == "dm":
+            rows = c.execute("""SELECT s.id, s.kind, s.title, s.created_at, s.sender, us.display_name sender_name FROM shares s
+                JOIN users us ON us.id=s.sender
+                WHERE s.group_id IS NULL AND ((s.sender=? AND s.recipient=?) OR (s.sender=? AND s.recipient=? AND COALESCE(s.hidden,0)=0))
+                ORDER BY s.id DESC""", (u["id"], ref, ref, u["id"])).fetchall()
+        else:
+            rows = c.execute("""SELECT s.id, s.kind, s.title, s.created_at, s.sender, us.display_name sender_name FROM shares s
+                JOIN users us ON us.id=s.sender
+                WHERE s.id IN (SELECT share_id FROM messages WHERE chat=? AND share_id IS NOT NULL)
+                   OR (s.group_id=? AND s.recipient=? AND COALESCE(s.hidden,0)=0)
+                ORDER BY s.id DESC""", (key, ref, u["id"])).fetchall()
+    out, seen = [], set()
+    for r in rows:
+        k = (r["sender"], r["title"], r["created_at"], r["kind"])
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(dict(r) | {"mine": r["sender"] == u["id"]})
     return out
 
 
@@ -927,7 +1202,7 @@ def share_file(sid: int, name: str, u=Depends(current_user)):
     """Plik z udostępnionej notatki — tylko gdy jest w jej treści; pochodzi z konta nadawcy."""
     name = _fname(name)
     with db() as c:
-        r = c.execute("SELECT sender, payload FROM shares WHERE id=? AND (recipient=? OR sender=?)", (sid, u["id"], u["id"])).fetchone()
+        r = _share_row(c, sid, u["id"])
     if not r or ("uploads/" + name) not in r["payload"]:
         raise HTTPException(404, "Nie znaleziono.")
     return _send_file(_udir(r["sender"]) / name)

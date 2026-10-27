@@ -44,7 +44,8 @@ a dane synchronizują się z aplikacją na Windows przez ten sam serwer. Nagrywa
 (zawsze najnowszy instalator z GitHuba). Generuje ją `python cloud/build_site.py` ze strony startowej aplikacji (`site/index.html`).
 
 **Aktualizacja:** ta sama komenda co przy instalacji (dane zostają w wolumenie `cloud-data`).
-**Kopia bazy:** `cd /opt/asystent/cloud && docker compose cp api:/data/cloud.db ./kopia-$(date +%F).db`
+**Kopia bazy** (baza działa w trybie WAL — kopiuj przez SQLite, nie sam plik):
+`cd /opt/asystent/cloud && docker compose exec api python -c "import sqlite3;sqlite3.connect('/data/cloud.db').backup(sqlite3.connect('/data/kopia.db'))" && docker compose cp api:/data/kopia.db ./kopia-$(date +%F).db`
 **Logi:** `docker compose logs -f api`
 
 ## Synchronizacja urządzeń
