@@ -1396,13 +1396,24 @@ def import_data(u: ImportData):
     db = files.get("asystent.db", b"")
     if not db.startswith(b"SQLite format 3\x00"):
         raise HTTPException(400, "To nie jest kopia Asystenta (brak bazy asystent.db).")
-    if DB_PATH.exists():
-        with get_conn() as c:   # baza w trybie WAL: najpierw wszystko do głównego pliku, potem kopia zapasowa
-            c.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-        shutil.copy2(DB_PATH, DB_PATH.with_suffix(".db.bak"))   # stara baza na wszelki wypadek
-    for suf in ("-wal", "-shm"):   # dziennik starej bazy nie może trafić do nowej
-        Path(str(DB_PATH) + suf).unlink(missing_ok=True)
-    DB_PATH.write_bytes(db)
+    # baza działa w trybie WAL (otwarte połączenia trzymają pliki -wal/-shm, na Windows nie da się ich podmienić):
+    # kopię wgrywamy i zapasową robimy mechanizmem kopii SQLite, a nie podmianą pliku
+    tmp = DB_PATH.with_suffix(".import.db")
+    tmp.write_bytes(db)
+    try:
+        if DB_PATH.exists():
+            cur, bak = sqlite3.connect(DB_PATH), sqlite3.connect(DB_PATH.with_suffix(".db.bak"))
+            try:
+                cur.backup(bak)   # stara baza na wszelki wypadek
+            finally:
+                cur.close(); bak.close()
+        src, dst = sqlite3.connect(tmp), sqlite3.connect(DB_PATH, timeout=30)
+        try:
+            src.backup(dst)
+        finally:
+            src.close(); dst.close()
+    finally:
+        tmp.unlink(missing_ok=True)
     for n, b in files.items():
         if n.startswith("uploads/"):
             UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
