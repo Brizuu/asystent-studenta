@@ -27,6 +27,19 @@ def init():
             created_at TEXT DEFAULT (datetime('now'))
         );
         CREATE INDEX IF NOT EXISTS quiz_cards_note ON quiz_cards(note_id);
+        -- test ABCD z notatki: pytania z 4 odpowiedziami (JSON), wyniki podejść
+        CREATE TABLE IF NOT EXISTS abcd_tests (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            note_id    INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+            questions  TEXT NOT NULL,
+            difficulty TEXT DEFAULT '',
+            attempts   INTEGER DEFAULT 0,
+            last_score INTEGER,
+            best_score INTEGER,
+            created_at TEXT DEFAULT (datetime('now')),
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS abcd_tests_note ON abcd_tests(note_id);
         """)
 
 
@@ -275,4 +288,145 @@ def reset(p: QuizReset):
             raise HTTPException(400, "Podaj notatkę albo zeszyt.")
         c.execute(f"DELETE FROM quiz_cards WHERE {where}" if p.delete else
                   f"UPDATE quiz_cards SET learned=0, skips=0 WHERE {where}", (arg,))
+    return {"ok": True}
+
+
+# ---------- TEST ABCD (jednokrotnego wyboru) z notatki ----------
+ABCD_LEVEL = {"easy": "łatwe — podstawowe pojęcia i fakty, dystraktory wyraźnie różne od poprawnej",
+              "medium": "średnie — zrozumienie, zastosowanie, porównania; dystraktory wiarygodne",
+              "hard": "trudne jak na egzaminie — szczegóły, wyjątki, zadania i pułapki; dystraktory bardzo bliskie poprawnej"}
+
+
+def _abcd_prompt(title: str, text: str, count: int, instructions: str, level: str) -> str:
+    instructions = (instructions or "").strip()[:1500]
+    return (
+        "Jesteś doświadczonym egzaminatorem. Na podstawie notatki studenta przygotuj TEST JEDNOKROTNEGO WYBORU (ABCD) "
+        f"— dokładnie {count} pytań. Poziom: {ABCD_LEVEL.get(level, ABCD_LEVEL['medium'])}.\n"
+        + (f"WSKAZÓWKI STUDENTA (najważniejsze): „{instructions}”\n" if instructions else "") +
+        "Zasady:\n"
+        "- Pisz po polsku. Każde pytanie sprawdza coś innego, od najważniejszych zagadnień notatki; pytania wyłącznie z treści notatki.\n"
+        "- Dokładnie 4 odpowiedzi, DOKŁADNIE JEDNA poprawna. Błędne odpowiedzi (dystraktory) mają być wiarygodne: typowe pomyłki, "
+        "pomylone pojęcia, odwrócone zależności, sąsiednie wartości — nie absurdy. Wszystkie odpowiedzi podobnej długości i w tej samej formie.\n"
+        "- Bez odpowiedzi typu „wszystkie powyższe”, „żadna z powyższych”, „A i B”. Bez podpowiedzi w treści pytania.\n"
+        "- Poprawna odpowiedź na RÓŻNYCH pozycjach (mniej więcej po równo A, B, C, D).\n"
+        "- Gdy notatka zawiera obliczenia, część pytań niech wymaga policzenia (wynik w odpowiedziach). Matematykę zapisuj w LaTeX między $…$.\n"
+        "- Do każdego pytania krótkie wyjaśnienie (1–2 zdania), DLACZEGO poprawna odpowiedź jest poprawna — na podstawie notatki.\n"
+        'Zwróć WYŁĄCZNIE tablicę JSON bez komentarzy i znaczników ```: '
+        '[{"q": "treść pytania", "options": ["odp. A", "odp. B", "odp. C", "odp. D"], "correct": 0, "explain": "wyjaśnienie"}, …] '
+        '— "correct" to numer poprawnej odpowiedzi 0–3.\n'
+        + f"\nNotatka „{title}”:\n{text[:120_000]}"
+    )
+
+
+def _abcd_clean(items: list) -> list:
+    out, seen = [], set()
+    for x in items if isinstance(items, list) else []:
+        if not isinstance(x, dict):
+            continue
+        q = str(x.get("q") or x.get("pytanie") or x.get("question") or "").strip()
+        opts = x.get("options") or x.get("odpowiedzi") or x.get("answers") or []
+        if isinstance(opts, dict):
+            opts = [opts.get(k) for k in ("A", "B", "C", "D")]
+        opts = [re.sub(r"^\s*[A-Da-d][.)]\s+", "", str(o or "")).strip() for o in opts][:4]
+        cor = x.get("correct", x.get("poprawna", x.get("answer")))
+        if isinstance(cor, str):
+            cor = cor.strip().upper()
+            cor = "ABCD".index(cor[0]) if cor[:1] in ("A", "B", "C", "D") else (int(cor) if cor.isdigit() else -1)
+        if not (q and len(opts) == 4 and all(opts) and len({o.lower() for o in opts}) == 4 and isinstance(cor, int) and 0 <= cor <= 3):
+            continue
+        if q.lower() in seen:
+            continue
+        seen.add(q.lower())
+        out.append({"q": q[:800], "options": [o[:400] for o in opts], "correct": cor,
+                    "explain": str(x.get("explain") or x.get("wyjasnienie") or x.get("wyjaśnienie") or "").strip()[:1200]})
+    return out
+
+
+def _abcd_out(r) -> dict | None:
+    if not r:
+        return None
+    d = dict(r)
+    d["questions"] = json.loads(d["questions"] or "[]")
+    return d
+
+
+def _abcd_save(note_id: int, items: list, level: str) -> dict:
+    qs = _abcd_clean(items)
+    if len(qs) < 3:
+        raise HTTPException(502, "Nie udało się odczytać pytań testu — spróbuj jeszcze raz.")
+    with get_conn() as c:
+        c.execute("DELETE FROM abcd_tests WHERE note_id=?", (note_id,))   # jeden test na notatkę: nowy zastępuje stary
+        tid = c.execute("INSERT INTO abcd_tests(note_id, questions, difficulty) VALUES(?,?,?)",
+                        (note_id, json.dumps(qs, ensure_ascii=False), level)).lastrowid
+        return _abcd_out(c.execute("SELECT * FROM abcd_tests WHERE id=?", (tid,)).fetchone())
+
+
+class AbcdGen(BaseModel):
+    note_id: int
+    count: int = 15
+    difficulty: str = "medium"
+    instructions: str = ""
+
+
+@router.get("/api/abcd")
+def abcd_get(note_id: int):
+    with get_conn() as c:
+        return {"test": _abcd_out(c.execute("SELECT * FROM abcd_tests WHERE note_id=? ORDER BY id DESC LIMIT 1", (note_id,)).fetchone())}
+
+
+@router.post("/api/abcd/generate")
+def abcd_generate(p: AbcdGen):
+    from server import gemini, GeminiError, _gemini_key
+    title, text = load_note(p.note_id)
+    if len(text) < 80:
+        raise HTTPException(400, "Notatka jest za krótka, żeby zrobić z niej test — dopisz trochę treści.")
+    if not _gemini_key():
+        raise HTTPException(400, "Brak klucza Gemini. Dodaj go w Ustawieniach (⚙ na dole paska menu).")
+    count = max(5, min(40, p.count))
+    try:
+        out = gemini([{"text": _abcd_prompt(title, text, count, p.instructions, p.difficulty)}], max_tokens=16384, temperature=0.5,
+                     timeout=240, kind="quiz", json_mode=True)
+    except GeminiError as e:
+        if e.status in (429, 503):
+            raise HTTPException(503, "Model Gemini jest chwilowo przeciążony albo wyczerpano limit. Spróbuj ponownie za chwilę.")
+        raise HTTPException(400 if e.status == 400 else 502, e.msg)
+    return {"test": _abcd_save(p.note_id, parse_json_list(out), p.difficulty)}
+
+
+@router.post("/api/abcd/prompt")
+def abcd_prompt(p: AbcdGen):
+    """Tryb bez klucza: polecenie do zwykłego czatu; odpowiedź (JSON) wraca przez /api/abcd/import."""
+    title, text = load_note(p.note_id)
+    return {"prompt": _abcd_prompt(title, text, max(5, min(40, p.count)), p.instructions, p.difficulty)}
+
+
+class AbcdImport(BaseModel):
+    note_id: int
+    text: str
+    difficulty: str = "medium"
+
+
+@router.post("/api/abcd/import")
+def abcd_import(p: AbcdImport):
+    return {"test": _abcd_save(p.note_id, parse_json_list(p.text), p.difficulty)}
+
+
+class AbcdResult(BaseModel):
+    score: int
+    total: int
+
+
+@router.post("/api/abcd/{tid}/result")
+def abcd_result(tid: int, p: AbcdResult):
+    pct = round(100 * max(0, p.score) / max(1, p.total))
+    with get_conn() as c:
+        c.execute("UPDATE abcd_tests SET attempts=attempts+1, last_score=?, best_score=MAX(COALESCE(best_score,0),?), "
+                  "updated_at=datetime('now') WHERE id=?", (pct, pct, tid))
+        return {"test": _abcd_out(c.execute("SELECT * FROM abcd_tests WHERE id=?", (tid,)).fetchone())}
+
+
+@router.delete("/api/abcd/{tid}")
+def abcd_delete(tid: int):
+    with get_conn() as c:
+        c.execute("DELETE FROM abcd_tests WHERE id=?", (tid,))
     return {"ok": True}

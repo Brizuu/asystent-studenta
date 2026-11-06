@@ -3196,6 +3196,35 @@ html.lite .ai-spin{animation-duration:1.2s}
 .callout .b-text h3{text-align:left!important;margin:14px 0 6px;font-size:17px}
 .callout .b-text .co-t{margin:0 0 8px;font-size:15.5px}
 .toggle .b-text.tgbody{padding:4px 2px 2px 26px}
+/* ===== TEST ABCD ===== */
+.ab-q{font-size:18px;line-height:1.5;color:var(--ink);font-weight:600;margin:18px 0 14px}
+.ab-opts{display:flex;flex-direction:column;gap:8px}
+.ab-o{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink-soft);font:inherit;font-size:15px;line-height:1.45;cursor:pointer;transition:background .15s,border-color .15s}
+.ab-o:not([disabled]):hover{background:var(--glass-2);border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--ink)}
+.ab-l{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;background:var(--glass-2);color:var(--ink)}
+.ab-t{padding-top:3px;min-width:0;overflow-wrap:anywhere}
+.ab-o.ok{border-color:rgba(84,217,150,.6);background:rgba(84,217,150,.12);color:var(--ink)}.ab-o.ok .ab-l{background:#54d996;color:#0b1a12}
+.ab-o.bad{border-color:rgba(229,103,95,.6);background:rgba(229,103,95,.12);color:var(--ink)}.ab-o.bad .ab-l{background:#E5675F;color:#fff}
+.ab-o.dim{opacity:.55}.ab-o[disabled]{cursor:default}
+.ab-exp{margin-top:12px;padding:12px 14px;border-radius:14px;display:flex;flex-direction:column;gap:4px;font-size:14.5px;line-height:1.5;color:var(--ink-soft)}
+.ab-exp.ok{background:rgba(84,217,150,.08);border:1px solid rgba(84,217,150,.3)}.ab-exp.ok b{color:#54d996}
+.ab-exp.bad{background:rgba(229,103,95,.08);border:1px solid rgba(229,103,95,.3)}.ab-exp.bad b{color:#E5675F}
+.ab-keys{color:var(--ink-dim);font-size:12.5px}
+.ab-start{display:flex;flex-direction:column;align-items:center;gap:16px;padding:22px 0 6px}
+.ab-stats{display:flex;gap:10px;width:100%}.ab-stats>div{flex:1;text-align:center;padding:14px 8px;border-radius:16px;background:var(--glass);border:1px solid var(--line)}
+.ab-stats b{display:block;font-size:24px;color:var(--ink)}.ab-stats small{color:var(--ink-dim);font-size:12.5px}
+.ab-opt-line{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:14px;cursor:pointer}.ab-opt-line input{accent-color:var(--accent);width:16px;height:16px}
+.ab-go{min-width:220px;justify-content:center;min-height:46px;font-size:15px}
+.ab-res{display:flex;align-items:center;gap:20px;padding:18px 4px 8px}
+.ab-ring{--p:0;width:96px;height:96px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),rgba(255,255,255,.08) 0)}
+.ab-ring b{width:76px;height:76px;border-radius:50%;background:#141924;display:grid;place-items:center;font-size:21px;color:var(--ink)}
+.ab-score{display:block;font-size:22px;color:var(--ink)}.ab-res small{color:var(--ink-soft);font-size:14px}
+.ab-wrong{margin-top:10px;max-height:46vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.ab-wrong h4{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);margin:6px 0 2px}
+.ab-w{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.03);display:flex;flex-direction:column;gap:5px;font-size:14px;line-height:1.45}
+.ab-wq{color:var(--ink);font-weight:600}.ab-wa{display:flex;gap:6px}.ab-wa>span:first-child{flex:none;font-weight:700}
+.ab-wa.bad>span:first-child{color:#E5675F}.ab-wa.ok>span:first-child{color:#54d996}.ab-we{color:var(--ink-dim);font-size:13px}
+@media(max-width:820px){.ab-q{font-size:16.5px}.ab-o{padding:12px}.ab-res{gap:14px}.ab-ring{width:80px;height:80px}.ab-ring b{width:62px;height:62px;font-size:18px}}
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -3987,6 +4016,7 @@ html.lite .ai-spin{animation-duration:1.2s}
                 <div class="nhead-row2">
                   <button class="btn ghost xs ncorrect" id="ncorrect" onclick="cycleCorrection()" title="Korekta pisowni i gramatyki"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5-5 5M12 17h8"/><path d="M13 12l2.5-6 2.5 6M13.7 10.5h3.6"/></svg> <span id="ncorrect-l">Korekta</span></button>
                   <button class="btn ghost xs nexport nquiz" onclick="openQuiz({note_id:noteActive})" title="Quiz z tej notatki: pytania od AI, odpowiedź do odsłonięcia, „Umiem” / „Pomiń”"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.6 9.6a2.4 2.4 0 114 1.8c-.9.7-1.6 1.1-1.6 2.3M12 16.6h.01"/></svg> Quiz</button>
+                  <button class="btn ghost xs nexport nabcd" onclick="openAbcd()" title="Test jednokrotnego wyboru (ABCD) z tej notatki: wynik, wyjaśnienia, powtórka błędnych"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M7.5 9l1.6 1.6L12 7.7M7.5 15.5h.01M14 9h3M14 15.5h3"/></svg> Test ABCD</button>
 
                 </div>
                 <span class="saved" id="note-saved"></span>
@@ -9560,6 +9590,115 @@ chatUI();
 
 /* ===== QUIZ: pytania z notatki (Gemini), odpowiedź rozmyta, „Umiem” zdejmuje z puli, „Pomiń” odkłada na później ===== */
 let QZ=null;
+/* ===================== TEST ABCD z notatki =====================
+   AI układa pytania jednokrotnego wyboru (4 odpowiedzi, jedna poprawna, wiarygodne dystraktory, wyjaśnienie).
+   Test zapisuje się w notatce; przy każdym podejściu pytania i odpowiedzi są tasowane, na końcu wynik i lista błędów. */
+let AB=null;
+const AB_LV=[['easy','Łatwy'],['medium','Średni'],['hard','Trudny (jak na egzaminie)']];
+const abShuffle=a=>{a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;};
+const abTxt=s=>esc(s||'').replace(/\n/g,'<br>');
+function abMath(root){if(window.katex&&root)root.querySelectorAll('.ab-tex').forEach(t=>{if(/\$|\\[([]/.test(t.textContent))aiMath(t);});}
+async function openAbcd(){
+  if(!noteActive)return; clearTimeout(saveTimer); await saveNote();
+  let r={}; try{r=await api('/abcd?note_id='+noteActive);}catch(_){}
+  AB={note_id:noteActive,title:(noteData&&noteData.title)||'Notatka',test:r.test||null,run:null};
+  $('#modal').style.maxWidth='720px'; openModal(); $('#modal').classList.add('quiz-modal');
+  AB.test?abStart():abForm();
+}
+function abClose(){closeModal(); $('#modal').classList.remove('quiz-modal'); AB=null;}
+function abForm(){
+  let count=15, lv=(AB.test&&AB.test.difficulty)||'medium';
+  $('#modal').innerHTML=`<h3>✦ Test ABCD z notatki</h3><div class="msub">AI ułoży pytania jednokrotnego wyboru z „${esc(AB.title)}”: 4 odpowiedzi, jedna poprawna, błędne podobne do prawdziwych — z wyjaśnieniem po każdym pytaniu.</div>
+    <div class="field"><span>Liczba pytań</span><div class="seg" id="ab-n" style="display:flex">${[10,15,20,30].map(n=>`<button type="button" data-n="${n}" style="flex:1">${n}</button>`).join('')}</div></div>
+    <div class="field"><span>Poziom</span><div class="seg" id="ab-lv" style="display:flex">${AB_LV.map(([k,l])=>`<button type="button" data-k="${k}" style="flex:1">${l}</button>`).join('')}</div></div>
+    <label class="field"><span>Na czym się skupić? (opcjonalnie)</span><textarea id="ab-ins" rows="2" placeholder="np. głównie definicje i twierdzenia, mniej dat"></textarea></label>
+    <div class="ai-chips">${['Definicje i pojęcia','Zadania obliczeniowe','Daty i nazwiska','Przyczyny i skutki','Pytania podchwytliwe'].map(p=>`<button type="button" data-p="${p}">${p}</button>`).join('')}</div>
+    <div class="actions">${AB.test?'<button class="btn ghost" onclick="abStart()">Wróć</button>':'<button class="btn ghost" onclick="abClose()">Anuluj</button>'}<button class="btn" id="ab-go">✦ ${AB.test?'Utwórz nowy test':'Utwórz test'}</button></div>`;
+  const paint=()=>{$$('#ab-n button').forEach(b=>b.classList.toggle('on',+b.dataset.n===count)); $$('#ab-lv button').forEach(b=>b.classList.toggle('on',b.dataset.k===lv));}; paint();
+  $$('#ab-n button').forEach(b=>b.onclick=()=>{count=+b.dataset.n;paint();}); $$('#ab-lv button').forEach(b=>b.onclick=()=>{lv=b.dataset.k;paint();});
+  $$('#modal .ai-chips button').forEach(c=>c.onclick=()=>{const t=$('#ab-ins'),v=t.value.trim(); t.value=v.includes(c.dataset.p)?v:(v?v+'. ':'')+c.dataset.p; c.classList.add('on');});
+  $('#ab-go').onclick=()=>abGenerate(count,lv,$('#ab-ins').value.trim());
+}
+async function abGenerate(count,difficulty,instructions){
+  const note_id=AB.note_id;
+  if(!AIS.mode)AIS=await api('/settings/ai');
+  if(AIS.mode==='chat'||!AIS.has_key)return abViaChat(count,difficulty,instructions);
+  $('#modal').innerHTML=`<div class="qz-wait"><span class="ai-spin"></span><b>Gemini układa test…</b><small>Zwykle 20–60 s. Możesz zamknąć to okno — test zapisze się w notatce.</small>
+    <button class="btn ghost sm" onclick="abClose()">Zamknij</button></div>`;
+  const stop=aiProgress({title:'Gemini tworzy test ABCD',stages:['Wysyłam notatkę','Wybieram najważniejsze zagadnienia','Układam pytania i błędne odpowiedzi','Dopisuję wyjaśnienia']});
+  try{const r=await api('/abcd/generate',{method:'POST',body:JSON.stringify({note_id,count,difficulty,instructions})}); if(r.detail)throw new Error(r.detail);
+    stop(); if(!AB||AB.note_id!==note_id){popout({icon:'ok',title:'Test gotowy',text:`${r.test.questions.length} pytań — kliknij „Test ABCD” w notatce.`});return;}
+    AB.test=r.test; abStart();}
+  catch(e){stop(); if(AB)abForm(); popout({icon:'warn',title:'Nie udało się utworzyć testu',text:e.message});}
+}
+async function abViaChat(count,difficulty,instructions){
+  const note_id=AB.note_id, r=await api('/abcd/prompt',{method:'POST',body:JSON.stringify({note_id,count,difficulty,instructions})});
+  let copied=false; try{await navigator.clipboard.writeText(r.prompt);copied=true;}catch(_){}
+  const chat=AIS.chat==='chatgpt'?'chatgpt':'gemini', name=chat==='chatgpt'?'ChatGPT':'Gemini'; window.open(CHAT_URL[chat],'_blank');
+  $('#modal').innerHTML=`<h3>Test ABCD przez ${name}</h3><div class="msub">${copied?'Polecenie jest w schowku.':'Skopiuj polecenie.'} Wklej je w czacie, a odpowiedź (listę w nawiasach [ … ]) wklej tutaj.</div>
+    ${copied?'':`<label class="field"><span>Polecenie</span><textarea readonly onclick="this.select()">${esc(r.prompt)}</textarea></label>`}
+    <label class="field chatpaste"><span>Odpowiedź z czatu</span><textarea id="ab-paste" placeholder='[{"q": "…", "options": ["…","…","…","…"], "correct": 0, "explain": "…"}]'></textarea></label>
+    <div class="actions"><button class="btn ghost" onclick="abForm()">Wróć</button><button class="btn" id="ab-imp">Zapisz test</button></div>`;
+  $('#ab-imp').onclick=async()=>{const t=$('#ab-paste').value.trim(); if(!t)return;
+    const x=await api('/abcd/import',{method:'POST',body:JSON.stringify({note_id,text:t,difficulty})});
+    if(x.detail){popout({icon:'warn',title:'Nie udało się odczytać testu',text:x.detail});return;} AB.test=x.test; abStart();};
+}
+function abStart(){
+  const t=AB.test, n=t.questions.length, lv=(AB_LV.find(x=>x[0]===t.difficulty)||AB_LV[1])[1];
+  $('#modal').innerHTML=`<div class="qz-top"><div><h3>Test ABCD · ${esc(AB.title)}</h3><small>${n} ${plural(n,'pytanie','pytania','pytań')} · poziom: ${esc(lv)}</small></div><button class="qz-x" onclick="abClose()" aria-label="Zamknij">✕</button></div>
+    <div class="ab-start">
+      <div class="ab-stats"><div><b>${t.attempts||0}</b><small>${plural(t.attempts||0,'podejście','podejścia','podejść')}</small></div>
+        <div><b>${t.last_score!=null?t.last_score+'%':'—'}</b><small>ostatni wynik</small></div><div><b>${t.best_score!=null?t.best_score+'%':'—'}</b><small>najlepszy</small></div></div>
+      <label class="ab-opt-line"><input type="checkbox" id="ab-mix" checked> Losowa kolejność pytań i odpowiedzi</label>
+      <button class="btn ab-go" id="ab-run">Rozpocznij test</button></div>
+    <div class="qz-foot"><button class="btn ghost sm" onclick="abForm()">✦ Nowy test</button><button class="btn ghost sm" onclick="abDelete()">Usuń test</button></div>`;
+  $('#ab-run').onclick=()=>abRun(t.questions,$('#ab-mix').checked);
+}
+function abRun(qs,mix=true){
+  const list=(mix?abShuffle(qs):qs.slice()).map(q=>{const o=q.options.map((t,i)=>({t,ok:i===q.correct})), s=mix?abShuffle(o):o; return {...q,opts:s,correct:s.findIndex(x=>x.ok)};});
+  AB.run={list,i:0,picked:[],retry:qs.length!==AB.test.questions.length}; abQ();
+}
+function abQ(){
+  const R=AB.run, q=R.list[R.i], n=R.list.length, done=R.picked.length>R.i, k=R.picked[R.i];
+  $('#modal').innerHTML=`<div class="qz-top"><div><h3>Pytanie ${R.i+1} z ${n}${R.retry?' · powtórka błędnych':''}</h3><small>Poprawnie: <b>${R.picked.filter((p,j)=>p===R.list[j].correct).length}</b> · ${esc(AB.title)}</small></div>
+      <button class="qz-x" onclick="abClose()" aria-label="Zamknij">✕</button></div><div class="qz-bar"><i style="width:${Math.round(R.i/n*100)}%"></i></div>
+    <div class="ab-q ab-tex">${abTxt(q.q)}</div>
+    <div class="ab-opts">${q.opts.map((o,i)=>`<button type="button" class="ab-o${done?(i===q.correct?' ok':i===k?' bad':' dim'):''}" data-i="${i}" ${done?'disabled':''}>
+      <span class="ab-l">${'ABCD'[i]}</span><span class="ab-t ab-tex">${abTxt(o.t)}</span></button>`).join('')}</div>
+    ${done?`<div class="ab-exp ${k===q.correct?'ok':'bad'}"><b>${k===q.correct?'✓ Dobrze!':'✕ Poprawna odpowiedź: '+'ABCD'[q.correct]}</b>${q.explain?`<span class="ab-tex">${abTxt(q.explain)}</span>`:''}</div>`:''}
+    <div class="qz-acts">${done?`<button class="btn ab-next" onclick="abNext()">${R.i+1<n?'Dalej':'Zobacz wynik'} <kbd>Enter</kbd></button>`:'<small class="ab-keys">Wybierz odpowiedź · klawisze A–D albo 1–4</small>'}</div>`;
+  $$('.ab-o:not([disabled])').forEach(b=>b.onclick=()=>abPick(+b.dataset.i));
+  abMath($('#modal'));
+}
+function abPick(i){const R=AB.run; if(R.picked.length>R.i)return; R.picked[R.i]=i; abQ();}
+function abNext(){const R=AB.run; if(R.picked.length<=R.i)return; if(R.i+1<R.list.length){R.i++; abQ();} else abEnd();}
+async function abEnd(){
+  const R=AB.run, n=R.list.length, good=R.list.filter((q,j)=>R.picked[j]===q.correct).length, pct=Math.round(good/n*100);
+  const wrong=R.list.filter((q,j)=>R.picked[j]!==q.correct);
+  if(!R.retry){try{const r=await api('/abcd/'+AB.test.id+'/result',{method:'POST',body:JSON.stringify({score:good,total:n})}); if(r.test)AB.test=r.test;}catch(_){}}
+  const msg=pct>=90?'Świetnie — jesteś gotowy(a)!':pct>=75?'Bardzo dobrze. Przejrzyj błędy i będzie komplet.':pct>=50?'Nieźle, ale jeszcze trochę nauki.':'Warto wrócić do notatki i spróbować jeszcze raz.';
+  AB.wrong=wrong;
+  $('#modal').innerHTML=`<div class="qz-top"><div><h3>Wynik testu${R.retry?' (powtórka błędnych)':''}</h3><small>${esc(AB.title)}</small></div><button class="qz-x" onclick="abClose()" aria-label="Zamknij">✕</button></div>
+    <div class="ab-res"><div class="ab-ring" style="--p:${pct}"><b>${pct}%</b></div><div><b class="ab-score">${good} / ${n}</b><small>${msg}</small></div></div>
+    ${wrong.length?`<div class="ab-wrong"><h4>Do powtórki (${wrong.length})</h4>${wrong.map(q=>{const j=R.list.indexOf(q), you=R.picked[j];
+      return `<div class="ab-w"><div class="ab-wq ab-tex">${abTxt(q.q)}</div><div class="ab-wa bad"><span>Twoja:</span><span class="ab-tex">${abTxt(q.opts[you].t)}</span></div>
+        <div class="ab-wa ok"><span>Poprawna:</span><span class="ab-tex">${abTxt(q.opts[q.correct].t)}</span></div>${q.explain?`<div class="ab-we ab-tex">${abTxt(q.explain)}</div>`:''}</div>`;}).join('')}</div>`:''}
+    <div class="actions" style="flex-wrap:wrap">${wrong.length?'<button class="btn ghost" onclick="abToQuiz()">Błędne → do quizu (fiszki)</button><button class="btn ghost" onclick="abRun(AB.wrong.map(q=>({q:q.q,options:q.opts.map(o=>o.t),correct:q.correct,explain:q.explain})))">Powtórz błędne</button>':''}
+      <button class="btn" onclick="abStart()">Jeszcze raz</button></div>`;
+  abMath($('#modal'));
+}
+async function abToQuiz(){
+  const cards=AB.wrong.map(q=>({q:q.q,a:q.opts[q.correct].t+(q.explain?'\n'+q.explain:'')}));
+  const r=await api('/quiz/import',{method:'POST',body:JSON.stringify({note_id:AB.note_id,text:JSON.stringify(cards),replace:false})});
+  popout(r.detail?{icon:'warn',title:'Nie dodano',text:r.detail}:{icon:'ok',title:`Dodano ${r.added} ${plural(r.added,'pytanie','pytania','pytań')} do quizu`,text:'Znajdziesz je pod przyciskiem „Quiz” w tej notatce.'});
+}
+async function abDelete(){const id=AB.test.id; if(!await confirmPop('Usunąć test?','Pytania i wyniki tego testu znikną.','Usuń'))return; await api('/abcd/'+id,{method:'DELETE'}); AB.test=null; abForm();}
+document.addEventListener('keydown',e=>{
+  if(!AB||!AB.run||!$('#modal-bd').classList.contains('open')||e.target.closest('input,textarea'))return;
+  const k=e.key.toUpperCase(), i='ABCD'.indexOf(k)>=0?'ABCD'.indexOf(k):'1234'.indexOf(e.key);
+  if(i>=0&&$('.ab-o:not([disabled])')){e.preventDefault(); abPick(i);}
+  else if(e.key==='Enter'&&$('.ab-next')){e.preventDefault(); abNext();}
+});
 async function openQuiz(scope){
   if(scope.note_id){clearTimeout(saveTimer);await saveNote();}
   const cards=await api('/quiz?'+(scope.note_id?'note_id='+scope.note_id:'notebook_id='+scope.notebook_id));
