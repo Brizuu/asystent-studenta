@@ -3190,6 +3190,12 @@ html.lite .ai-spin{animation-duration:1.2s}
 .ex-it input{width:17px;height:17px;accent-color:var(--accent);flex:none}.ex-it span{display:flex;flex-direction:column;min-width:0}
 .ex-it b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ex-it small{color:var(--ink-dim);font-size:12px}
 .ex-hint{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:6px;line-height:1.45}
+.callout .b-text.cobody,.toggle .b-text.tgbody{padding:2px 0 0;min-height:24px;background:none}
+.callout .b-text.cobody>:first-child,.toggle .b-text.tgbody>:first-child{margin-top:0}
+.callout .b-text.cobody>:last-child,.toggle .b-text.tgbody>:last-child{margin-bottom:0}
+.callout .b-text h3{text-align:left!important;margin:14px 0 6px;font-size:17px}
+.callout .b-text .co-t{margin:0 0 8px;font-size:15.5px}
+.toggle .b-text.tgbody{padding:4px 2px 2px 26px}
 /* ===================== TELEFON (≤820 px): audyt wersji mobilnej ===================== */
 @media(max-width:820px){
   /* dolne menu: przewijane palcem, większe przyciski z czytelnymi podpisami, wszystkie zakładki dostępne */
@@ -8192,11 +8198,12 @@ function cleanPaste(html){
   if(root.children.length===1&&/^(P|DIV)$/.test(root.firstElementChild.tagName)&&!root.firstElementChild.querySelector('p,div,ul,ol,table'))root.firstElementChild.replaceWith(...root.firstElementChild.childNodes);   // jeden akapit = wstaw w linii
   return root.innerHTML.replace(/\u00a0/g,' ').trim();
 }
-function buildTextBlock(d,b){
+function buildTextBlock(d,b,opt={}){   // opt.host(tb,ed): gdzie wstawić pasek i edytor (ramka „Ważne”, blok rozwijany)
   d.innerHTML=ctl(b.id);
   const ed=document.createElement('div');
   ed.className='b-text'; ed.contentEditable='true'; ed.dataset.block=b.id; ed.spellcheck=(typeof correctionMode==='undefined'||correctionMode!=='off');
-  ed.setAttribute('data-ph','Pisz…  ( # link do zeszytu · [[ link do notatki )');
+  ed.setAttribute('data-ph',opt.ph||'Pisz…  ( # link do zeszytu · [[ link do notatki )');
+  if(opt.cls)ed.classList.add(opt.cls);
   ed.innerHTML=b.html||'';
   ed.querySelectorAll('img').forEach(i=>{i.loading='lazy'; i.decoding='async';});   // długie notatki z obrazami: dekodowanie dopiero przy przewinięciu
   if(b.fontSize)ed.style.fontSize=b.fontSize+'px';
@@ -8612,7 +8619,7 @@ function buildTextBlock(d,b){
     const r=document.createRange();r.setStart(p,0);r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r);
     remember();save();updateActive();
   }
-  d.appendChild(tb); d.appendChild(ed);
+  if(opt.host)opt.host(tb,ed); else{d.appendChild(tb); d.appendChild(ed);}
   if(b.versions&&b.versions.length){const vc=document.createElement('button');vc.type='button';vc.className='ver-chip';
     vc.title='Poprzednie wersje tego bloku — możesz wrócić do stanu sprzed poprawki AI';vc.textContent='↺ Poprzednia wersja';
     vc.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();openVersions(b.id);});d.appendChild(vc);}
@@ -9160,7 +9167,10 @@ function examBlocks(html){
   const out=[], re=/(?:<p>\s*)?\[\[\s*PEWNE\s*\]\](?:\s*<\/p>)?([\s\S]*?)(?:<p>\s*)?\[\[\s*\/\s*PEWNE\s*\]\](?:\s*<\/p>)?/gi; let last=0, m;
   const text=h=>{h=h.replace(/(?:<p>\s*)?\[\[\s*\/?\s*PEWNE\s*\]\](?:\s*<\/p>)?/gi,'').trim(); if(h.replace(/<[^>]+>|\s/g,''))out.push({id:uid(),type:'text',html:aiFormat(h)});};
   while((m=re.exec(html))){text(html.slice(last,m.index)); const inner=m[1].trim();
-    if(inner.replace(/<[^>]+>|\s/g,''))out.push({id:uid(),type:'callout',kind:'important',html:aiFormat('<p><b>★ Na pewno będzie</b></p>'+inner)});
+    if(inner.replace(/<[^>]+>|\s/g,'')){
+      const h=inner.match(/^\s*<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/i), title=h?h[1].replace(/<[^>]+>/g,'').replace(/^\s*★\s*/,'').trim():'';
+      const body=aiFormat(h?inner.slice(h[0].length):inner).replace(/^(\s*<p><br><\/p>)+/,'');
+      out.push({id:uid(),type:'callout',kind:'important',html:`<p class="co-t"><b>★ Na pewno będzie${title?': '+esc(title):''}</b></p>`+body});}
     last=re.lastIndex;}
   text(html.slice(last)); return out;
 }
@@ -10113,30 +10123,32 @@ const CALLOUTS={info:{i:'ℹ',t:'Informacja',c:'#5eafff'},warn:{i:'▲',t:'Uwaga
 function buildCallout(d,b){
   b.kind=b.kind||'info';
   const k=CALLOUTS[b.kind];
-  d.innerHTML=ctl(b.id)+`
+  buildTextBlock(d,b,{cls:'cobody',ph:'Treść…',host:(tb,ed)=>{
+    const w=document.createElement('div'); w.innerHTML=`
     <div class="callout" style="--cc:${k.c}">
       <div class="cohead"><span class="coic">${k.i}</span>
         <span class="colabel">${k.t}</span>
         <button type="button" class="cokind" aria-haspopup="listbox" title="Rodzaj">${k.t}<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
       </div>
-      <div class="cobody" contenteditable="true" data-ph="Treść…">${b.html||''}</div>
+      <i class="co-slot"></i>
     </div>`;
-  const body=d.querySelector('.cobody'), sel=d.querySelector('.cokind');
-  body.addEventListener('input',()=>{b.html=body.innerHTML;scheduleSave();});
+    const box=w.firstElementChild; box.querySelector('.co-slot').replaceWith(ed); d.appendChild(tb); d.appendChild(box);}});
+  const sel=d.querySelector('.cokind');
   sel.addEventListener('click',e=>{e.stopPropagation(); openKindMenu(sel,b.kind,v=>{b.kind=v;renderBlocks();scheduleSave();});});
 }
 
 /* ===== TOGGLE / SPOILER (Active Recall) ===== */
 function buildToggle(d,b){
-  d.innerHTML=ctl(b.id)+`
+  buildTextBlock(d,b,{cls:'tgbody',ph:'Odpowiedź / ukryta treść…',host:(tb,ed)=>{
+    const w=document.createElement('div'); w.innerHTML=`
     <details class="toggle" ${b.open?'open':''}>
       <summary><span class="tgar">▸</span><span class="tgsum" contenteditable="true" data-ph="Pytanie / nagłówek…">${b.summary||''}</span></summary>
-      <div class="tgbody" contenteditable="true" data-ph="Odpowiedź / ukryta treść…">${b.html||''}</div>
+      <i class="tg-slot"></i>
     </details>`;
-  const det=d.querySelector('details'), sum=d.querySelector('.tgsum'), body=d.querySelector('.tgbody');
+    const det=w.firstElementChild; det.querySelector('.tg-slot').replaceWith(ed); d.appendChild(tb); d.appendChild(det);}});
+  const det=d.querySelector('details'), sum=d.querySelector('.tgsum');
   sum.addEventListener('input',()=>{b.summary=sum.innerHTML;scheduleSave();});
   sum.addEventListener('click',e=>e.preventDefault()); // edycja bez zwijania
-  body.addEventListener('input',()=>{b.html=body.innerHTML;scheduleSave();});
   det.addEventListener('toggle',()=>{b.open=det.open;scheduleSave();});
 }
 
