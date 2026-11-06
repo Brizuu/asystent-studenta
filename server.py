@@ -1332,6 +1332,84 @@ def ai_topic_note_prompt(a: AITopicNote):
     return {"prompt": _topic_prompt(a, "markdown")}
 
 
+EXAM_KIND = {"kolokwium": "kolokwium", "zaliczenie": "zaliczenie", "egzamin": "egzamin", "wejsciowka": "wejściówkę"}
+
+
+class AIExamNote(BaseModel):
+    note_ids: list[int]
+    kind: str = "kolokwium"     # kolokwium | zaliczenie | egzamin | wejsciowka
+    sure: str = ""              # tematy, które na pewno będą — po jednym w linii
+    instructions: str = ""
+    style: str = ""
+    date: str = ""              # termin (opcjonalnie) — do planu nauki
+
+
+def _exam_material(a: AIExamNote) -> tuple[str, list[str]]:
+    if not a.note_ids:
+        raise HTTPException(400, "Zaznacz co najmniej jedną notatkę.")
+    parts, titles, total = [], [], 0
+    for nid in a.note_ids[:40]:
+        title, text = quiz.load_note(nid)
+        if not text.strip():
+            continue
+        text = text[:max(0, 260_000 - total)]
+        total += len(text)
+        titles.append(title or "Bez tytułu")
+        parts.append(f"=== MATERIAŁ {len(titles)}: {title or 'Bez tytułu'} ===\n{text}")
+        if total >= 260_000:
+            break
+    if not parts:
+        raise HTTPException(400, "Zaznaczone notatki są puste.")
+    return "\n\n".join(parts), titles
+
+
+def _exam_prompt(a: AIExamNote, material: str, fmt: str = "html") -> str:
+    kind = EXAM_KIND.get(a.kind, "kolokwium")
+    sure = [x.strip(" -•\t") for x in (a.sure or "").splitlines() if x.strip(" -•\t")][:30]
+    sure_rule = ("TEMATY, KTÓRE NA PEWNO BĘDĄ (student wie to od prowadzącego — to PRIORYTET):\n"
+                 + "\n".join(f"- {x[:300]}" for x in sure) + "\n"
+                 "- Każdy z tych tematów opracuj NAJDOKŁADNIEJ ze wszystkich: pełne wyjaśnienie, wszystko, o co można zapytać, "
+                 "typowe pytania i zadania z rozwiązaniem, częste błędy. Umieść je NA POCZĄTKU notatki, każdy jako osobną sekcję otoczoną "
+                 "znacznikami w osobnych akapitach: <p>[[PEWNE]]</p> … treść sekcji … <p>[[/PEWNE]]</p> (aplikacja wyróżni je ramką „Na pewno będzie”). "
+                 "Nagłówek takiej sekcji zacznij od „★ ”. W pozostałej części notatki każde odwołanie do tych tematów zaznacz <mark>.\n"
+                 "- Jeśli któregoś z tych tematów nie ma w materiałach, i tak go opracuj z rzetelnej wiedzy akademickiej i dopisz na końcu jego sekcji "
+                 "<p><em>(uzupełnione — tego nie było w Twoich notatkach)</em></p>.\n") if sure else ""
+    return ("Jesteś doświadczonym wykładowcą i egzaminatorem. Student przygotowuje się na " + kind
+            + (f" (termin: {a.date.strip()[:40]})" if a.date.strip() else "") + " i dał Ci swoje notatki z zajęć (poniżej). "
+            "Przygotuj z nich JEDNĄ notatkę do nauki na " + kind + " — tylko to, co realnie może się pojawić, ułożone tak, żeby jak najszybciej "
+            "i najskuteczniej się tego nauczyć. Przedmiot może być dowolny (ścisły, humanistyczny, prawniczy, medyczny, techniczny…) — "
+            "dobierz formę do materiału: definicje, twierdzenia, wzory, procesy, klasyfikacje, daty, autorzy, przepisy, argumenty, typowe zadania.\n"
+            + _instr_line(a.instructions) + sure_rule +
+            "Zasady:\n- Pisz po polsku. Opieraj się na materiałach; nie zmyślaj. Łącz powtórzenia z różnych notatek w jedno, usuń dygresje i ozdobniki.\n"
+            "- Na samym początku krótka sekcja <h3>Plan nauki</h3>: lista 3–6 punktów, czego uczyć się najpierw (od najważniejszego)"
+            + (" i jak rozłożyć to do terminu" if a.date.strip() else "") + ".\n"
+            "- Potem sekcje tematyczne w kolejności WAŻNOŚCI na " + kind + " (nie w kolejności notatek). Przy nagłówku sekcji oznacz szansę pojawienia się: "
+            "„★★★” (prawie na pewno), „★★” (prawdopodobne), „★” (warto znać), np. <h3>2. Granica ciągu ★★★</h3>.\n"
+            "- W każdej sekcji: najważniejsze pojęcia i fakty (krótko), to, o co prowadzący zwykle pyta, oraz — gdy przedmiot to ma — typowe zadanie "
+            "z rozwiązaniem krok po kroku.\n"
+            "- Na końcu: <h3>Pytania, które mogą paść</h3> (10–20 pytań z krótkimi odpowiedziami, od najbardziej prawdopodobnych), "
+            "<h3>Ściąga — najważniejsze w pigułce</h3> (zwięzła lista samych kluczowych faktów/wzorów) i <h3>Lista kontrolna przed " + kind + "</h3> "
+            "(punkty do odhaczenia: „umiem …”).\n"
+            + (READABLE_RULE if fmt == "html" else "") + _style_rule(a.style)
+            + (HTML_RULE if fmt == "html" else "Odpowiedz WYŁĄCZNIE treścią notatki w Markdown (###, -, **), bez wstępu; znaczniki [[PEWNE]] i [[/PEWNE]] wstaw w osobnych liniach.")
+            + "\n\nMATERIAŁY STUDENTA:\n" + material)
+
+
+@app.post("/api/ai/exam-note")
+def ai_exam_note(a: AIExamNote):
+    """Notatka na kolokwium / zaliczenie z kilku notatek: wybór tego, co może paść, priorytety, pewniaki wyróżnione."""
+    material, titles = _exam_material(a)
+    out = _ai_call([{"text": _exam_prompt(a, material)}], kind="exam", max_tokens=32768, timeout=420, complete=True)
+    return {"html": _clean_ai_html(out), "sources": titles}
+
+
+@app.post("/api/ai/exam-note/prompt")
+def ai_exam_note_prompt(a: AIExamNote):
+    """Tryb bez klucza: polecenie do wklejenia w zwykły czat."""
+    material, _ = _exam_material(a)
+    return {"prompt": _exam_prompt(a, material[:120_000], "markdown")}
+
+
 @app.post("/api/ai/improve")
 def ai_improve(a: AIImprove):
     if not re.sub(r"<[^>]+>|\[\[OBRAZ \d+\]\]|\s", "", a.html):
