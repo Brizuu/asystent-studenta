@@ -34,7 +34,28 @@ init()
 
 
 # ---------- tekst notatki (bloki → zwykły tekst dla AI) ----------
+def _tex_out(h: str) -> str:
+    """Wzór w notatce (<span class="itex" data-tex="…">…KaTeX…</span>) → $zapis LaTeX$ — bez tekstu wyrenderowanego KaTeX."""
+    out, i = [], 0
+    for m in re.finditer(r'<span\b[^>]*\bclass="itex( disp)?"[^>]*\bdata-tex="([^"]*)"[^>]*>', h):
+        if m.start() < i:
+            continue
+        depth, j = 1, m.end()
+        for t in re.finditer(r"<(/?)span\b[^>]*>", h[j:]):
+            depth += -1 if t.group(1) else 1
+            if not depth:
+                j += t.end()
+                break
+        else:
+            j = len(h)
+        d = "$$" if m.group(1) else "$"
+        out += [h[i:m.start()], d + unescape(m.group(2)) + d]
+        i = j
+    return "".join(out) + h[i:]
+
+
 def _html_text(h: str) -> str:
+    h = _tex_out(h or "")
     h = re.sub(r"<img\b[^>]*>", " ", h or "", flags=re.I)
     h = re.sub(r"</(p|div|h[1-6]|li|tr|blockquote)>|<br\s*/?>", "\n", h, flags=re.I)
     h = re.sub(r"<li[^>]*>", "• ", h, flags=re.I)
