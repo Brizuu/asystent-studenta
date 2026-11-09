@@ -865,7 +865,7 @@ body.on-todo .soft-bg{opacity:1} body.on-todo .soft-bg::before{opacity:1}
 .dj-whenwrap{position:relative}
 .dj-whenbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px 8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .dj-whenbtn:hover{background:rgba(255,255,255,.07)} .dj-whenbtn.set{border-color:rgba(255,209,102,.5);background:rgba(255,209,102,.1);color:#ffe3a3}
-.dj-whenbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round} .dj-whenbtn .cv{width:14px;height:14px;opacity:.7}
+.dj-whenbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round} .dj-whenbtn .dj-cv{width:14px;height:14px;opacity:.7}
 .dj-pick{position:absolute;left:0;top:calc(100% + 8px);z-index:50;width:min(380px,86vw);padding:16px;border-radius:20px;background:rgba(22,24,38,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px -14px rgba(0,0,0,.75)}
 .dj-pick[hidden]{display:none} .dj-pick.up{top:auto;bottom:calc(100% + 8px)}
 .dj-hm{float:right;margin-top:-6px;width:74px;padding:5px 8px;border-radius:9px;font:inherit;font-size:15px;font-weight:700;text-align:center;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid var(--line)}
@@ -3422,6 +3422,28 @@ html.lite .ai-spin{animation-duration:1.2s}
   .ch-panel{left:0;right:0;top:0;bottom:0;width:auto;height:auto!important;border-radius:0;padding-top:env(safe-area-inset-top);z-index:400}
   body.ch-open .pomo,body.ch-open .spoti,body.ch-open .rail,body.ch-open .ch-fab{display:none!important}
 }
+/* ===================== PORADNIK (przewodnik po aplikacji) ===================== */
+.tour-hole{position:fixed;z-index:400;border-radius:14px;pointer-events:none;box-shadow:0 0 0 2px var(--accent),0 0 0 200vmax rgba(5,8,14,.72);
+  transition:top .35s var(--ease,ease),left .35s var(--ease,ease),width .35s var(--ease,ease),height .35s var(--ease,ease),opacity .2s}
+.tour-hole.center{top:50%!important;left:50%!important;width:0!important;height:0!important;box-shadow:0 0 0 200vmax rgba(5,8,14,.72)}
+.tour-card{position:fixed;z-index:401;width:min(380px,calc(100vw - 32px));padding:20px;border-radius:18px;background:#141A24;border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.85);color:var(--ink);transition:top .35s var(--ease,ease),left .35s var(--ease,ease)}
+.tour-card .tc-n{font-size:12.5px;color:var(--ink-dim);font-weight:600}
+.tour-card h3{margin:6px 0 8px;font-size:19px;line-height:1.25;font-weight:800;letter-spacing:-.01em}
+.tour-card p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.55}
+.tour-card p b{color:var(--ink)}
+.tour-card .tc-vis{margin-top:14px}
+.tour-card .tc-vis .kg-shot{margin:0}
+.tour-card .tc-act{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}
+.tour-card .tc-act .sp{flex:1}
+.tour-card .tc-skip{background:none;border:0;color:var(--ink-dim);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:6px 2px}
+.tour-card .tc-skip:hover{color:var(--ink)}
+.tour-card .tc-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;min-height:44px}
+.tour-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin:0 0 14px;overflow:hidden}
+.tour-bar i{display:block;height:100%;background:var(--accent);transition:width .35s}
+@media(max-width:820px){.tour-card{left:16px!important;right:16px;width:auto}}
+@media(prefers-reduced-motion:reduce){.tour-hole,.tour-card{transition:none}}
+
 /* ===================== AUDYT WYGLĄDU APLIKACJI ===================== */
 /* etykiety zwykłą pisownią zamiast rozstrzelonych wersalików */
 .eyebrow,.wl-now .wn-lbl,.combo-list .grp,.us-grid small,.us-cap,.fr-sec h4,.td-lh,.sy-sub,.dj-sug h6,.dj-pick h6,.dj-when-row>span,.sg-reply b,.adm-grid span,
@@ -3553,6 +3575,7 @@ html.lite .ai-spin{animation-duration:1.2s}
         <svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0012 3z"/></svg>
         <span>Sugestie</span>
       </button>
+    <button class="bell" id="nav-tour" onclick="tourStart(0)" title="Poradnik: co gdzie jest i jak włączyć AI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 014.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17.2h.01"/></svg><span>Poradnik</span></button>
     <button class="bell" id="nav-settings" onclick="go('ustawienia')" title="Ustawienia: AI, dane"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>Ustawienia</span></button>
     <button class="bell" id="bell" title="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5.5 2.5 7.5 2.5 7.5h-17S6 14.5 6 9z"/><path d="M10.3 20a1.9 1.9 0 003.4 0"/></svg><span>Powiadomienia</span><i class="bell-n" id="bell-n" hidden></i></button>
     </div>
@@ -3881,7 +3904,7 @@ html.lite .ai-spin{animation-duration:1.2s}
           </div>
           <div id="dj-pane-pkp" hidden><div id="dj-pkp"></div></div>
           <div class="dj-when-row"><span>Odjazd</span>
-            <div class="dj-whenwrap"><button class="dj-whenbtn" id="dj-whenbtn" onclick="djPicker(event)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="dj-when-l">Teraz</span><svg class="cv" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="dj-whenwrap"><button class="dj-whenbtn" id="dj-whenbtn" onclick="djPicker(event)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="dj-when-l">Teraz</span><svg class="dj-cv" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
               <div class="dj-pick glass" id="dj-pick" hidden></div></div>
             <button class="btn ghost sm" id="dj-now-btn" hidden onclick="djSetAt(null)">Wróć do „teraz”</button></div>
           <div class="dj-res" id="dj-res"></div>
@@ -3944,11 +3967,11 @@ html.lite .ai-spin{animation-duration:1.2s}
           <div class="st-h"><span class="st-badge">Zalecane · darmowe</span><h3>Klucz Gemini</h3>
             <p>Pełne możliwości: notatki AI i zamiana nagrań wykładów na tekst. Klucz jest darmowy, bez karty płatniczej, założysz go w minutę.</p></div>
           <ol class="st-steps">
-            <li>Otwórz Google AI Studio i zaloguj się kontem Google. <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/apikey','_blank')">Otwórz AI Studio ↗</button></li>
+            <li>Otwórz Google AI Studio i zaloguj się kontem Google. <button class="btn ghost xs" onclick="window.open('https://aistudio.google.com/app/api-keys','_blank')">Otwórz AI Studio ↗</button></li>
             <li>Kliknij <b>Create API key</b> (Utwórz klucz) i skopiuj go.</li>
             <li>Wklej poniżej i zapisz — aplikacja od razu sprawdzi połączenie.</li>
           </ol>
-          <button class="btn ghost sm st-guide-btn" onclick="keyGuide()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2 2 0 016 4h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 9h8M8 13h5"/></svg>Poradnik krok po kroku</button>
+          <button class="btn ghost sm st-guide-btn" onclick="tourStart(TOUR_AI)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2 2 0 016 4h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 9h8M8 13h5"/></svg>Poradnik krok po kroku</button>
           <div class="st-key"><input id="st-key" type="password" placeholder="Wklej klucz z Google AI Studio" autocomplete="off" spellcheck="false">
             <button class="btn" onclick="stSaveKey()">Zapisz i sprawdź</button></div>
         </div>
@@ -7231,14 +7254,14 @@ function keyGuide(){
   const shot=(url,body)=>`<div class="kg-shot"><div class="kg-bar"><i></i><i></i><i></i><span>${url}</span></div><div class="kg-body">${body}</div></div>`;
   const S=[
     {t:'Otwórz Google AI Studio',d:'Kliknij przycisk poniżej. Otworzy się strona Google AI Studio — zaloguj się zwykłym kontem Google (tym samym co Gmail).',
-     v:shot('aistudio.google.com/apikey',`<div class="kg-login"><b>Google</b><span>Zaloguj się</span><i class="kg-in">twoj.mail@gmail.com</i><i class="kg-btn">Dalej</i></div>`),
-     a:`<button class="btn sm" onclick="window.open('https://aistudio.google.com/apikey','_blank')">Otwórz AI Studio ↗</button>`},
+     v:shot('aistudio.google.com/app/api-keys',`<div class="kg-login"><b>Google</b><span>Zaloguj się</span><i class="kg-in">twoj.mail@gmail.com</i><i class="kg-btn">Dalej</i></div>`),
+     a:`<button class="btn sm" onclick="window.open('https://aistudio.google.com/app/api-keys','_blank')">Otwórz AI Studio ↗</button>`},
     {t:'Zaakceptuj warunki (tylko za pierwszym razem)',d:'Przy pierwszym wejściu Google pokaże okno z warunkami korzystania. Zaznacz zgodę i kliknij „Continue” / „Kontynuuj”.',
      v:shot('aistudio.google.com',`<div class="kg-dlg"><b>Gemini API — warunki</b><span class="kg-ck"><i>✓</i> Akceptuję warunki korzystania</span><i class="kg-btn hl">Continue</i></div>`)},
     {t:'Utwórz klucz',d:'Na stronie „API keys” kliknij niebieski przycisk „Create API key” („Utwórz klucz API”). Jeśli zapyta o projekt, wybierz „Create API key in new project”.',
-     v:shot('aistudio.google.com/apikey',`<div class="kg-keys"><div class="kg-row"><b>API keys</b><i class="kg-btn hl">+ Create API key</i></div><div class="kg-empty">Nie masz jeszcze kluczy</div></div>`)},
+     v:shot('aistudio.google.com/app/api-keys',`<div class="kg-keys"><div class="kg-row"><b>API keys</b><i class="kg-btn hl">+ Create API key</i></div><div class="kg-empty">Nie masz jeszcze kluczy</div></div>`)},
     {t:'Skopiuj klucz',d:'Pojawi się okno z kluczem — długi ciąg znaków zaczynający się od „AIza…”. Kliknij „Copy” obok niego. Nie pokazuj go nikomu — to jak hasło do Twojego darmowego limitu.',
-     v:shot('aistudio.google.com/apikey',`<div class="kg-dlg"><b>API key generated</b><span class="kg-key">AIzaSyD3…kX9q<i class="kg-btn hl sm">Copy</i></span></div>`)},
+     v:shot('aistudio.google.com/app/api-keys',`<div class="kg-dlg"><b>API key generated</b><span class="kg-key">AIzaSyD3…kX9q<i class="kg-btn hl sm">Copy</i></span></div>`)},
     {t:'Wklej klucz w aplikacji',d:'Wróć tutaj, wklej klucz i kliknij „Zapisz i sprawdź”. Aplikacja od razu sprawdzi połączenie — gotowe: notatki AI i zamiana nagrań na tekst działają.',
      v:`<div class="kg-paste"><input id="kg-key" type="password" placeholder="Wklej klucz (AIza…)" autocomplete="off" spellcheck="false"><button class="btn ghost sm" id="kg-clip">Wklej ze schowka</button></div>
         <p class="kg-tip">Klucz jest darmowy i bez karty płatniczej. Ma dzienny limit zapytań — przy nauce w zupełności wystarcza. Klucz możesz w każdej chwili usunąć w AI Studio.</p>`,
@@ -10964,6 +10987,78 @@ updateCorrectionBtn();
 /* ---------- start ---------- */
 $('#plan-date').value=todayISO();
 restoreCols(); syncBell(); loadPulpit(); history.replaceState(navState(),'');
+
+/* ===== PORADNIK: przewodnik po aplikacji, potem klucz Gemini krok po kroku =====
+   Odpala się sam przy pierwszym uruchomieniu (o ile nie ma jeszcze klucza), ponownie z menu „Poradnik”. */
+const TOUR_KEY_URL='https://aistudio.google.com/app/api-keys';
+const tourShot=(url,body)=>`<div class="kg-shot"><div class="kg-bar"><i></i><i></i><i></i><span>${url}</span></div><div class="kg-body">${body}</div></div>`;
+const tourKeyCard=()=>$('#st-key')&&$('#st-key').closest('.st-card');
+const tourAi=()=>{go('ustawienia'); if(typeof stTab==='function')stTab('ai');};
+const TOUR=[
+  {t:'Cześć! Pokażę Ci, co gdzie jest',d:'To zajmie minutę. Na końcu włączymy funkcje AI: notatki z PDF, zdjęć i nagrań wykładów, quizy i testy.',next:'Zaczynamy'},
+  {go:'pulpit',el:'#nav [data-v="pulpit"]',t:'Pulpit',d:'Twój dzień w jednym miejscu: co trwa teraz, plan zajęć, zadania na dziś i ile zostało w budżecie.'},
+  {el:'#nav [data-v="nauka"]',t:'Nauka',d:'Zeszyty i notatki. Tu AI zrobi notatkę z PDF, zdjęć tablicy albo nagrania wykładu, a z gotowej notatki quiz i test ABCD.'},
+  {el:'#nav [data-v="plan"]',t:'Plan dnia',d:'Wklej link do kalendarza z USOS, a zajęcia z salami pojawią się od razu. Dodasz też własne wpisy, np. pracę.'},
+  {el:'#nav',t:'Reszta pod ręką',d:'Zadania z przypomnieniami, budżet na miesiąc, znajomi i grupy do wymiany notatek oraz odjazdy tramwajów i autobusów na żywo.'},
+  {run:tourAi,el:tourKeyCard,t:'Funkcje AI potrzebują klucza Gemini',d:'Klucz jest <b>darmowy i bez karty płatniczej</b>. Zrobisz go w Google AI Studio w około minutę. Przeprowadzę Cię przez to krok po kroku.'},
+  {run:tourAi,el:tourKeyCard,t:'Krok 1: otwórz stronę z kluczami',d:'Kliknij przycisk poniżej. Otworzy się Google AI Studio. Zaloguj się kontem Google (tym samym co Gmail). Przy pierwszym wejściu zaznacz zgodę na warunki i kliknij <b>Continue</b>.',
+   v:()=>tourShot('aistudio.google.com/app/api-keys',`<div class="kg-login"><b>Google</b><span>Zaloguj się</span><i class="kg-in">twoj.mail@gmail.com</i><i class="kg-btn">Dalej</i></div>`),
+   x:()=>`<button class="btn tc-link" onclick="window.open('${TOUR_KEY_URL}','_blank')">Otwórz Google AI Studio</button>`},
+  {run:tourAi,el:tourKeyCard,t:'Krok 2: utwórz klucz',d:'Na stronie <b>API keys</b> kliknij <b>Create API key</b>. Jeśli zapyta o projekt, wybierz <b>Create API key in new project</b> albo dowolny projekt z listy.',
+   v:()=>tourShot('aistudio.google.com/app/api-keys',`<div class="kg-keys"><div class="kg-row"><b>API keys</b><i class="kg-btn hl">+ Create API key</i></div><div class="kg-empty">Nie masz jeszcze kluczy</div></div>`),
+   x:()=>`<button class="btn ghost tc-link" onclick="window.open('${TOUR_KEY_URL}','_blank')">Otwórz stronę z kluczami jeszcze raz</button>`},
+  {run:tourAi,el:tourKeyCard,t:'Krok 3: skopiuj klucz',d:'Klucz to długi ciąg znaków zaczynający się od <b>AIza</b>. Kliknij ikonę kopiowania obok niego. Nie pokazuj go nikomu, działa jak hasło do Twojego darmowego limitu.',
+   v:()=>tourShot('aistudio.google.com/app/api-keys',`<div class="kg-dlg"><b>API key</b><span class="kg-key">AIzaSyD3…kX9q<i class="kg-btn hl sm">Copy</i></span></div>`)},
+  {run:tourAi,el:()=>$('#st-key')&&$('#st-key').closest('.st-key'),t:'Krok 4: wklej klucz tutaj',d:'Wklej klucz w podświetlone pole i kliknij <b>Zapisz i sprawdź</b>. Aplikacja od razu sprawdzi połączenie.',
+   x:()=>`<button class="btn ghost tc-link" id="tour-clip">Wklej ze schowka</button>`,save:true},
+  {el:'#nav-tour',t:'Gotowe',d:'Klucz możesz dodać później w <b>Ustawieniach</b>, w zakładce AI. Ten poradnik uruchomisz ponownie przyciskiem <b>Poradnik</b>.',next:'Zamknij'},
+];
+const TOUR_AI=5;
+let tourI=-1;
+function tourStart(i){tourI=-1; try{localStorage.setItem('tour_done','1');}catch(_){} if(typeof closeModal==='function'&&$('#modal-bd')&&$('#modal-bd').classList.contains('open'))closeModal(); tourGo(i||0);}
+function tourEnd(){tourI=-1; $('#tour-hole')?.remove(); $('#tour-card')?.remove(); removeEventListener('resize',tourPlace); removeEventListener('scroll',tourPlace,true); removeEventListener('keydown',tourKeys);}
+function tourKeys(e){if(e.key==='Escape')tourEnd(); else if(e.key==='ArrowRight'&&!e.target.closest('input,textarea'))tourGo(tourI+1); else if(e.key==='ArrowLeft'&&!e.target.closest('input,textarea'))tourGo(tourI-1);}
+function tourGo(i){
+  if(i<0)return; if(i>=TOUR.length){tourEnd();return;}
+  const s=TOUR[i]; tourI=i;
+  if(s.go)go(s.go); if(s.run)s.run();
+  let hole=$('#tour-hole'), card=$('#tour-card');
+  if(!hole){hole=document.createElement('div'); hole.id='tour-hole'; hole.className='tour-hole center'; document.body.appendChild(hole);
+    card=document.createElement('div'); card.id='tour-card'; card.className='tour-card'; card.setAttribute('role','dialog'); card.setAttribute('aria-live','polite'); document.body.appendChild(card);
+    addEventListener('resize',tourPlace); addEventListener('scroll',tourPlace,true); addEventListener('keydown',tourKeys);}
+  const last=i===TOUR.length-1, n=TOUR.length;
+  card.innerHTML=`<div class="tour-bar"><i style="width:${Math.round((i+1)/n*100)}%"></i></div><div class="tc-n">${i+1} z ${n}</div><h3>${s.t}</h3><p>${s.d}</p>
+    ${s.v?`<div class="tc-vis">${s.v()}</div>`:''}${s.x?s.x():''}
+    <div class="tc-act">${last?'':`<button class="tc-skip" id="tour-skip">${i>=TOUR_AI?'Dodam później':'Pomiń poradnik'}</button>`}<span class="sp"></span>
+      ${i>0&&!last?'<button class="btn ghost sm" id="tour-prev">Wstecz</button>':''}
+      ${s.save?'<button class="btn sm" id="tour-save">Zapisz i sprawdź</button>':`<button class="btn sm" id="tour-next">${s.next||'Dalej'}</button>`}</div>`;
+  $('#tour-prev')&&($('#tour-prev').onclick=()=>tourGo(i-1));
+  $('#tour-next')&&($('#tour-next').onclick=()=>tourGo(i+1));
+  $('#tour-skip')&&($('#tour-skip').onclick=()=>i>=TOUR_AI?tourGo(n-1):tourEnd());
+  $('#tour-clip')&&($('#tour-clip').onclick=async()=>{try{$('#st-key').value=(await navigator.clipboard.readText()).trim();}catch(_){} $('#st-key').focus();});
+  $('#tour-save')&&($('#tour-save').onclick=async()=>{const k=$('#st-key').value.trim(); if(!k){$('#st-key').focus();return;} tourEnd(); await stSaveKey();});
+  setTimeout(()=>{const el=tourEl(); if(el)el.scrollIntoView({block:'nearest',inline:'nearest'}); tourPlace(); setTimeout(tourPlace,450); (s.save?$('#st-key'):$('#tour-next'))?.focus({preventScroll:true});},s.go||s.run?260:0);
+}
+function tourEl(){const s=TOUR[tourI]; if(!s||!s.el)return null; const e=typeof s.el==='function'?s.el():$(s.el); if(!e)return null; const r=e.getBoundingClientRect(); return r.width&&r.height?e:null;}
+function tourPlace(){
+  const hole=$('#tour-hole'), card=$('#tour-card'); if(!hole||!card)return;
+  const el=tourEl(), W=innerWidth, H=innerHeight, cw=card.offsetWidth, ch=card.offsetHeight, m=16, phone=W<=820;
+  if(!el){hole.classList.add('center'); card.style.left=Math.max(m,(W-cw)/2)+'px'; card.style.top=Math.max(m,(H-ch)/2)+'px'; return;}
+  const r=el.getBoundingClientRect(), pad=6; hole.classList.remove('center');
+  Object.assign(hole.style,{top:(r.top-pad)+'px',left:(r.left-pad)+'px',width:(r.width+pad*2)+'px',height:(r.height+pad*2)+'px'});
+  let x,y;
+  if(phone){x=m; y=r.top+r.height/2>H/2?Math.max(m,r.top-ch-18):Math.min(H-ch-m,r.bottom+18);}
+  else if(r.right+20+cw<W-m){x=r.right+20; y=Math.min(Math.max(m,r.top+r.height/2-ch/2),H-ch-m);}
+  else if(r.bottom+18+ch<H-m){x=Math.min(Math.max(m,r.left),W-cw-m); y=r.bottom+18;}
+  else if(r.top-18-ch>m){x=Math.min(Math.max(m,r.left),W-cw-m); y=r.top-18-ch;}
+  else{x=Math.max(m,r.left-20-cw); y=Math.min(Math.max(m,r.top),H-ch-m);}
+  card.style.left=x+'px'; card.style.top=Math.max(m,y)+'px';
+}
+// pierwsze uruchomienie: pokaż poradnik, chyba że klucz już jest (dotychczasowi użytkownicy)
+setTimeout(async()=>{let done=false; try{done=!!localStorage.getItem('tour_done');}catch(_){done=true;} if(done)return;
+  if(document.body.classList.contains('on-start')||($('#modal-bd')&&$('#modal-bd').classList.contains('open')))return;
+  let ai={}; try{ai=await api('/settings/ai');}catch(_){} if(ai.has_key){try{localStorage.setItem('tour_done','1');}catch(_){} return;}
+  tourStart(0);},2200);
 </script>
 </body>
 </html>
